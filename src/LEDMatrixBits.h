@@ -66,7 +66,7 @@ public:
 	void transmitRow(int row, SPIConnection& conn) const;
 	
 	// debug
-	void streamFrameToSerial(void);
+	void streamToSerial(void);
 };
 
 #endif // __LEDMATRIXBITTS_H__

@@ -21,7 +21,7 @@
 
 // #define SPICACHEPADBITS(rows,cols)	(rows*3 + cols)%8 ? 8 - (rows*3 + cols)%8 : 0
 // #define SPICACHESIZE(rows,cols)	1+((rows*3 + cols)-1)/8
-#if TWENTY_FOUR_BIT_COLOR
+#if TWELVE_BIT_COLOR
 #define MAX_SCAN_PASS_COUNT 15
 #else
 #define MAX_SCAN_PASS_COUNT 3
@@ -79,7 +79,7 @@ void RGBLEDMatrix::generateFrameBits(LEDMatrixBits& frameBits, size_t frame ) co
 }
 
 size_t RGBLEDMatrix::maxFrameCountForValue(ColorType value) const {
-#if TWENTY_FOUR_BIT_COLOR
+#if TWELVE_BIT_COLOR
 	switch (value) {
 		case 0:
 			return 0;
@@ -245,7 +245,7 @@ void RGBLEDMatrix::setRowBitsForFrame(
 // Number of 5 microsecond units
 unsigned int RGBLEDMatrix::multiplier5microseconds( size_t frame ) const {
 	unsigned int mulitplier = 1;
-#if TWENTY_FOUR_BIT_COLOR
+#if TWELVE_BIT_COLOR
 	mulitplier = frame/4+1;
 #else
 	switch (frame) {

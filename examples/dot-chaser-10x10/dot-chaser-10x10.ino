@@ -22,7 +22,7 @@ protected:
           color = DARK_BLUE_COLOR;
         }
         if ( x == _xStack[3] && y == _yStack[3] ) {
-#if TWENTY_FOUR_BIT_COLOR
+#if TWELVE_BIT_COLOR
           color = 0x0009;
 #else
           color = B00000010;

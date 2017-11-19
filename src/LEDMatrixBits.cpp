@@ -199,7 +199,7 @@ ICACHE_RAM_ATTR void LEDMatrixBits::transmitRow(int row, SPIConnection& conn) co
 	conn.endTransaction();
 }
 
-void LEDMatrixBits::streamFrameToSerial(void) {
+void LEDMatrixBits::streamToSerial(void) {
 	unsigned char* dataPtr = _data;
 	
 	for (size_t row = 0; row < this->rows(); row++) {

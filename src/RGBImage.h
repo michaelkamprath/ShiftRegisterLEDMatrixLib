@@ -18,8 +18,8 @@
 #ifndef __RGBIMAGE12BIT_H__
 #define __RGBIMAGE12BIT_H__
 
-#ifndef TWENTY_FOUR_BIT_COLOR
-#define TWENTY_FOUR_BIT_COLOR (defined(__arm__) && defined(TEENSYDUINO))||defined(__AVR_ATmega2560__)||defined ( ESP8266 )
+#ifndef TWELVE_BIT_COLOR
+#define TWELVE_BIT_COLOR (defined(__arm__) && defined(TEENSYDUINO))||defined(__AVR_ATmega2560__)||defined ( ESP8266 )
 #endif
 /***
 
@@ -39,7 +39,7 @@ The bits of the byte are laid out as follows in a 2-byte integer:
 */
 class GlyphBase;
 
-#if TWENTY_FOUR_BIT_COLOR
+#if TWELVE_BIT_COLOR
 typedef unsigned int ColorType;
 
 

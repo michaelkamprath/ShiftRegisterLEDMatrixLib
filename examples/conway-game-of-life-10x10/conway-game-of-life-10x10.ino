@@ -1,11 +1,9 @@
+#include <LEDMatrix.h>
+#include <RGBLEDMatrix.h>
+#include <RGBImage.h>
 #include <Glyph.h>
-#include <LEDMatrixBits.h>
 #include <RGBAnimation.h>
 #include <RGBAnimationSequence.h>
-#include <RGBImage.h>
-#include <RGBLEDMatrix.h>
-#include <RGBLEDMatrixUtils.h>
-#include <SPIConnection.h>
 #include <TimerAction.h>
 
 //
@@ -17,7 +15,7 @@
 //   red = cell is dying
 //   black = cell is dead
 // 
-// A randome set of cells are born on the first generration, then the game commences
+// A random set of cells are born on the first generration, then the game commences
 // according to the standard rules.
 //
 

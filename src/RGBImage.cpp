@@ -45,7 +45,7 @@ RGBImageBase::~RGBImageBase()
 
 const ColorType RGBImageBase::pixel( int row, int column ) const {
 	if (this->isProgMem()) {
-#if TWENTY_FOUR_BIT_COLOR
+#if TWELVE_BIT_COLOR
 		return (ColorType)pgm_read_word_near( this->data() + row*this->columns() + column );
 #else
 		return (ColorType)pgm_read_byte_near( this->data() + row*this->columns() + column );
