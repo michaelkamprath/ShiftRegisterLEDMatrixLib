@@ -1,4 +1,4 @@
-# Arduino Driver for Shift Register LED Matrix
+# Arduino Driver for Shift Register LED Matrices
 
 This library provides a generalized API to create and drive an image on LED matrix where shift registers, such as the 74HC595 or DM13a, are used to control the rows and columns of the matrix. Both single color and RGB LED matrices are supported. To use this driver in the Arduino IDE, add the folder `ShiftRegisterLEDMatrixLib` as a library as described in [this document](https://www.arduino.cc/en/Guide/Libraries), or install via the libraries manager in the Arduino IDE.
 
@@ -63,7 +63,7 @@ The `LEDMatrix` driver is used for matrices of single color LEDs. This drive use
 #### RGBLEDMatrix
 The `RGBLEDMatrix` driver is used for matrices of RGB color LEDs. This drive uses a `MutableRGBImage` as its image buffer.
 
-In addition to the basic options listed above, when constructing an `RGBLEDMatrix` object, you need to indicate the shift register bit layout for the RGB columns. See the "Bit Layouts" section of this document.
+In addition to the basic options listed above, when constructing an `RGBLEDMatrix` object, you need to indicate the shift register bit layout for the RGB columns. See the [Bit Layouts](#bit-layouts) section of this document.
 ### Animation Management
 #### TimerAction
 A `TimerAction` object allows you to manage a variably timed action in a manner that does not require the use of a clock interrupt. Since timer interrupts are not used, the timing of action may not be precise, so this class should only be used for actions that are not sensitive to some variability in the action timing. The object has a `loop()` method that should be called in every call to the global `loop()` method. 
