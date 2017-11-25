@@ -56,7 +56,7 @@ When constructing a matrix driver, you need to tell it a few details:
 * The matrix's size in rows and columns
 * Whether the shift registers used for controlling columns should be set to `HIGH` or `LOW` to turn on the column. 
 * Whether the shift registers used for controlling rows should be set to `HIGH` or `LOW` to turn on the row
-* The pin which will be used to send the latch signle.
+* The pin which will be used to send the latch signal.
 
 #### LEDMatrix
 The `LEDMatrix` driver is used for matrices of single color LEDs. This drive uses a `MutableGlyph` as its image buffer.

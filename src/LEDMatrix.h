@@ -42,6 +42,19 @@ protected:
 public:
   
 
+	/**
+	 *	Constructs a mono-color LED matrix controller object.
+	 *
+	 *	@param rows the number of  rows in the LED matrix. Rows are expected to have
+	 *	            shared power to the LEDs.
+	 *	@param columns the number of columns in the LED matrix.
+	 *	@param columnControlBitOn what value a column bit should be set to to the column on.
+	 *	@param rowControlBitOn what value a row bit should be set to to turn the row on. 
+	 *               E.g. of the row is common anode and a PNP transistor is being use 
+	 *               to switch power to the row, the row bit likely needs to be LOW to
+	 *               cause the transistor to power the row.
+	 *  @param slavePin which ard pin is used for the latch signal.
+	 */
 	LEDMatrix(
 			int rows,
 			int columns,
@@ -55,9 +68,26 @@ public:
 		);
 	virtual ~LEDMatrix();
 	
+	/**
+	 * Should be called before any operations against this object is performed.
+	 */
 	virtual void setup();
 	
+	/**
+	 * Returns the image buffer for this matrix object. This is the 
+	 * image buffer that drawing should be done to.
+	 *
+	 * @return a MutableGlyph object reference that is the matrix's image buffer.
+	 */ 
 	MutableGlyph& image(void)				{ return *_screen_data; }
+
+	/**
+	 * Returns a const reference to the image buffer for this matrix object. This is the 
+	 * image buffer that drawing should be done to, but is const here and thus should
+	 * be only read from.
+	 *
+	 * @return a const MutableGlyph object reference that is the matrix's image buffer.
+	 */ 
 	const MutableGlyph& image(void) const	{ return *_screen_data; }
 };
 
