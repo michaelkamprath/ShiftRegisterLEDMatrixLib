@@ -19,11 +19,18 @@
 #ifndef __TIMERACTION_H__
 #define __TIMERACTION_H__
 
+/**
+ * TimerAction is a class that manages the timed firing of an action. Timing is 
+ * approximate and "no sooner than" the period delay.  To use, subclass this class
+ * and override the protected action() method to implement the periodic action, then call 
+ * the loop() method to an instance of the the subclass that has been constructed with the
+ * desired timing interval. The TimerAction class will call the action() method repeatedly
+ * after the first call to loop once the timing interval has passed.
+ */
 class TimerAction {
 private:
 	unsigned long _interval;
 	unsigned long  _lastLoopMicros;
-	unsigned long  _actionAverageMicros;
 	
 	bool _isActive;
 	
@@ -47,7 +54,6 @@ protected:
 public:
   TimerAction(unsigned long intervalMicros)
   		: 	_interval(intervalMicros),
-  			_actionAverageMicros(0),
   			_isActive(true)
   	{
 		_interval = intervalMicros;
@@ -60,9 +66,6 @@ public:
 			if ( _interval <= delta ) {
 				_lastLoopMicros = micros();
 				this->action();
-				// at this point this->timeSinceLast() is the time it took to 
-				// do the action;
-				_actionAverageMicros = (_actionAverageMicros+this->timeSinceLast())/2;
 			}
 		}
 	}

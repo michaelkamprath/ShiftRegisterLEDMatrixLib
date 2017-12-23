@@ -56,8 +56,23 @@ protected:
 	
 	virtual unsigned int multiplier5microseconds( size_t frame ) const;
 public:
-  
 
+	/**
+	 *	Constructs the base LED matrix controller object.
+	 *
+	 *	@param rows the number of  rows in the LED matrix. Rows are expected to have
+	 *	            shared power to the LEDs.
+	 *	@param columns the number of columns in the LED matrix.
+	 *	@param columnBitWidth the number of bits needed to represent one physical LED in 
+	 *              a column. E.g., and RGB LED needs 3 bits.
+	 *	@param pwmCycleScanCount the number of row scans needed for the PWM cycle of the matrix.
+	 *	@param columnControlBitOn what value a column bit should be set to to the column on.
+	 *	@param rowControlBitOn what value a row bit should be set to to turn the row on. 
+	 *               E.g. of the row is common anode and a PNP transistor is being use 
+	 *               to switch power to the row, the row bit likely needs to be LOW to
+	 *               cause the transistor to power the row.
+	 *  @param slavePin which ard pin is used for the latch signal.
+	 */
 	BaseLEDMatrix(
 			unsigned int rows,
 			unsigned int columns,
@@ -73,18 +88,60 @@ public:
 		);
 	virtual ~BaseLEDMatrix();
 	
+	/**
+	 * Should be called before any operations against this object is performed. Child
+	 * classes implementing matrix-type specific implementation should call this parent 
+	 * class implementation of setup() before doing their own setup work.
+	 */
 	virtual void setup();  
 
+	/**
+	 * Increments the draw lock. While a matrix has a non-zero draw lock, any changes to 
+	 * the image() buffer will not be pass through to the matrix scan buffer.
+	 */
 	void startDrawing(void)   			{ _isDrawingCount++; }
+	
+	/**
+	 * Decrements the draw lock. All calls to startDrawing() should be balanced with a 
+	 * call to stopDrawing().
+	 */
 	void stopDrawing(void)    			{ _isDrawingCount--; if (_isDrawingCount < 0) { _isDrawingCount = 0; }}
+	
+	
+	/**
+	 * Returns true is a draw lock is active.
+	 */
 	bool isDrawing(void) const			{ return (_isDrawingCount > 0); }
 	
+	/**
+	 * Returns the number of rows in this matrix.
+	 *
+	 * @return the number of rows in the matrix.
+	 */
 	unsigned int rows() const          			{ return _rows; }
+
+	/**
+	 * Returns the number of columns in this matrix.
+	 *
+	 * @return the number of columns in the matrix.
+	 */
 	unsigned int columns() const       			{ return _columns; }
 
+	/**
+	 * Begins the row scan timer interrupt, which in turn starts sending data through the 
+	 * SPI interface to the LED matrix.
+	 */
 	void startScanning(void);
+
+	/**
+	 * Stops the LED matrix row scan timmer interrupt.
+	 */
 	void stopScanning(void);
 
+	/**
+	 * This methods are "private" to this class but have to be declared public so 
+	 * the timer interrupt can access them.
+	 */
 	void shiftOutCurrentRow(void);
 	unsigned int nextTimerInterval(void) const;
 	void incrementScanRow( void );

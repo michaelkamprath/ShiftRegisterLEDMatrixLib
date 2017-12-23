@@ -7,7 +7,7 @@
 #######################################
 
 BaseLEDMatrix		KEYWORD1
-ColorType			KEYWORD1
+RGBColorType		KEYWORD1
 Frame				KEYWORD1
 Glyph				KEYWORD1
 GlyphBase			KEYWORD1

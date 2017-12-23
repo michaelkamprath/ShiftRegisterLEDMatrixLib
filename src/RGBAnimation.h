@@ -35,13 +35,13 @@ private:
 	RGBLEDMatrix& _matrix;
 
 	int _rightPadSize;
-	ColorType _rightPadColor;
+	RGBColorType _rightPadColor;
 	int _leftPadSize;
-	ColorType _leftPadColor;
+	RGBColorType _leftPadColor;
 	int _topPadSize;
-	ColorType _topPadColor;
+	RGBColorType _topPadColor;
 	int _bottomPadSize;
-	ColorType _bottomPadColor;
+	RGBColorType _bottomPadColor;
 	
 protected:
 	virtual void action();
@@ -81,10 +81,10 @@ public:
 	int rows() const						{ return _matrix.rows(); }
 	int columns() const						{ return _matrix.columns(); }
 	
-	void setRightPad( int padSize, ColorType padColor = BLACK_COLOR );
-	void setLeftPad( int padSize, ColorType padColor = BLACK_COLOR );
-	void setTopPad( int padSize, ColorType padColor = BLACK_COLOR );
-	void setBottomPad( int padSize, ColorType padColor = BLACK_COLOR );
+	void setRightPad( int padSize, RGBColorType padColor = BLACK_COLOR );
+	void setLeftPad( int padSize, RGBColorType padColor = BLACK_COLOR );
+	void setTopPad( int padSize, RGBColorType padColor = BLACK_COLOR );
+	void setBottomPad( int padSize, RGBColorType padColor = BLACK_COLOR );
 };
 
 class GlyphSequenceAnimation : public RGBAnimationBase {
@@ -94,8 +94,8 @@ public:
 		int row;
 		int column;
 		unsigned long interval;
-		ColorType foreground;
-		ColorType background;
+		RGBColorType foreground;
+		RGBColorType background;
 	};
 
 private:

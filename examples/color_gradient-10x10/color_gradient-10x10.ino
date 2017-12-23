@@ -12,18 +12,18 @@
 #define LOOP_COUNTER_MAX 8000
 
 const int ROW_COLOR_LIST_SIZE = 19;
-ColorType rowColors[ROW_COLOR_LIST_SIZE];
+RGBColorType rowColors[ROW_COLOR_LIST_SIZE];
 
-ColorType currentColor = RED_COLOR;
+RGBColorType currentColor = RED_COLOR;
 
-ColorType redIncrement = 1 << RED_BIT_SHIFT;
-ColorType greenIncrement = 1 << GREEN_BIT_SHIFT;
-ColorType blueIncrement = 1 << BLUE_BIT_SHIFT;
+RGBColorType redIncrement = 1 << RED_BIT_SHIFT;
+RGBColorType greenIncrement = 1 << GREEN_BIT_SHIFT;
+RGBColorType blueIncrement = 1 << BLUE_BIT_SHIFT;
 
 const int SEQUENCE_LENGTH = 7;
 
 // This is the list of main colors we want to cycle through. Agradient will be calculated between them.
-ColorType colorSequence[SEQUENCE_LENGTH] = { 
+RGBColorType colorSequence[SEQUENCE_LENGTH] = { 
     RED_COLOR,
     RED_COLOR+GREEN_COLOR,
     GREEN_COLOR,
@@ -44,9 +44,9 @@ unsigned int colorIncrements[SEQUENCE_LENGTH] = {
     greenIncrement+blueIncrement
   };
 
-// since ColorTYpe is an unsigned value, we need to keep track whether we are
+// since RGBColorType is an unsigned value, we need to keep track whether we are
 // adding or subtracting the increment.
-ColorType incrementType[SEQUENCE_LENGTH] = {
+RGBColorType incrementType[SEQUENCE_LENGTH] = {
     true,
     false,
     true,
@@ -72,7 +72,7 @@ int getNextIdx() {
   }
 }
 
-ColorType getNextColor() {
+RGBColorType getNextColor() {
   if ( currentColor == colorSequence[getNextIdx()] ) {
     sequenceIdx++;
     if (sequenceIdx == SEQUENCE_LENGTH) {

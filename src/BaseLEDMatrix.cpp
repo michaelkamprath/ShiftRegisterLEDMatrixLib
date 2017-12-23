@@ -21,9 +21,6 @@
 #define ICACHE_RAM_ATTR
 #endif
 
-#define SPICACHEPADBITS(rows,cols)	(rows*3 + cols)%8 ? 8 - (rows*3 + cols)%8 : 0
-#define SPICACHESIZE(rows,cols)	1+((rows*3 + cols)-1)/8
-
 const unsigned long UPDATE_INTERVAL = 2000;
 
 static BaseLEDMatrix* gSingleton = NULL;
@@ -110,7 +107,7 @@ void BaseLEDMatrix::action() {
 	} 
 }
 
-void BaseLEDMatrix::shiftOutCurrentRow( void ) {
+ICACHE_RAM_ATTR void BaseLEDMatrix::shiftOutCurrentRow( void ) {
 	this->shiftOutRow( _scanRow, _scanPass );
 }
 
