@@ -78,7 +78,7 @@ void RGBLEDMatrix::generateFrameBits(LEDMatrixBits& frameBits, size_t frame ) co
 	}
 }
 
-size_t RGBLEDMatrix::maxFrameCountForValue(ColorType value) const {
+size_t RGBLEDMatrix::maxFrameCountForValue(RGBColorType value) const {
 #if TWELVE_BIT_COLOR
 	switch (value) {
 		case 0:
@@ -209,27 +209,27 @@ void RGBLEDMatrix::setRowBitsForFrame(
 			columnBitIdxIncrement = 1;
 		}
 		for (unsigned int col = 0; col < this->columns(); col++) {
-			ColorType rgbValue = image.pixel(row, col);
+			RGBColorType rgbValue = image.pixel(row, col);
 			
 			// a form of Binary Code Modulation is used to control
 			// the LED intensity at variou levels.
 		
 			// red
-			ColorType redValue = rgbValue & RED_MASK;
+			RGBColorType redValue = rgbValue & RED_MASK;
 			if (redValue && frame <= RGBLEDMatrix::maxFrameCountForValue(redValue) ) {
 				frameBits.setColumnControlBit(row,colBitIdx+redBitOffset,true);
 				rowNeedsPower = true;
 			}
 			
 			// green
-			ColorType greenValue = rgbValue & GREEN_MASK;
+			RGBColorType greenValue = rgbValue & GREEN_MASK;
 			if (greenValue && frame <= RGBLEDMatrix::maxFrameCountForValue(greenValue) ) {
 				frameBits.setColumnControlBit(row,colBitIdx+greenBitOffset,true);
 				rowNeedsPower = true;
 			}
 					
 			// blue
-			ColorType blueValue = (rgbValue & BLUE_MASK);
+			RGBColorType blueValue = (rgbValue & BLUE_MASK);
 			if (blueValue && frame <= RGBLEDMatrix::maxFrameCountForValue(blueValue) ) {
 				frameBits.setColumnControlBit(row,colBitIdx+blueBitOffset,true);
 				rowNeedsPower = true;

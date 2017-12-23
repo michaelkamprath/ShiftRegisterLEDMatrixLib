@@ -37,7 +37,7 @@ private:
   LifeState* _cells;
   LifeState* _nextCells;
 
-  ColorType getColorForLifeState( LifeState state ) const;
+  RGBColorType getColorForLifeState( LifeState state ) const;
   
 protected:
   virtual void action();
@@ -143,7 +143,7 @@ void CellUniverse::action() {
       int idx = y*_leds.columns() + x;
       _nextCells[idx] = newState;
 
-      ColorType cellColor = this->getColorForLifeState(newState);
+      RGBColorType cellColor = this->getColorForLifeState(newState);
       _leds.image().pixel(y, x) = cellColor;
     }
   }
@@ -157,15 +157,15 @@ void CellUniverse::drawToScreen() {
   for (int x = 0; x < _leds.columns(); x++) {
     for (int y = 0; y < _leds.rows(); y++ ) {
       LifeState currentState = this->getCellStatus(y, x);
-      ColorType cellColor = this->getColorForLifeState(currentState);
+      RGBColorType cellColor = this->getColorForLifeState(currentState);
       _leds.image().pixel(y, x) = cellColor;
     }
   }
   _leds.stopDrawing();
 }
 
-ColorType CellUniverse::getColorForLifeState( LifeState state ) const {
-  ColorType cellColor = BLACK_COLOR;
+RGBColorType CellUniverse::getColorForLifeState( LifeState state ) const {
+  RGBColorType cellColor = BLACK_COLOR;
   switch (state) {
     case BORN:
       cellColor = GREEN_COLOR;

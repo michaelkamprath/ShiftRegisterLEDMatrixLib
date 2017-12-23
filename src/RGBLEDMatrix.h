@@ -45,7 +45,7 @@ private:
 			LEDMatrixBits& frameBits,
 			const RGBImageBase& image
 		) const; 
-	size_t maxFrameCountForValue(ColorType value) const;
+	size_t maxFrameCountForValue(RGBColorType value) const;
 protected:
 	virtual void generateFrameBits(LEDMatrixBits& frameBits, size_t frame ) const;
 	virtual bool matrixNeedsUpdate(void) const;

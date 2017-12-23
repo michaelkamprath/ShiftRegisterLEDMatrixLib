@@ -103,19 +103,19 @@ void RGBAnimationBase::update() {
 	_matrix.stopDrawing();
 }
 
-void RGBAnimationBase::setRightPad( int padSize, ColorType padColor ) {
+void RGBAnimationBase::setRightPad( int padSize, RGBColorType padColor ) {
 	_rightPadSize = padSize;
 	_rightPadColor = padColor;
 }
-void RGBAnimationBase::setLeftPad( int padSize, ColorType padColor ) {
+void RGBAnimationBase::setLeftPad( int padSize, RGBColorType padColor ) {
 	_leftPadSize = padSize;
 	_leftPadColor = padColor;
 }
-void RGBAnimationBase::setTopPad( int padSize, ColorType padColor ) {
+void RGBAnimationBase::setTopPad( int padSize, RGBColorType padColor ) {
 	_topPadSize = padSize;
 	_topPadColor = padColor;
 }
-void RGBAnimationBase::setBottomPad( int padSize, ColorType padColor ) {
+void RGBAnimationBase::setBottomPad( int padSize, RGBColorType padColor ) {
 	_bottomPadSize = padSize;
 	_bottomPadColor = padColor;
 }

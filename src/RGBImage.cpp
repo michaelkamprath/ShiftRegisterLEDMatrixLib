@@ -43,12 +43,12 @@ RGBImageBase::~RGBImageBase()
 {
 }
 
-const ColorType RGBImageBase::pixel( int row, int column ) const {
+const RGBColorType RGBImageBase::pixel( int row, int column ) const {
 	if (this->isProgMem()) {
 #if TWELVE_BIT_COLOR
-		return (ColorType)pgm_read_word_near( this->data() + row*this->columns() + column );
+		return (RGBColorType)pgm_read_word_near( this->data() + row*this->columns() + column );
 #else
-		return (ColorType)pgm_read_byte_near( this->data() + row*this->columns() + column );
+		return (RGBColorType)pgm_read_byte_near( this->data() + row*this->columns() + column );
 #endif
 	} else {
 		return this->data()[row*this->columns() + column];
@@ -60,7 +60,7 @@ const ColorType RGBImageBase::pixel( int row, int column ) const {
 RGBImage::RGBImage(
 	int rows,
 	int columns,
-	const ColorType* data,
+	const RGBColorType* data,
 	bool isFromProgramSpace )
 :	RGBImageBase(rows,columns),
 	_data(data),
@@ -73,10 +73,10 @@ RGBImage::RGBImage(const RGBImageBase& other)
 :	RGBImageBase(other),
 	_data( other.isProgMem() ? 
 				other.data() :
-				(ColorType*)memcpy(
-					new ColorType[(other.rows()*other.columns())],
+				(RGBColorType*)memcpy(
+					new RGBColorType[(other.rows()*other.columns())],
 					other.data(),
-					(other.rows()*other.columns())*sizeof(ColorType)
+					(other.rows()*other.columns())*sizeof(RGBColorType)
 				)),
 	_isProgMem(false),
 	_manageMem(true)
@@ -96,7 +96,7 @@ RGBImage::~RGBImage() {
 
 MutableRGBImage::MutableRGBImage(int rows, int columns)
 :	RGBImageBase(rows,columns),
-	_data(new ColorType[rows*columns]),
+	_data(new RGBColorType[rows*columns]),
 	_dirty(false)
 {
 	this->paintColor(BLACK_COLOR);
@@ -105,22 +105,22 @@ MutableRGBImage::MutableRGBImage(int rows, int columns)
 MutableRGBImage::MutableRGBImage(
 	int rows,
 	int columns,
-	const ColorType* data,
+	const RGBColorType* data,
 	bool isFromProgramSpace )
 :	RGBImageBase(rows,columns),
-	_data(new ColorType[rows*columns]),
+	_data(new RGBColorType[rows*columns]),
 	_dirty(false)
 {
 	if (isFromProgramSpace) {
-		memcpy_P(_data, data, rows*columns*sizeof(ColorType));		
+		memcpy_P(_data, data, rows*columns*sizeof(RGBColorType));		
 	} else {
-		memcpy(_data, data, rows*columns*sizeof(ColorType));
+		memcpy(_data, data, rows*columns*sizeof(RGBColorType));
 	}
 }
 
 MutableRGBImage::MutableRGBImage(const RGBImageBase& other)
 :	RGBImageBase(other),
-	_data(new ColorType[other.rows()*other.columns()]),
+	_data(new RGBColorType[other.rows()*other.columns()]),
 	_dirty(true)
 {
 	this->copy(other);
@@ -135,15 +135,15 @@ void MutableRGBImage::copy(const RGBImageBase& other) {
 	
 	if (other.rows() == this->rows() && other.columns() == this->columns()) {
 		if (other.isProgMem()) {
-			memcpy_P(_data, other.data(), other.rows()*other.columns()*sizeof(ColorType));		
+			memcpy_P(_data, other.data(), other.rows()*other.columns()*sizeof(RGBColorType));		
 		} else {
-			memcpy(_data, other.data(), other.rows()*other.columns()*sizeof(ColorType));
+			memcpy(_data, other.data(), other.rows()*other.columns()*sizeof(RGBColorType));
 		}
 		_dirty = true;
 	}
 }
 
-ColorType& MutableRGBImage::pixel( int row, int column ) { 
+RGBColorType& MutableRGBImage::pixel( int row, int column ) { 
 	_dirty = true;
 	return _data[row*this->columns() + column];
 }
@@ -180,7 +180,7 @@ void MutableRGBImage::placeImageAt( const RGBImageBase& image, int row, int colu
 
 	for ( int yT = startRow, yO = imageY; (yT < this->rows()) && (yO < image.rows()); yT++, yO++ ) { 
 		for (int colCounter = 0; colCounter < imageColumns; colCounter++) {
-			ColorType color = image.pixel(yO,imageX+colCounter);
+			RGBColorType color = image.pixel(yO,imageX+colCounter);
 			if (color != TRANSPARENT_COLOR) {
 				this->pixel(yT,thisX+colCounter) = color;
 			}
@@ -188,7 +188,7 @@ void MutableRGBImage::placeImageAt( const RGBImageBase& image, int row, int colu
 	}
 }
 
-void MutableRGBImage::paintColor( ColorType color ) {
+void MutableRGBImage::paintColor( RGBColorType color ) {
 	_dirty = true;
 	for (int idx = 0; idx < this->rows()*this->columns(); idx++) {
 		_data[idx] = color;
@@ -200,7 +200,7 @@ void MutableRGBImage::drawLine(
 		int startColumn,
 		int stopRow,
 		int stopColumn,
-		ColorType color
+		RGBColorType color
 	)
 {
 	_dirty = true;
@@ -245,7 +245,7 @@ void MutableRGBImage::drawRectangle(
   		int tlColumn,
   		int brRow,
   		int brColumn,
-  		ColorType color,
+  		RGBColorType color,
   		bool fill
   	)
 {
@@ -263,7 +263,7 @@ void MutableRGBImage::drawRectangle(
 	
 	for (int row = finalTLRow; row <= finalBRRow; row++ ) {
 		if ( fill || row == finalTLRow || row == finalBRRow ) {
-			ColorType* startPtr = &this->pixel(row,finalTLColumn);
+			RGBColorType* startPtr = &this->pixel(row,finalTLColumn);
 			for (int i = 0; i < finalBRColumn-finalTLColumn+1; i++) {
 				startPtr[i] = color;
 			}
@@ -279,8 +279,8 @@ void MutableRGBImage::drawGlyph(
 		const GlyphBase& glyph,
 		int row,
 		int column,
-		ColorType foreground,
-		ColorType background
+		RGBColorType foreground,
+		RGBColorType background
 	)
 {
 	if (	row >= this->rows()

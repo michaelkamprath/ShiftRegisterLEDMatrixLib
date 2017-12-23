@@ -70,7 +70,7 @@ bool GlyphBase::getBit( int row, int column ) const {
 	}
 }
 
-MutableRGBImage* GlyphBase::getImageWithColor( ColorType foreground, ColorType background ) const {
+MutableRGBImage* GlyphBase::getImageWithColor( RGBColorType foreground, RGBColorType background ) const {
 	MutableRGBImage* img = new MutableRGBImage( this->rows(), this->columns() );
 	
 	if (this->isProgMem()) {

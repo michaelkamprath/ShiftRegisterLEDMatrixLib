@@ -59,8 +59,8 @@ public:
 	virtual bool getBit( int row, int column ) const;
 	
 	MutableRGBImage* getImageWithColor(
-			ColorType foreground,
-			ColorType background = TRANSPARENT_COLOR
+			RGBColorType foreground,
+			RGBColorType background = TRANSPARENT_COLOR
 		) const;
 
 	void streamToSerial(void);

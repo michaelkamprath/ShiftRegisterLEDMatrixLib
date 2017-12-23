@@ -19,7 +19,7 @@ There are two ways to initialize a `Glyph` object: with a bit array and with a b
 #### RGBImage
 A RGBImage is a color image using one of two color modes: 6 bit and 12 bit. There are two types of RGBImage object, the immutable `RGBImage` object and the mutable `MutableRGBImage` object. The advantage of the immutable `RGBImage` object is that it can be initialized with a `PROGMEM` block, thus reducing the RAM footprint for statically constructed `RGBImage` objects.
 
-Color for the image is represented by a `ColorType` value. When the preprocessor macro 	`TWELVE_BIT_COLOR` is defined to `1`, `ColorType` will be an `unsigned int` with the following bit layout:
+Color for the image is represented by a `RGBColorType` value. When the preprocessor macro 	`TWELVE_BIT_COLOR` is defined to `1`, `RGBColorType` will be an `unsigned int` with the following bit layout:
 
 ```
 Bits   0   4   8  12  
@@ -34,7 +34,7 @@ Bits   0   4   8  12
 ``` 
 Color can easily be set in hexadecimal format, as the 2nd byte is red, the third byte is green, and the fourth byte is blue. The left most bit of the first byte is used to indicate whether the color is transparent or not. For operations that support transparency, any other color bits are ignored when the transparency bit is set. Transparency is primarily used when drawing one `RGBImage` onto another. Transparent colors will not change the color of the underlying pixel the `RGBImage` is being drawn on top of.
 
-When the preprocessor macro `TWELVE_BIT_COLOR` is defined to `0`, `ColorType` will be an `unsigned char` with the following bit layout:
+When the preprocessor macro `TWELVE_BIT_COLOR` is defined to `0`, `RGBColorType` will be an `unsigned char` with the following bit layout:
 
 ```
 Bits   0   4
@@ -48,7 +48,7 @@ Bits   0   4
 	B = Blue
 ```
 
-An `RGBImage` can be initialized with an array of `ColorType` values sized to be the image's rows\*columns. 
+An `RGBImage` can be initialized with an array of `RGBColorType` values sized to be the image's rows\*columns. 
 ### Matrix Driver
 The matrix driver is an object that manages rendering an image on an LED matrix. It does this using a double buffer approach. The first buffer is the image that is desired to be rendered on the LED matrix. The second buffer is the bit sequences that needs to be sent to the LED matrix's shift registers to render the image. The matrix drive object uses SPI to send the bits to the shift register. Since the rows on the matrix are multiplexed when rendering, the matrix driver object will use a system clock interrupt to ensure the multiplexing is consistently timed. 
 

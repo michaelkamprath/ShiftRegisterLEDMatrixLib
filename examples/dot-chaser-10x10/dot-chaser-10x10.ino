@@ -17,7 +17,7 @@ protected:
     _screen->startDrawing();
     for (int x = 0; x < _screen->rows(); ++x) {
       for (int y = 0; y < _screen->columns(); ++y ) {
-        ColorType color = 0;
+        RGBColorType color = 0;
         if ( x == _xStack[4] && y == _yStack[4] ) {
           color = DARK_BLUE_COLOR;
         }
