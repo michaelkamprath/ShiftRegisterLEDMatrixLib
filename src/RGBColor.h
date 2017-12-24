@@ -17,6 +17,7 @@
 //     along with Shift Register LED Matrix Project.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __RGBCOLOR_H__
 #define __RGBCOLOR_H__
+#include <Arduino.h>
 
 #ifndef TWELVE_BIT_COLOR
 #define TWELVE_BIT_COLOR (defined(__arm__) && defined(TEENSYDUINO))||defined(__AVR_ATmega2560__)||defined ( ESP8266 )
