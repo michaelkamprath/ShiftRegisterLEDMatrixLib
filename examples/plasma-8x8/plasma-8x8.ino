@@ -25,7 +25,7 @@
 const int COLOR_SCHEME = 1;
 
 const float SPACE_STRETCH_FACTOR = 4.0;
-const float TIME_DILATION = 5.0;
+const float TIME_DILATION = 20.0;
 
 RGBLEDMatrix leds(8,8);
 
@@ -86,7 +86,7 @@ void setup() {
 unsigned long loopCounter = 0;
 unsigned long timeCount = 0;
 
-const unsigned long loopMod = 2000;
+const unsigned long loopMod = 500;
 
 void loop() {
   leds.loop();
