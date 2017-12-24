@@ -139,7 +139,7 @@ namespace RGBColor {
 	 *	@param blue blue value between 0 and 255
 	 *  @return A RGBColorType value that closely approximates the passed color.
 	 */	 
-	RGBColorType fromRGB(char red, char green, char blue);
+	RGBColorType fromRGB(int red, int green, int blue);
 	
 	
 	/**

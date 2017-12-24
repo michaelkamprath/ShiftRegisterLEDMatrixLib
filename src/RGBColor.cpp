@@ -18,6 +18,7 @@
 
 #include <math.h>
 #include "RGBColor.h"
+#include "SRLEDMatrixUtils.h"
 
 #if TWELVE_BIT_COLOR
 
@@ -31,7 +32,7 @@
 
 #endif
 
-RGBColorType RGBColor::fromRGB(char red, char green, char blue) {
+RGBColorType RGBColor::fromRGB(int red, int green, int blue) {
 	RGBColorType r = red/RGB_SCALE_VALUE;
 	RGBColorType g = green/RGB_SCALE_VALUE;
 	RGBColorType b = blue/RGB_SCALE_VALUE;
@@ -42,7 +43,7 @@ RGBColorType RGBColor::fromRGB(char red, char green, char blue) {
 }
 
 RGBColorType RGBColor::fromHSV(float hue, float saturation, float value) {
-	float H = ( hue < 0 ? ( fmod(hue,360) + 360.0) : fmod(hue,360) );
+	float H = ( hue < 0 ? ( SRLEDMatrixUtils::fmod(hue,360) + 360.0) : SRLEDMatrixUtils::fmod(hue,360) );
 
 	float C = value*saturation;
 	float X = C*(1 - fabs(float(int(H/60.0)%2-1)) );
@@ -85,7 +86,7 @@ RGBColorType RGBColor::fromHSV(float hue, float saturation, float value) {
 }
 
 RGBColorType RGBColor::fromHSL(float hue, float saturation, float lightness) {
-	float H = ( hue < 0 ? ( fmod(hue,360) + 360.0) : fmod(hue,360) );
+	float H = ( hue < 0 ? ( SRLEDMatrixUtils::fmod(hue,360) + 360.0) : SRLEDMatrixUtils::fmod(hue,360) );
 
 	float C = (1.0 - fabs(2.0*lightness - 1.0))*saturation;
 	float X = C*(1 - fabs(float(int(H/60.0)%2-1)) );

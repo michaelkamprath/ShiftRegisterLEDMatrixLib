@@ -159,7 +159,7 @@ MutableGlyph::MutableGlyph(
 
 MutableGlyph::MutableGlyph( const GlyphBase& other )
 	: 	GlyphBase(other),
-		_bits( (bool*)memcpy_smart( 
+		_bits( (bool*)SRLEDMatrixUtils::memcpy_smart( 
 					new bool[(other.rows()*other.columns())],
 					other.bits(),
 					(other.rows()*other.columns())*sizeof(bool),

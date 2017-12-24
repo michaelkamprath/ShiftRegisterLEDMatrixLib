@@ -17,15 +17,18 @@
 //     along with Shift Register LED Matrix Project.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __SRLEDMATRIXUTILS_H__
 #define __SRLEDMATRIXUTILS_H__
+#include <Arduino.h>
 
+namespace SRLEDMatrixUtils {
+	void * memcpy_smart(
+				void * dest,
+				const void * src,
+				size_t n,
+				bool isSrcProgMem
+			);
 
-void * memcpy_smart(
-			void * dest,
-			const void * src,
-			size_t n,
-			bool isSrcProgMem
-		);
+	float fmod(float value, float modulo);
 
-
+}
 #endif // __RGBLEDMATRIXUTILS_H__
 

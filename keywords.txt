@@ -7,7 +7,6 @@
 #######################################
 
 BaseLEDMatrix		KEYWORD1
-RGBColorType		KEYWORD1
 Frame				KEYWORD1
 Glyph				KEYWORD1
 GlyphBase			KEYWORD1
@@ -20,6 +19,8 @@ MutableRGBImage		KEYWORD1
 RGBAnimation		KEYWORD1
 RGBAnimationBase	KEYWORD1
 RGBAnimationSequence	KEYWORD1
+RGBColor			KEYWORD1
+RGBColorType		KEYWORD1
 RGBImage			KEYWORD1
 RGBImageBase		KEYWORD1
 RGBLEDBitLayout		KEYWORD1
@@ -34,6 +35,7 @@ TimerAction			KEYWORD1
 #######################################
 
 memcpy_smart		KEYWORD2
+fmod				KEYWORD2
 
 #######################################
 # Constants (LITERAL1)

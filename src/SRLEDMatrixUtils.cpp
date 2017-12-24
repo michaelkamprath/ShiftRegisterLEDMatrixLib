@@ -24,7 +24,7 @@
 #include "SRLEDMatrixUtils.h"
 
 
-void * memcpy_smart(
+void * SRLEDMatrixUtils::memcpy_smart(
 			void * dest,
 			const void * src,
 			size_t n,
@@ -37,3 +37,7 @@ void * memcpy_smart(
 		return memcpy(dest, src, n);
 	}
 } 
+
+float SRLEDMatrixUtils::fmod(float x, float y) {
+	return x - y * floor(x/y);
+}
