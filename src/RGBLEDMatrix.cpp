@@ -193,7 +193,7 @@ void RGBLEDMatrix::setRowBitsForFrame(
 	int row,
 	size_t frame,
 	LEDMatrixBits& frameBits,
-	const RGBImageBase& image ) const 
+	const MutableRGBImage& image ) const 
 {	
 	if (!frameBits.isRowMemoized(row)) {
 		bool rowNeedsPower = false;

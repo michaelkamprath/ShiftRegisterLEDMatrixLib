@@ -43,7 +43,7 @@ private:
 			int row,
 			size_t frame,
 			LEDMatrixBits& frameBits,
-			const RGBImageBase& image
+			const MutableRGBImage& image
 		) const; 
 	size_t maxFrameCountForValue(RGBColorType value) const;
 protected:

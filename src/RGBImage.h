@@ -17,39 +17,25 @@
 //     along with Shift Register LED Matrix Project.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __RGBIMAGE12BIT_H__
 #define __RGBIMAGE12BIT_H__
-#include "RGBColor.h"
 
+#include "RGBColor.h"
+#include "LEDImage.h"
 class GlyphBase;
 
-class RGBImageBase {
-private:
-	int _rows;
-	int _columns;
+class RGBImageBase : public LEDImageBase<RGBColorType> {
 
 public:
-	RGBImageBase(int rows, int columns);
+
+	RGBImageBase(
+			int rows,
+			int columns
+		);
 	RGBImageBase(const RGBImageBase& other);
 	virtual ~RGBImageBase();
-	
-	int rows(void) const		{ return _rows; }
-	int columns(void) const		{ return _columns; }
-	virtual bool isProgMem(void) const = 0;
-	virtual const RGBColorType* data(void) const = 0;
-
-	const RGBColorType pixel( int row, int column ) const;
-	
 };
 
-class RGBImage : public RGBImageBase {
-private:
-
-	const RGBColorType* _data;
-	int _dataSize;
-	bool _isProgMem;
-	bool _manageMem;
-
+class RGBImage : public LEDImage<RGBColorType> {
 public:
-
 	RGBImage(
 			int rows,
 			int columns,
@@ -59,17 +45,9 @@ public:
 	RGBImage(const RGBImageBase& other);
 	virtual ~RGBImage();
 
-	virtual bool isProgMem(void) const			{ return _isProgMem; }
-	virtual const RGBColorType* data(void) const	{ return _data; }
-
 };
 
-class MutableRGBImage : public RGBImageBase {
-private:
-	RGBColorType* _data;
-	
-	bool _dirty;
-
+class MutableRGBImage : public MutableLEDImage<RGBColorType,BLACK_COLOR,TRANSPARENT_COLOR> {
 public:
 	MutableRGBImage(int rows, int columns);
 	MutableRGBImage(
@@ -81,34 +59,6 @@ public:
 	MutableRGBImage(const RGBImageBase& other);
 	virtual ~MutableRGBImage();
 
-	virtual bool isProgMem(void) const		{ return false; }
-	virtual const RGBColorType* data(void) const	{ return _data; }
-
-	bool isDirty( void) const	{ return _dirty; }
-	void setNotDirty()			{ _dirty = false; }
-	
-	void copy(const RGBImageBase& other);
-
-	RGBColorType& pixel( int row, int column );
-		
-	void placeImageAt( const RGBImageBase& image, int row, int column );
-	void paintColor( RGBColorType color ); 
-	void drawLine(
-		int startRow,
-		int startColumn,
-		int stopRow,
-		int stopColumn,
-		RGBColorType color
-	);
-	void drawRectangle( 
-		int tlRow,
-		int tlColumn,
-		int brRow,
-		int brColumn,
-		RGBColorType color,
-		bool fill = true
-	);
-	
 	void drawGlyph(
 			const GlyphBase& image,
 			int row,
@@ -116,7 +66,6 @@ public:
 			RGBColorType foreground,
 			RGBColorType background = TRANSPARENT_COLOR
 		);
-
 };
 
 #endif //__RGBIMAGE_H__
