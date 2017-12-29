@@ -210,7 +210,7 @@ void RGBLEDMatrix::setRowBitsForFrame(
 		}
 		for (unsigned int col = 0; col < this->columns(); col++) {
 			RGBColorType rgbValue = image.pixel(row, col);
-			
+
 			// a form of Binary Code Modulation is used to control
 			// the LED intensity at variou levels.
 		

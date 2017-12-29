@@ -20,7 +20,11 @@
 #include <Arduino.h>
 
 #ifndef TWELVE_BIT_COLOR
-#define TWELVE_BIT_COLOR (defined(__arm__) && defined(TEENSYDUINO))||defined(__AVR_ATmega2560__)||defined ( ESP8266 )
+#define TWELVE_BIT_COLOR (defined(__arm__)&& defined(TEENSYDUINO)) \
+							||defined(__AVR_ATmega2560__) \
+							||defined ( ESP8266 ) \
+							||defined(ARDUINO_SAMD_ZERO) \
+							||defined(_SAM3XA_)
 #endif
 
 #if TWELVE_BIT_COLOR

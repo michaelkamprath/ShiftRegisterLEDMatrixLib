@@ -42,12 +42,12 @@ void drawPlasma( unsigned long counter ) {
     for (int row = 0; row < leds.rows(); row++ ) {
       float y = ((float)row/((float)leds.rows()*SPACE_STRETCH_FACTOR)) - 0.5;
 
-      float v1 = sin(x*10.0+utime);
-      float v2 = sin(10.0*(x*sin(utime/2.0) + y*cos(utime/3.0)) + utime);
+      float v1 = sinf(x*10.0+utime);
+      float v2 = sinf(10.0*(x*sinf(utime/2.0) + y*cosf(utime/3.0)) + utime);
       
-      float cx = x + 0.5*sin(utime/5.0);
-      float cy = y + 0.5*cos(utime/3.0);
-      float v3 = sin( sqrt(100.0*(cx*cx + cy*cy) + 1.0) + utime );
+      float cx = x + 0.5*sinf(utime/5.0);
+      float cy = y + 0.5*cosf(utime/3.0);
+      float v3 = sinf( sqrtf(100.0*(cx*cx + cy*cy) + 1.0) + utime );
       
       float v = v1+v2+v3;
 
@@ -55,17 +55,17 @@ void drawPlasma( unsigned long counter ) {
       switch (COLOR_SCHEME) {
         default:
         case 1:
-          r = mapSineToRange(sin(v*PI), 255);
-          g = mapSineToRange(sin(v*PI + 2.0*PI/3.0), 255);
-          b = mapSineToRange(sin(v*PI + 4.0*PI/3.0), 255);
+          r = mapSineToRange(sinf(v*PI), 255);
+          g = mapSineToRange(sinf(v*PI + 2.0*PI/3.0), 255);
+          b = mapSineToRange(sinf(v*PI + 4.0*PI/3.0), 255);
           break;
         case 2:
           r = 255;
-          g = mapSineToRange(cos(v*PI), 255);
-          b = mapSineToRange(sin(v*PI), 255);
+          g = mapSineToRange(cosf(v*PI), 255);
+          b = mapSineToRange(sinf(v*PI), 255);
           break;
         case 3:
-          r = g = b = mapSineToRange(sin(v*5.0*PI), 255);
+          r = g = b = mapSineToRange(sinf(v*5.0*PI), 255);
           break;
       }
 

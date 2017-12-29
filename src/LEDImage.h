@@ -161,7 +161,7 @@ LEDImage<PixelType>::~LEDImage() {
 }
 
 
-#pragma mark MutableRGBImage
+#pragma mark MutableLEDImage
 
 template <class PixelType, PixelType LEDBlackColor, PixelType LEDTransparentColor> 
 class MutableLEDImage : public LEDImageBase<PixelType> {
@@ -193,6 +193,7 @@ public:
 	
 	void copy(const LEDImageBase<PixelType>& other);
 
+	using LEDImageBase<PixelType>::pixel;
 	PixelType& pixel( int row, int column );
 		
 	void placeImageAt( const LEDImageBase<PixelType>& image, int row, int column );

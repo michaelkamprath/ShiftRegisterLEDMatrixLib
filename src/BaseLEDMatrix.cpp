@@ -132,6 +132,21 @@ ICACHE_RAM_ATTR unsigned int BaseLEDMatrix::multiplier5microseconds( size_t fram
 	return  1;
 }
 
+/*
+ * Interrupt Handlers
+ *
+ * Here, different interrupt handlers are implemented for each kind of micro-controller.
+ * Pull requests for more microcontroller types are encouraged!
+ *
+ * The basic goal of the handlers is to fire the next interrupt N*5 microseconds after
+ * the last one interrupt ended, where N is multiple determine by the scan count. This 
+ * requires stopping then starting the interrupts within the handler and ensure what 
+ * happens while interrupts are off takes a consistent number of clock cycles, otherwise 
+ * the LEDs will have uneven brightness.
+ *
+ */
+ 
+#pragma mark Teensy Handlers
 #if (defined(__arm__) && defined(TEENSYDUINO))
 //
 // On the Teensy ARM boards, use the TimerThree library to drive scan timing
@@ -168,7 +183,7 @@ unsigned int BaseLEDMatrix::nextTimerInterval(void) const {
 	return  5*this->multiplier5microseconds( _scanPass );
 }
 
-
+#pragma mark ESP8266 Handlers
 #elif defined ( ESP8266 )
 
 //
@@ -213,9 +228,136 @@ ICACHE_RAM_ATTR unsigned int BaseLEDMatrix::nextTimerInterval(void) const {
 	return  5*this->multiplier5microseconds( _scanPass );
 }
 
-#elif defined(ARDUINO_SAMD_ZERO)||defined(_SAM3XA_)
-// no timer code for the Due or Zero yet
+#pragma mark Arduino Due Handlers
+#elif defined(_SAM3XA_) // Arduino Due
 
+void BaseLEDMatrix::startScanning(void) {
+	this->setup();
+
+	/* turn on the timer clock in the power management controller */
+	pmc_set_writeprotect(false);		 // disable write protection for pmc registers
+	pmc_enable_periph_clk(ID_TC7);	 // enable peripheral clock TC7
+
+	/* we want wavesel 01 with RC */
+	TC_Configure(/* clock */ TC2,/* channel */ 1, TC_CMR_WAVE | TC_CMR_WAVSEL_UP_RC | TC_CMR_TCCLKS_TIMER_CLOCK2); 
+	TC_SetRC(TC2, 1, 1000);
+	TC_Start(TC2, 1);
+
+	// enable timer interrupts on the timer
+	TC2->TC_CHANNEL[1].TC_IER=TC_IER_CPCS;   // IER = interrupt enable register
+	TC2->TC_CHANNEL[1].TC_IDR=~TC_IER_CPCS;  // IDR = interrupt disable register
+
+	/* Enable the interrupt in the nested vector interrupt controller */
+	/* TC4_IRQn where 4 is the timer number * timer channels (3) + the channel number (=(1*3)+1) for timer1 channel1 */
+	NVIC_EnableIRQ(TC7_IRQn);
+
+}
+
+unsigned int BaseLEDMatrix::nextTimerInterval(void) const {
+	// Calculates the microseconds for each scan
+	// The base interval is set to 55, which for the 
+	// 10.5MHz CLOCK2 yields a ~5 micro second interval.
+	return  55*this->multiplier5microseconds( _scanPass );
+}
+
+void BaseLEDMatrix::stopScanning(void) {
+ 	NVIC_DisableIRQ(TC7_IRQn);	
+	TC_Stop(TC2, 1);
+}
+
+void TC7_Handler() {
+	
+ 	TC_GetStatus(TC2, 1);
+ 	NVIC_DisableIRQ(TC7_IRQn);	
+	TC_Stop(TC2, 1);
+
+	gSingleton->shiftOutCurrentRow();
+
+	TC_SetRC(TC2, 1, gSingleton->nextTimerInterval()); 
+
+	NVIC_ClearPendingIRQ(TC7_IRQn);
+	NVIC_EnableIRQ(TC7_IRQn);
+	TC_Start(TC2, 1);
+
+  	gSingleton->incrementScanRow();
+}
+
+#pragma mark Arduino Zero Handlers
+#elif defined(ARDUINO_SAMD_ZERO) // Arduino Zero
+
+void BaseLEDMatrix::startScanning(void) {
+	this->setup();
+	REG_GCLK_CLKCTRL = (uint16_t) (GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK0 | GCLK_CLKCTRL_ID_TCC2_TC3) ;
+	while ( GCLK->STATUS.bit.SYNCBUSY == 1 ); // wait for sync 
+
+	// The type cast must fit with the selected timer mode 
+	TcCount16* TC = (TcCount16*) TC3; // get timer struct
+
+	TC->CTRLA.reg &= ~TC_CTRLA_ENABLE;   // Disable TC
+	while (TC->STATUS.bit.SYNCBUSY == 1); // wait for sync 
+
+	TC->CTRLA.reg |= TC_CTRLA_MODE_COUNT16;  // Set Timer counter Mode to 16 bits
+	while (TC->STATUS.bit.SYNCBUSY == 1); // wait for sync 
+	TC->CTRLA.reg |= TC_CTRLA_WAVEGEN_NFRQ; // Set TC as  match mode 
+	while (TC->STATUS.bit.SYNCBUSY == 1); // wait for sync 
+
+	TC->CTRLA.reg |= TC_CTRLA_PRESCALER_DIV4;   // Set perscaler
+	while (TC->STATUS.bit.SYNCBUSY == 1); // wait for sync 
+
+	TC->CC[0].reg = 0xFFFF;
+	while (TC->STATUS.bit.SYNCBUSY == 1); // wait for sync 
+
+	// Interrupts 
+	TC->INTENSET.reg = 0;              // disable all interrupts
+	TC->INTENSET.bit.MC0 = 1;          // enable compare match to CC0
+
+	// Enable InterruptVector
+	NVIC_EnableIRQ(TC3_IRQn);
+
+	// 	Enable TC
+	TC->CTRLA.reg |= TC_CTRLA_ENABLE;
+	while (TC->STATUS.bit.SYNCBUSY == 1); // wait for sync 
+}
+
+unsigned int BaseLEDMatrix::nextTimerInterval(void) const {
+	// Calculates the microseconds for each scan
+	// The base interval is set to 59, which with a /4
+	// prescaler should yield a 5 ms interval.
+	return  59*this->multiplier5microseconds( _scanPass );
+}
+
+void BaseLEDMatrix::stopScanning(void) {
+	TcCount16* TC = (TcCount16*) TC3; // get timer struct
+	TC->CTRLA.reg &= ~TC_CTRLA_ENABLE;   // Disable TC
+	while (TC->STATUS.bit.SYNCBUSY == 1); // wait for sync 
+}
+
+void TC3_Handler()                              // Interrupt Service Routine (ISR) for timer TC4
+{     
+//	Serial.println("ARDUINO_SAMD_ZERO TC3_Handler()");
+	
+	TcCount16* TC = (TcCount16*) TC3; // get timer struct
+
+	TC->CTRLA.reg &= ~TC_CTRLA_ENABLE;   // Disable TC
+	while (TC->STATUS.bit.SYNCBUSY == 1); // wait for sync 
+
+	// shift out next row
+	gSingleton->shiftOutCurrentRow();
+	// reload the timer
+	TC->CC[0].reg = gSingleton->nextTimerInterval();
+	while (TC->STATUS.bit.SYNCBUSY == 1); // wait for sync 
+
+	TC->INTFLAG.bit.MC0 = 1;
+	
+	TC->CTRLA.reg |= TC_CTRLA_ENABLE;
+	while (TC->STATUS.bit.SYNCBUSY == 1); // wait for sync 
+
+  	// update scan row. Done outside of interrupt stoppage since execution time can
+  	// be inconsistent, which would lead to vary brightness in rows.
+  	gSingleton->incrementScanRow();
+}
+
+#pragma mark ATmega 8-bit Handlers
 #else
 //
 // On normal Arduino board (Uno, Nano, etc), use the timer interrupts to drive the
