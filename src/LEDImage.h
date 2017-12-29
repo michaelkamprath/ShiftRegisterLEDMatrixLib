@@ -84,11 +84,11 @@ template <class PixelType>
 const PixelType LEDImageBase<PixelType>::pixel( int row, int column ) const {
 	if (this->isProgMem()) {
 		switch (sizeof(PixelType)) {
-			case 16:
+			case 4:
 				return (PixelType)pgm_read_word_near( this->data() + row*this->columns() + column );
 				break;
 			default:
-			case 8:
+			case 2:
 				return (PixelType)pgm_read_byte_near( this->data() + row*this->columns() + column );
 				break;
 		}
@@ -143,7 +143,7 @@ LEDImage<PixelType>::LEDImage(const LEDImageBase<PixelType>& other)
 	_data( other.isProgMem() ? 
 				other.data() :
 				(PixelType*)memcpy(
-					new RGBColorType[(other.rows()*other.columns())],
+					new PixelType[(other.rows()*other.columns())],
 					other.data(),
 					(other.rows()*other.columns())*sizeof(PixelType)
 				)),

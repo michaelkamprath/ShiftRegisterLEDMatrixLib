@@ -118,7 +118,7 @@ public:
 class ImageSequenceAnimation : public RGBAnimationBase {
 public:
 	struct Frame {
-		const RGBImageBase* image;
+		const LEDImageBase<RGBColorType>* image;
 		int row;
 		int column;
 		unsigned long interval;
