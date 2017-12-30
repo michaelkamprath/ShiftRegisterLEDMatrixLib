@@ -195,7 +195,8 @@ public:
 
 	using LEDImageBase<PixelType>::pixel;
 	PixelType& pixel( int row, int column );
-		
+	void setPixel( int row, int column, PixelType color );
+	
 	void placeImageAt( const LEDImageBase<PixelType>& image, int row, int column );
 	void paintColor( PixelType color ); 
 	void drawLine(
@@ -214,6 +215,13 @@ public:
 		bool fill = true
 	);
 	
+	void drawCircle( 
+  		int centerRow,
+  		int centerColumn,
+  		int radius,
+  		PixelType color,
+  		bool fill = true
+  	);
 };
 
 template <class PixelType, PixelType LEDBlackColor, PixelType LEDTransparentColor> 
@@ -283,6 +291,23 @@ PixelType& MutableLEDImage<PixelType,LEDBlackColor,LEDTransparentColor>::pixel(
 }
 
 template <class PixelType, PixelType LEDBlackColor, PixelType LEDTransparentColor> 
+void MutableLEDImage<PixelType,LEDBlackColor,LEDTransparentColor>::setPixel(
+	int row,
+	int column,
+	PixelType color
+) {
+	if (	(row < 0)
+			||(column < 0)
+			||(row >= this->rows())	
+			||(column >= this->columns())
+		) {
+		return;	
+	}
+	
+	this->pixel(row, column) = color;
+}
+
+template <class PixelType, PixelType LEDBlackColor, PixelType LEDTransparentColor> 
 void MutableLEDImage<PixelType,LEDBlackColor,LEDTransparentColor>::placeImageAt(
 		const LEDImageBase<PixelType>& image,
 		int row,
@@ -345,6 +370,15 @@ void MutableLEDImage<PixelType,LEDBlackColor,LEDTransparentColor>::drawLine(
 		PixelType color
 	)
 {
+	if (
+		((startRow < 0)&&(stopRow < 0))
+		||((startRow >= this->rows())&&(stopRow >= this->rows()))
+		||((startColumn < 0)&&(stopColumn < 0))
+		||((startColumn >= this->columns())&&(stopColumn >= this->columns()))
+	) {
+		// the line is assuredly completely off screen. do nothing
+		return;
+	}
 	_dirty = true;
 	if ( stopColumn != startColumn ) {
 		float delta_col = stopColumn - startColumn;
@@ -356,7 +390,7 @@ void MutableLEDImage<PixelType,LEDBlackColor,LEDTransparentColor>::drawLine(
 				delta_col < 0 ? col-- : col++ ) 
 			{
 				int row = round(startRow + delta_row*(col - startColumn)/delta_col);
-				this->pixel(row,col) = color;
+				this->setPixel(row, col, color);
 			}
 		}
 		else {
@@ -365,7 +399,7 @@ void MutableLEDImage<PixelType,LEDBlackColor,LEDTransparentColor>::drawLine(
 				delta_row < 0 ? row-- : row++ ) 
 			{
 				int col = round(startColumn + delta_col*(row - startRow)/delta_row);
-				this->pixel(row,col) = color;
+				this->setPixel(row, col, color);
 			}
 		
 		}
@@ -377,7 +411,7 @@ void MutableLEDImage<PixelType,LEDBlackColor,LEDTransparentColor>::drawLine(
 			  delta_row < 0 ? row >= stopRow : row <= stopRow; 
 			  delta_row < 0 ? row-- : row++ ) 
 		{
-			this->pixel(row,startColumn) = color;
+			this->setPixel(row, startColumn, color);
 		}	
 	}
 }	
@@ -418,4 +452,88 @@ void MutableLEDImage<PixelType,LEDBlackColor,LEDTransparentColor>::drawRectangle
 	}
 }
 
+template <class PixelType, PixelType LEDBlackColor, PixelType LEDTransparentColor> 
+void MutableLEDImage<PixelType,LEDBlackColor,LEDTransparentColor>::drawCircle( 
+  		int cRow,
+  		int cCol,
+  		int radius,
+  		PixelType color,
+  		bool fill
+  	)
+{
+	if (radius == 0) {
+		this->setPixel(cRow, cCol, color);
+		return;
+	}
+
+	
+	this->setPixel(cRow + radius, cCol, color);
+	this->setPixel(cRow - radius, cCol, color);
+	this->setPixel(cRow, cCol + radius, color);
+	this->setPixel(cRow, cCol - radius, color);
+	
+	int r2 = radius*radius;
+	int x = 1;
+	int y = (int)(sqrtf(r2 - 1) + 0.5);
+	while (x < y){
+		if (fill) {
+			this->drawLine(
+					cRow + y, cCol + x,
+					cRow - y, cCol + x,
+					color
+				);
+			this->drawLine(
+					cRow + y, cCol - x,
+					cRow - y, cCol - x,
+					color
+				);
+			this->drawLine(
+					cRow + x, cCol + y,
+					cRow - x, cCol + y,
+					color
+				);
+			this->drawLine(
+					cRow + x, cCol - y,
+					cRow - x, cCol - y,
+					color
+				);				
+		} else {
+			this->setPixel(cRow + y, cCol + x, color);
+			this->setPixel(cRow + y, cCol - x, color);
+			this->setPixel(cRow - y, cCol + x, color);
+			this->setPixel(cRow - y, cCol - x, color);
+			this->setPixel(cRow + x, cCol + y, color);
+			this->setPixel(cRow + x, cCol - y, color);
+			this->setPixel(cRow - x, cCol + y, color);
+			this->setPixel(cRow - x, cCol - y, color);
+		}
+				
+		x += 1;
+		y = (int)(sqrtf(r2 - x*x) + 0.5);
+	}
+	
+	if (x == y) {
+		if (fill) {
+			this->drawLine(
+					cRow + y, cCol + x,
+					cRow - y, cCol + x,
+					color
+				);
+			this->drawLine(
+					cRow + y, cCol - x,
+					cRow - y, cCol - x,
+					color
+				);
+		} else {
+			this->setPixel(cRow + y, cCol + x, color);
+			this->setPixel(cRow + y, cCol - x, color);
+			this->setPixel(cRow - y, cCol + x, color);
+			this->setPixel(cRow - y, cCol - x, color);
+		}
+	}
+	
+	if (fill) {
+		this->drawCircle(cRow, cCol, radius-1, color, fill);
+	}
+}
 #endif //__LEDIMAGE_H__

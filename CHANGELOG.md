@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 - Added support for the Arduino Zero and Due boards (and related)
+- Added method to LEDImage for drawing circles
 
 ## [1.0.1] - 2017-12-24
 ### Changed
