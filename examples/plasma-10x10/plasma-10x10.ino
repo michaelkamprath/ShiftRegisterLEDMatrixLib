@@ -85,15 +85,34 @@ void setup() {
 
 unsigned long loopCounter = 0;
 unsigned long timeCount = 0;
+bool timeIncrement = true;
 
-const unsigned long loopMod = 500;
+const unsigned long loopMod = 50;
 
 void loop() {
   leds.loop();
   loopCounter++;
 
   if (loopCounter == loopMod) {
-    timeCount++;
+    if (timeIncrement) {
+      timeCount++;
+      
+      //
+      // set a maximum to timeCount because floats only have
+      // a max precision of 5 significant digits. Otherwise, when timeCount
+      // gets too large, the animation will get choppy because calls to drawPlasma()
+      // will not have a noticable change to timeCount/TIME_DILATION. for several
+      // consecutive calls.
+      //
+      if (timeCount >= 1000*PI) {
+        timeIncrement = false;
+      }
+    } else {
+      timeCount--;
+      if (timeCount == 0) {
+        timeIncrement = true;
+      }
+    }
     drawPlasma(timeCount);
     loopCounter = 0;
   }
