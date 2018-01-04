@@ -22,18 +22,6 @@
 #include "LEDImage.h"
 class GlyphBase;
 
-class RGBImageBase : public LEDImageBase<RGBColorType> {
-
-public:
-
-	RGBImageBase(
-			int rows,
-			int columns
-		);
-	RGBImageBase(const RGBImageBase& other);
-	virtual ~RGBImageBase();
-};
-
 class RGBImage : public LEDImage<RGBColorType> {
 public:
 	RGBImage(
@@ -42,7 +30,7 @@ public:
 			const RGBColorType* data,
 			bool isFromProgramSpace = false
 		);
-	RGBImage(const RGBImageBase& other);
+	RGBImage(const LEDImageBase<RGBColorType>& other);
 	virtual ~RGBImage();
 
 };
@@ -56,7 +44,7 @@ public:
 			const RGBColorType* data,
 			bool isFromProgramSpace = false
 		);
-	MutableRGBImage(const RGBImageBase& other);
+	MutableRGBImage(const LEDImageBase<RGBColorType>& other);
 	virtual ~MutableRGBImage();
 
 	void drawGlyph(

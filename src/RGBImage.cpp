@@ -19,21 +19,6 @@
 #include "RGBImage.h"
 #include "Glyph.h"
 
-#pragma mark RGBImageBase
-
-RGBImageBase::RGBImageBase(int rows, int columns)
-:	LEDImageBase<RGBColorType>( rows, columns )
-{
-}
-
-RGBImageBase::RGBImageBase(const RGBImageBase& other)
-:	LEDImageBase<RGBColorType>(other)
-{
-}
-
-RGBImageBase::~RGBImageBase()
-{
-}
 #pragma mark RGBImage
 
 RGBImage::RGBImage(
@@ -45,7 +30,7 @@ RGBImage::RGBImage(
 {
 }
 
-RGBImage::RGBImage(const RGBImageBase& other)
+RGBImage::RGBImage(const LEDImageBase<RGBColorType>& other)
 :	LEDImage<RGBColorType>(other)
 {
 }
@@ -70,7 +55,7 @@ MutableRGBImage::MutableRGBImage(
 {
 }
 
-MutableRGBImage::MutableRGBImage(const RGBImageBase& other)
+MutableRGBImage::MutableRGBImage(const LEDImageBase<RGBColorType>& other)
 :	MutableLEDImage<RGBColorType,BLACK_COLOR,TRANSPARENT_COLOR>(other)
 {
 }
