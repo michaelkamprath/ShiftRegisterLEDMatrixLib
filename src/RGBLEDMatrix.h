@@ -29,9 +29,15 @@ public:
 		INDIVIDUAL_LEDS,	
 		
 		// All elements of the same color are consecutive in column order. The color
-		// are order Red, Green Blue
+		// are order Red, Green, Blue
 		// For a 4-column matrix, each row is ordered: RRRR-GGGG-BBBB
-		RGB_GROUPS
+		RGB_GROUPS,
+		
+		// All elements of the same color are consecutive in column order. The color
+		// are order Red, Blue, Green
+		// For a 4-column matrix, each row is ordered: RRRR-BBBB-GGGG
+		RBG_GROUPS
+			
 	} RGBLEDBitLayout;
 
 private:

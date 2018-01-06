@@ -71,8 +71,9 @@ A `TimerAction` object allows you to manage a variably timed action in a manner 
 The basic pattern of usage is:
 
 1. Create a `LEDMatrix` or `RGBLEDMatrix` matrix object passing the appropriate arguments
-1. In the global `setup()` method, call the `setup()` method of the matrix object to initialize all fields. This call `startScanning()` on the matrix object to cause but to be transmitted to the shift registers in the matrix. 
-1. Draw to the `image()` object on the matrix object, but do call the `startDrawing()` matrix object method prior to any drawing, and balance the call with a call to `stopDrawing()` on the matrix object. These method prevent the image display on the matrix from being altered while you are drawing to it.
+1. In the global `setup()` method, call the `setup()` method of the matrix object to initialize all fields. Then call `startScanning()` on the matrix object to cause bits to be transmitted to the shift registers in the matrix. 
+1. Draw to the `image()` object on the matrix object, but do call the `startDrawing()` matrix object method prior to any drawing, and balance the call with a call to `stopDrawing()` on the matrix object. These method prevent the image display on the matrix's LEDs from being altered while you are drawing to to the image buffer.
+1. Call the matrix object's `loop()` method in the global `loop()` function.
 
 
 # Notes
@@ -124,6 +125,8 @@ This driver can support either 6-bit or 12-bit color. By default, this library u
 * Arduino Mega 2560
 * Wemos D1 mini Lite
 * NodeMCU
+* Arduino Zero
+* Arduino Due
 
 ### Bit Layouts
 This driver can support two different bit layouts for RGB LED matrices. The default bit layout assumes each RGB LED is a single unit and each column is wired up with the RGB bits consecutively.  That is, for a 4x4 matrix, the bit layout would look like this:

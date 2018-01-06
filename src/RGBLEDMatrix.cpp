@@ -207,6 +207,11 @@ void RGBLEDMatrix::setRowBitsForFrame(
 			greenBitOffset = this->columns();
 			blueBitOffset = 2*this->columns();
 			columnBitIdxIncrement = 1;
+		} else if (_bitLayout == RBG_GROUPS) {
+			redBitOffset = 0;
+			greenBitOffset = 2*this->columns();
+			blueBitOffset = this->columns();
+			columnBitIdxIncrement = 1;
 		}
 		for (unsigned int col = 0; col < this->columns(); col++) {
 			RGBColorType rgbValue = image.pixel(row, col);
