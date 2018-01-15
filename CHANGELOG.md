@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 - Added support for the Arduino Zero and Due boards (and related)
+- Added support for older ATmega8535, ATmega16 and ATmega32 microcontrollers
 - Added method to LEDImage for drawing circles
 - Added a Red-Blue-Green bit layout mode for the RGB matrix object
 

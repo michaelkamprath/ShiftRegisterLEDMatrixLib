@@ -17,6 +17,8 @@
 //     along with Shift Register LED Matrix Project.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "BaseLEDMatrix.h"
+#include "SRLEDMatrixUtils.h"
+
 #ifndef ICACHE_RAM_ATTR
 #define ICACHE_RAM_ATTR
 #endif
