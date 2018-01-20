@@ -248,20 +248,25 @@ void RGBLEDMatrix::setRowBitsForFrame(
 
 
 // Number of 5 microsecond units
-unsigned int RGBLEDMatrix::multiplier5microseconds( size_t frame ) const {
-	unsigned int mulitplier = 1;
+unsigned int RGBLEDMatrix::baseIntervalMultiplier( size_t frame ) const {
 #if TWELVE_BIT_COLOR
-	mulitplier = frame/4+1;
+#if defined(__AVR_ATmega2560__)||defined(__AVR_ATmega1284__)||defined(__AVR_ATmega1284P__)
+	unsigned int multiplier = frame/8 + 1;
 #else
+	unsigned int multiplier = frame/4 + 1;
+#endif
+
+#else
+	unsigned int multiplier = 1;
 	switch (frame) {
 		case 2:
-			mulitplier = 3;
+			multiplier = 3;
 			break;
 		case 3:
-			mulitplier = 8;
+			multiplier = 8;
 			break;
 	}
 #endif
-
-	return  mulitplier;
+	
+	return  multiplier;
 }

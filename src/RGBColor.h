@@ -22,7 +22,9 @@
 #ifndef TWELVE_BIT_COLOR
 #define TWELVE_BIT_COLOR (defined(__arm__)&& defined(TEENSYDUINO)) \
 							||defined(__AVR_ATmega2560__) \
-							||defined ( ESP8266 ) \
+							||defined(__AVR_ATmega1284__) \
+							||defined(__AVR_ATmega1284P__) \
+							||defined( ESP8266 ) \
 							||defined(ARDUINO_SAMD_ZERO) \
 							||defined(_SAM3XA_)
 #endif
@@ -45,7 +47,7 @@ The bits of the byte are laid out as follows in a 2-byte integer:
 
 */
 
-typedef unsigned int RGBColorType;
+typedef uint16_t RGBColorType;
 
 
 const RGBColorType AQUA_COLOR = 0x00FF;

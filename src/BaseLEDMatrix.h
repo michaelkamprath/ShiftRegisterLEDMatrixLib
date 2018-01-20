@@ -54,7 +54,7 @@ protected:
 	virtual bool matrixNeedsUpdate(void) const = 0;
 	virtual void matrixHasBeenUpdated(void) = 0;
 	
-	virtual unsigned int multiplier5microseconds( size_t frame ) const;
+	virtual unsigned int baseIntervalMultiplier( size_t frame ) const;
 public:
 
 	/**

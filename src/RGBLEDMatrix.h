@@ -56,7 +56,7 @@ protected:
 	virtual void generateFrameBits(LEDMatrixBits& frameBits, size_t frame ) const;
 	virtual bool matrixNeedsUpdate(void) const;
 	virtual void matrixHasBeenUpdated(void);
-	virtual unsigned int multiplier5microseconds( size_t frame ) const;
+	virtual unsigned int baseIntervalMultiplier( size_t frame ) const;
 public:
   
 	/**

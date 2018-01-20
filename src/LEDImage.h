@@ -84,11 +84,10 @@ template <class PixelType>
 const PixelType LEDImageBase<PixelType>::pixel( int row, int column ) const {
 	if (this->isProgMem()) {
 		switch (sizeof(PixelType)) {
-			case 4:
+			case 2:
 				return (PixelType)pgm_read_word_near( this->data() + row*this->columns() + column );
 				break;
-			default:
-			case 2:
+			case 1:
 				return (PixelType)pgm_read_byte_near( this->data() + row*this->columns() + column );
 				break;
 		}

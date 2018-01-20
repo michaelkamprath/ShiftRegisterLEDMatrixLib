@@ -129,7 +129,7 @@ ICACHE_RAM_ATTR void BaseLEDMatrix::incrementScanRow( void ) {
 }
 
 // Number of 5 microsecond units
-ICACHE_RAM_ATTR unsigned int BaseLEDMatrix::multiplier5microseconds( size_t frame ) const {
+ICACHE_RAM_ATTR unsigned int BaseLEDMatrix::baseIntervalMultiplier( size_t frame ) const {
 	// base case does nothing interesting
 	return  1;
 }
@@ -182,7 +182,7 @@ void BaseLEDMatrix::stopScanning(void) {
 
 unsigned int BaseLEDMatrix::nextTimerInterval(void) const {
 	// Calculates the microseconds for each scan	
-	return  5*this->multiplier5microseconds( _scanPass );
+	return  5*this->baseIntervalMultiplier( _scanPass );
 }
 
 #pragma mark ESP8266 Handlers
@@ -227,7 +227,7 @@ void BaseLEDMatrix::stopScanning(void) {
 
 ICACHE_RAM_ATTR unsigned int BaseLEDMatrix::nextTimerInterval(void) const {
 	// Calculates the microseconds for each scan
-	return  5*this->multiplier5microseconds( _scanPass );
+	return  5*this->baseIntervalMultiplier( _scanPass );
 }
 
 #pragma mark Arduino Due Handlers
@@ -259,7 +259,7 @@ unsigned int BaseLEDMatrix::nextTimerInterval(void) const {
 	// Calculates the microseconds for each scan
 	// The base interval is set to 55, which for the 
 	// 10.5MHz CLOCK2 yields a ~5 micro second interval.
-	return  55*this->multiplier5microseconds( _scanPass );
+	return  55*this->baseIntervalMultiplier( _scanPass );
 }
 
 void BaseLEDMatrix::stopScanning(void) {
@@ -325,7 +325,7 @@ unsigned int BaseLEDMatrix::nextTimerInterval(void) const {
 	// Calculates the microseconds for each scan
 	// The base interval is set to 59, which with a /4
 	// prescaler should yield a 5 ms interval.
-	return  59*this->multiplier5microseconds( _scanPass );
+	return  59*this->baseIntervalMultiplier( _scanPass );
 }
 
 void BaseLEDMatrix::stopScanning(void) {
@@ -372,20 +372,19 @@ void BaseLEDMatrix::startScanning(void) {
 	this->setup();
 
 	noInterrupts(); // disable all interrupts
-	
-  	TIMSK2 &= ~(1<<TOIE2); // disable timer overflow interupt
+
+	TIMSK2 &= ~(1<<TOIE2); // disable timer overflow interupt
 
 	// SET timer2 to count up mode
 	TCCR2A &= ~((1<<WGM21) | (1<<WGM20));
 	TCCR2B &= ~(1<<WGM22);
-
 	// set clock to I/O clock
-  	ASSR &= ~(1<<AS2);
- 
-  	// overflow only mode
-  	TIMSK2 &= ~(1<<OCIE2A);
-  	
-  	// configure to fire about every 5 micro-second 
+	ASSR &= ~(1<<AS2);
+
+	// overflow only mode
+	TIMSK2 &= ~(1<<OCIE2A);
+
+	// configure to fire about every 5 micro-second 
 	TCCR2B |= (1<<CS22) ; 
 	TCCR2B &= ~(1<<CS20);
 	TCCR2B &= ~(1<<CS21);
@@ -402,19 +401,21 @@ void BaseLEDMatrix::stopScanning(void) {
 }
 
 unsigned int BaseLEDMatrix::nextTimerInterval(void) const {
-	return  max(257 - this->multiplier5microseconds( _scanPass )*BASE_SCAN_TIMER_INTERVALS, 0 );
+	return  max(257 - this->baseIntervalMultiplier( _scanPass )*BASE_SCAN_TIMER_INTERVALS, 0 );
 }
 
-
 ISR(TIMER2_OVF_vect) {
-	noInterrupts(); 
+	noInterrupts(); // disable all interrupts
+
 	// shift out next row
 	gSingleton->shiftOutCurrentRow();
+	
 	// reload the timer
-	TCNT2 = gSingleton->nextTimerInterval();
-  	interrupts(); 
-  	// update scan row. Done outside of interrupt stoppage since execution time can
-  	// be inconsistent, which would lead to vary brightness in rows.
-  	gSingleton->incrementScanRow();
+	TCNT2 = gSingleton->nextTimerInterval();	
+	interrupts(); // enable all interrupts
+	
+	// update scan row. Done outside of interrupt stoppage since execution time can
+	// be inconsistent, which would lead to vary brightness in rows.
+	gSingleton->incrementScanRow();
 }
 #endif
