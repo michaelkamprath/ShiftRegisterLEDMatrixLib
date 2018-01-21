@@ -36,10 +36,10 @@ void drawPlasma( unsigned long counter ) {
   float utime = float(counter)/TIME_DILATION;
   
   leds.startDrawing();
-  for (int col = 0; col < leds.columns(); col++ ) {
+  for (unsigned int col = 0; col < leds.columns(); col++ ) {
     float x = ((float)col/((float)leds.columns()*SPACE_STRETCH_FACTOR)) - 0.5;
 
-    for (int row = 0; row < leds.rows(); row++ ) {
+    for (unsigned int row = 0; row < leds.rows(); row++ ) {
       float y = ((float)row/((float)leds.rows()*SPACE_STRETCH_FACTOR)) - 0.5;
 
       float v1 = sinf(x*10.0+utime);
@@ -87,7 +87,12 @@ unsigned long loopCounter = 0;
 unsigned long timeCount = 0;
 bool timeIncrement = true;
 
+#if (defined(__arm__)&& defined(TEENSYDUINO))
+// slow things down for the Teensy
+const unsigned long loopMod = 20000;
+#else
 const unsigned long loopMod = 50;
+#endif
 
 void loop() {
   leds.loop();
