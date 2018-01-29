@@ -34,21 +34,26 @@ BaseLEDMatrix::BaseLEDMatrix(
 	unsigned int pwmCycleScanCount,
 	bool columnControlBitOn,
 	bool rowControlBitOn,
-	int slavePin
+	unsigned int interFrameOffTimeMicros,
+	int slavePin,
+	unsigned long maxSPISpeed
 ) :		TimerAction(UPDATE_INTERVAL),
 		_rows(rows),
 		_columns(columns),
 		_columnBitWidth(columnBitWidth),
 		_pwmCycleScanCount(pwmCycleScanCount),
+		_interFrameOffTimeMicros(interFrameOffTimeMicros),
 		_columnControlBitOn(columnControlBitOn),
 		_rowControlBitOn(rowControlBitOn),
 		_curScreenBitFrames(NULL),
 		_screenBitFrames(new LEDMatrixBits*[pwmCycleScanCount*2]),
+		_allOffBits(NULL),
 		_screenBitFrameToggle(false),
+		_interFrameTransmitOffToggle(false),
 		_scanPass(1),
 		_scanRow(0),
 		_isDrawingCount(0),
-		_spi(slavePin)
+		_spi(slavePin, maxSPISpeed)
 {
 
 }
@@ -66,6 +71,16 @@ void BaseLEDMatrix::setup() {
 
 		_curScreenBitFrames = &_screenBitFrames[0];
 
+		if (_interFrameOffTimeMicros > 0) {
+			_allOffBits = new LEDMatrixBits(
+											this->rows(),
+											this->columns()*_columnBitWidth,
+											_columnControlBitOn,
+											_rowControlBitOn
+										);
+			_allOffBits->setAllOff();
+		}
+		
 		if (gSingleton == nullptr) {
 			gSingleton = this;
 		}
@@ -109,8 +124,15 @@ void BaseLEDMatrix::action() {
 	} 
 }
 
+ICACHE_RAM_ATTR bool BaseLEDMatrix::doInterFrameTransmitOff( void ) const {
+	return _interFrameTransmitOffToggle;
+}
+ICACHE_RAM_ATTR void BaseLEDMatrix::shiftOutAllOff(void) {
+	_allOffBits->transmitRow(_scanRow, _spi);
+	_interFrameTransmitOffToggle = false;
+}
 ICACHE_RAM_ATTR void BaseLEDMatrix::shiftOutCurrentRow( void ) {
-	this->shiftOutRow( _scanRow, _scanPass );
+	this->shiftOutRow( _scanRow, _scanPass );	
 }
 
 ICACHE_RAM_ATTR void BaseLEDMatrix::shiftOutRow( int row, int scanPass ) {
@@ -126,12 +148,22 @@ ICACHE_RAM_ATTR void BaseLEDMatrix::incrementScanRow( void ) {
 			_scanPass = 1;
 		}
 	}
+	
+	if (_interFrameOffTimeMicros > 0) {
+		_interFrameTransmitOffToggle = true;
+	}
 }
 
 // Number of 5 microsecond units
 ICACHE_RAM_ATTR unsigned int BaseLEDMatrix::baseIntervalMultiplier( size_t frame ) const {
 	// base case does nothing interesting
 	return  1;
+}
+
+ICACHE_RAM_ATTR unsigned int BaseLEDMatrix::rowOffTimerInterval(void) const {
+	// _interFrameOffTimeInterval should be set in the platform-specific startScanning() 
+	// method
+	return  _interFrameOffTimeInterval;
 }
 
 /*
@@ -157,20 +189,30 @@ ICACHE_RAM_ATTR unsigned int BaseLEDMatrix::baseIntervalMultiplier( size_t frame
 
 void time3InteruptHandler( void ) {
 	Timer3.stop();
-	gSingleton->shiftOutCurrentRow();
-	// reload the timer
-	Timer3.setPeriod(gSingleton->nextTimerInterval());
-  	Timer3.start(); 
-  	// update scan row. Done outside of interrupt stoppage since execution time can
-  	// be inconsistent, which would lead to vary brightness in rows.
-  	gSingleton->incrementScanRow();
 	
+	if (gSingleton->doInterFrameTransmitOff()) {
+		gSingleton->shiftOutAllOff();
+		
+		// reload the timer
+		Timer3.setPeriod(gSingleton->rowOffTimerInterval());
+		Timer3.start(); 
+	} else {
+		gSingleton->shiftOutCurrentRow();
+		// reload the timer
+		Timer3.setPeriod(gSingleton->nextRowScanTimerInterval());
+		Timer3.start(); 
+		// update scan row. Done outside of interrupt stoppage since execution time can
+		// be inconsistent, which would lead to vary brightness in rows.
+		gSingleton->incrementScanRow();
+	} 
 }
 
 void BaseLEDMatrix::startScanning(void) {
 	this->setup();
 	
-	Timer3.initialize(this->nextTimerInterval());
+	_interFrameOffTimeInterval = _interFrameOffTimeMicros;
+	
+	Timer3.initialize(this->nextRowScanTimerInterval());
 	Timer3.attachInterrupt(time3InteruptHandler);
 	Timer3.start();
 }
@@ -180,7 +222,7 @@ void BaseLEDMatrix::stopScanning(void) {
 	Timer3.detachInterrupt();
 }
 
-unsigned int BaseLEDMatrix::nextTimerInterval(void) const {
+unsigned int BaseLEDMatrix::nextRowScanTimerInterval(void) const {
 	// Calculates the microseconds for each scan	
 	return  5*this->baseIntervalMultiplier( _scanPass );
 }
@@ -193,13 +235,23 @@ unsigned int BaseLEDMatrix::nextTimerInterval(void) const {
 // Use D5 (GPIO14) as CLK and D7 (CPIO13) as SER
 //
 inline void timer0InteruptHandler (void){
-	gSingleton->shiftOutCurrentRow();
-	// reload the timer
- 	timer0_write(ESP.getCycleCount() + 84 * gSingleton->nextTimerInterval());
-  	// update scan row. Done outside of interrupt stoppage since execution time can
-  	// be inconsistent, which would lead to vary brightness in rows.
-	interrupts();
-  	gSingleton->incrementScanRow();
+	if (gSingleton->doInterFrameTransmitOff()) {
+		gSingleton->shiftOutAllOff();
+		
+		// reload the timer
+		timer0_write(ESP.getCycleCount() + 84*gSingleton->rowOffTimerInterval());		
+		interrupts();
+	} else {
+		gSingleton->shiftOutCurrentRow();
+		
+		// reload the timer
+		timer0_write(ESP.getCycleCount() + 84*gSingleton->nextRowScanTimerInterval());
+		interrupts();
+		
+		// update scan row. Done outside of interrupt stoppage since execution time can
+		// be inconsistent, which would lead to vary brightness in rows.
+		gSingleton->incrementScanRow();
+	} 
 }
 
 void BaseLEDMatrix::startScanning(void) {
@@ -207,12 +259,14 @@ void BaseLEDMatrix::startScanning(void) {
 
 	this->setup();
 	
+	_interFrameOffTimeInterval = _interFrameOffTimeMicros;
+	
 	noInterrupts();
 	timer0_isr_init();
 	timer0_attachInterrupt(timer0InteruptHandler);
 	
 	// dirty hack to make sure we don't miss the first ISR call upon start up
-	uint32_t tickCount = ESP.getCycleCount() + 84 * this->nextTimerInterval();
+	uint32_t tickCount = ESP.getCycleCount() + 84 * this->nextRowScanTimerInterval();
 	if (firstCall) {
 		tickCount += 5000;
 		firstCall = false;
@@ -225,7 +279,7 @@ void BaseLEDMatrix::stopScanning(void) {
 	timer0_detachInterrupt();
 }
 
-ICACHE_RAM_ATTR unsigned int BaseLEDMatrix::nextTimerInterval(void) const {
+ICACHE_RAM_ATTR unsigned int BaseLEDMatrix::nextRowScanTimerInterval(void) const {
 	// Calculates the microseconds for each scan
 	return  5*this->baseIntervalMultiplier( _scanPass );
 }
@@ -235,6 +289,8 @@ ICACHE_RAM_ATTR unsigned int BaseLEDMatrix::nextTimerInterval(void) const {
 
 void BaseLEDMatrix::startScanning(void) {
 	this->setup();
+	
+	_interFrameOffTimeInterval = 11*_interFrameOffTimeMicros;
 
 	/* turn on the timer clock in the power management controller */
 	pmc_set_writeprotect(false);		 // disable write protection for pmc registers
@@ -255,7 +311,7 @@ void BaseLEDMatrix::startScanning(void) {
 
 }
 
-unsigned int BaseLEDMatrix::nextTimerInterval(void) const {
+unsigned int BaseLEDMatrix::nextRowScanTimerInterval(void) const {
 	// Calculates the microseconds for each scan
 	// The base interval is set to 55, which for the 
 	// 10.5MHz CLOCK2 yields a ~5 micro second interval.
@@ -273,15 +329,26 @@ void TC7_Handler() {
  	NVIC_DisableIRQ(TC7_IRQn);	
 	TC_Stop(TC2, 1);
 
-	gSingleton->shiftOutCurrentRow();
 
-	TC_SetRC(TC2, 1, gSingleton->nextTimerInterval()); 
+	if (gSingleton->doInterFrameTransmitOff()) {
+		gSingleton->shiftOutAllOff();
+		
+		TC_SetRC(TC2, 1, gSingleton->rowOffTimerInterval()); 
 
-	NVIC_ClearPendingIRQ(TC7_IRQn);
-	NVIC_EnableIRQ(TC7_IRQn);
-	TC_Start(TC2, 1);
+		NVIC_ClearPendingIRQ(TC7_IRQn);
+		NVIC_EnableIRQ(TC7_IRQn);
+		TC_Start(TC2, 1);
+	} else {
+		gSingleton->shiftOutCurrentRow();
 
-  	gSingleton->incrementScanRow();
+		TC_SetRC(TC2, 1, gSingleton->nextRowScanTimerInterval()); 
+
+		NVIC_ClearPendingIRQ(TC7_IRQn);
+		NVIC_EnableIRQ(TC7_IRQn);
+		TC_Start(TC2, 1);
+
+		gSingleton->incrementScanRow();
+	} 
 }
 
 #pragma mark Arduino Zero Handlers
@@ -289,6 +356,9 @@ void TC7_Handler() {
 
 void BaseLEDMatrix::startScanning(void) {
 	this->setup();
+
+	_interFrameOffTimeInterval = 12*_interFrameOffTimeMicros;
+
 	REG_GCLK_CLKCTRL = (uint16_t) (GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK0 | GCLK_CLKCTRL_ID_TCC2_TC3) ;
 	while ( GCLK->STATUS.bit.SYNCBUSY == 1 ); // wait for sync 
 
@@ -321,12 +391,13 @@ void BaseLEDMatrix::startScanning(void) {
 	while (TC->STATUS.bit.SYNCBUSY == 1); // wait for sync 
 }
 
-unsigned int BaseLEDMatrix::nextTimerInterval(void) const {
+unsigned int BaseLEDMatrix::nextRowScanTimerInterval(void) const {
 	// Calculates the microseconds for each scan
 	// The base interval is set to 59, which with a /4
 	// prescaler should yield a 5 ms interval.
 	return  59*this->baseIntervalMultiplier( _scanPass );
 }
+
 
 void BaseLEDMatrix::stopScanning(void) {
 	TcCount16* TC = (TcCount16*) TC3; // get timer struct
@@ -336,27 +407,38 @@ void BaseLEDMatrix::stopScanning(void) {
 
 void TC3_Handler()                              // Interrupt Service Routine (ISR) for timer TC4
 {     
-//	Serial.println("ARDUINO_SAMD_ZERO TC3_Handler()");
-	
 	TcCount16* TC = (TcCount16*) TC3; // get timer struct
 
 	TC->CTRLA.reg &= ~TC_CTRLA_ENABLE;   // Disable TC
 	while (TC->STATUS.bit.SYNCBUSY == 1); // wait for sync 
 
-	// shift out next row
-	gSingleton->shiftOutCurrentRow();
-	// reload the timer
-	TC->CC[0].reg = gSingleton->nextTimerInterval();
-	while (TC->STATUS.bit.SYNCBUSY == 1); // wait for sync 
+	if (gSingleton->doInterFrameTransmitOff()) {
+		gSingleton->shiftOutAllOff();
 
-	TC->INTFLAG.bit.MC0 = 1;
+		// reload the timer
+		TC->CC[0].reg = gSingleton->rowOffTimerInterval();
+		while (TC->STATUS.bit.SYNCBUSY == 1); // wait for sync 
+		
+		TC->INTFLAG.bit.MC0 = 1;
 	
-	TC->CTRLA.reg |= TC_CTRLA_ENABLE;
-	while (TC->STATUS.bit.SYNCBUSY == 1); // wait for sync 
+		TC->CTRLA.reg |= TC_CTRLA_ENABLE;
+		while (TC->STATUS.bit.SYNCBUSY == 1); // wait for sync 
+	} else {
+		// shift out next row
+		gSingleton->shiftOutCurrentRow();
+		// reload the timer
+		TC->CC[0].reg = gSingleton->nextRowScanTimerInterval();
+		while (TC->STATUS.bit.SYNCBUSY == 1); // wait for sync 
 
-  	// update scan row. Done outside of interrupt stoppage since execution time can
-  	// be inconsistent, which would lead to vary brightness in rows.
-  	gSingleton->incrementScanRow();
+		TC->INTFLAG.bit.MC0 = 1;
+	
+		TC->CTRLA.reg |= TC_CTRLA_ENABLE;
+		while (TC->STATUS.bit.SYNCBUSY == 1); // wait for sync 
+
+		// update scan row. Done outside of interrupt stoppage since execution time can
+		// be inconsistent, which would lead to vary brightness in rows.
+		gSingleton->incrementScanRow();
+	} 
 }
 
 #pragma mark ATmega 8-bit Handlers
@@ -370,6 +452,8 @@ void TC3_Handler()                              // Interrupt Service Routine (IS
 
 void BaseLEDMatrix::startScanning(void) {
 	this->setup();
+	
+	_interFrameOffTimeInterval = max(257 - (BASE_SCAN_TIMER_INTERVALS/5)*_interFrameOffTimeMicros, 0);
 
 	noInterrupts(); // disable all interrupts
 
@@ -390,7 +474,7 @@ void BaseLEDMatrix::startScanning(void) {
 	TCCR2B &= ~(1<<CS21);
 
 	// load counter start point and enable the timer
-	TCNT2 = this->nextTimerInterval();
+	TCNT2 = this->nextRowScanTimerInterval();
 	TIMSK2 |= (1<<TOIE2);
 	
   	interrupts(); // enable all interrupts
@@ -400,22 +484,29 @@ void BaseLEDMatrix::stopScanning(void) {
   	TIMSK2 &= ~(1<<TOIE2); // disable timer overflow interupt
 }
 
-unsigned int BaseLEDMatrix::nextTimerInterval(void) const {
+unsigned int BaseLEDMatrix::nextRowScanTimerInterval(void) const {
 	return  max(257 - this->baseIntervalMultiplier( _scanPass )*BASE_SCAN_TIMER_INTERVALS, 0 );
 }
 
 ISR(TIMER2_OVF_vect) {
 	noInterrupts(); // disable all interrupts
-
-	// shift out next row
-	gSingleton->shiftOutCurrentRow();
+	if (gSingleton->doInterFrameTransmitOff()) {
+		gSingleton->shiftOutAllOff();
+		
+		TCNT2 = gSingleton->rowOffTimerInterval();
+		
+		interrupts();
+	} else {
+		// shift out next row
+		gSingleton->shiftOutCurrentRow();
 	
-	// reload the timer
-	TCNT2 = gSingleton->nextTimerInterval();	
-	interrupts(); // enable all interrupts
+		// reload the timer
+		TCNT2 = gSingleton->nextRowScanTimerInterval();	
+		interrupts(); // enable all interrupts
 	
-	// update scan row. Done outside of interrupt stoppage since execution time can
-	// be inconsistent, which would lead to vary brightness in rows.
-	gSingleton->incrementScanRow();
+		// update scan row. Done outside of interrupt stoppage since execution time can
+		// be inconsistent, which would lead to vary brightness in rows.
+		gSingleton->incrementScanRow();
+	} 
 }
 #endif

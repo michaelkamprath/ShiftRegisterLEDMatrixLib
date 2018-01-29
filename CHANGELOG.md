@@ -10,11 +10,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Refactored the image classes to have a common, templated base class. This consolidates similar logic to a single location.
 
 ### Added
-- Added support for the Arduino Zero and Due boards (and related)
-- Added support for older ATmega8535, ATmega16 and ATmega32 microcontrollers
-- Added support for ATmega1284 and ATmega1284P microcontrollers
-- Added method to LEDImage for drawing circles
-- Added a Red-Blue-Green bit layout mode for the RGB matrix object
+- Support for the Arduino Zero and Due boards (and related)
+- Support for older ATmega8535, ATmega16 and ATmega32 microcontrollers
+- Support for ATmega1284 and ATmega1284P microcontrollers
+- A method to LEDImage for drawing circles
+- A Red-Blue-Green bit layout mode for the RGB matrix object
+- An option to shift out an "all off" signal for a short period of time in between row updates to the shift registers. This helps mitigate LEF ghosting when the time to turn off for the row power switch is appreciable and cannot be mitigated in hardware. For example, when using 2981 source drivers for the row power switching.
+
 
 ## [1.0.1] - 2017-12-24
 ### Changed

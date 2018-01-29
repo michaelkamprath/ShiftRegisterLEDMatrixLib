@@ -8,6 +8,9 @@ Find at more about this library and hardware that it is designed for at:
 [www.kamprath.net/led-matrix/](http://www.kamprath.net/led-matrix/)
 
 # Design and Usage
+## Hardware support
+
+
 ## Architecture
 This library has three general facets: image handling, matrix driver, and animation management.
 

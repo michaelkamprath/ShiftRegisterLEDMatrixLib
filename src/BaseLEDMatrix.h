@@ -32,12 +32,18 @@ private:
 	unsigned int _columns;
 	unsigned int _columnBitWidth;
 	unsigned int _pwmCycleScanCount;
+	unsigned int _interFrameOffTimeMicros;
+	unsigned int _interFrameOffTimeInterval;
+	 
 	bool _columnControlBitOn;
 	bool _rowControlBitOn;
 		
 	LEDMatrixBits **_curScreenBitFrames;
 	LEDMatrixBits **_screenBitFrames;
+	LEDMatrixBits *_allOffBits;
+	
 	bool _screenBitFrameToggle;
+	bool _interFrameTransmitOffToggle;
 	
 	unsigned int _scanPass;
 	unsigned int _scanRow;
@@ -71,6 +77,13 @@ public:
 	 *               E.g. of the row is common anode and a PNP transistor is being use 
 	 *               to switch power to the row, the row bit likely needs to be LOW to
 	 *               cause the transistor to power the row.
+	 *	@param interFrameOffTimeMicros Controls whether an all-off signal is sent to the
+	 *				 shift registers in between row updates in order to mitigate LED 
+	 *				 ghosting. A value of 0 indicates that no all-off signal should be 
+	 *				 sent. A value greater than 0 indicates how many microseconds should
+	 *				 be waited until the next row update gets shifted out. Usually a value 
+	 *				 less than 3 microseconds is sufficient for most slow row power
+	 *				 switching.
 	 *  @param slavePin which ard pin is used for the latch signal.
 	 */
 	BaseLEDMatrix(
@@ -80,11 +93,14 @@ public:
 			unsigned int pwmCycleScanCount,
 			bool columnControlBitOn = LOW,
 			bool rowControlBitOn = LOW,
+			unsigned int interFrameOffTimeMicros = 0,
 #if defined ( ESP8266 )
 			int slavePin = D8	
 #else
 			int slavePin = 10	
 #endif
+			,
+			unsigned long maxSPISpeed = 18000000
 		);
 	virtual ~BaseLEDMatrix();
 	
@@ -142,8 +158,11 @@ public:
 	 * This methods are "private" to this class but have to be declared public so 
 	 * the timer interrupt can access them.
 	 */
+	bool doInterFrameTransmitOff( void ) const;
 	void shiftOutCurrentRow(void);
-	unsigned int nextTimerInterval(void) const;
+	void shiftOutAllOff(void);
+	unsigned int nextRowScanTimerInterval(void) const;
+	unsigned int rowOffTimerInterval(void) const;
 	void incrementScanRow( void );
 };
 

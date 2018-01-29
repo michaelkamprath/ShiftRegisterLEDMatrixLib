@@ -24,8 +24,10 @@
 #endif
 
 SPIConnection::SPIConnection(
-	int slavePin
-)	:	_slavePin(slavePin)
+	int slavePin,
+	unsigned long maxSPISpeed
+)	:	_slavePin(slavePin),
+		_maxSPISpeed(maxSPISpeed)
 {
 }
 
@@ -40,7 +42,7 @@ void SPIConnection::setup() {
 }
 
 ICACHE_RAM_ATTR void SPIConnection::startTransaction(void) {
-	SPI.beginTransaction(SPISettings(12000000, MSBFIRST, SPI_MODE0));
+	SPI.beginTransaction(SPISettings(_maxSPISpeed, MSBFIRST, SPI_MODE0));
 	digitalWrite (_slavePin, LOW);
 }
 

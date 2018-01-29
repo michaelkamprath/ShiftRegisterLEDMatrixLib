@@ -20,10 +20,12 @@
 
 class SPIConnection {
 	int _slavePin;
-
+	unsigned long _maxSPISpeed;
+	
 public:
 	SPIConnection(
-			int slavePin = 10
+			int slavePin = 10,
+			unsigned long maxSPISpeed = 18000000
 		);
 	virtual ~SPIConnection();
 	

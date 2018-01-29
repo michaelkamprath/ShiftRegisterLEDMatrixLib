@@ -26,6 +26,7 @@ LEDMatrix::LEDMatrix(
 	int columns,
 	bool columnControlBitOn,
 	bool rowControlBitOn,
+	unsigned int interFrameOffTimeMicros,
 	int slavePin
 ) :		BaseLEDMatrix(
 				rows,
@@ -34,6 +35,7 @@ LEDMatrix::LEDMatrix(
 				LED_MATRIX_MAX_SCAN_PASS_COUNT,
 				columnControlBitOn,
 				rowControlBitOn,
+				interFrameOffTimeMicros,
 				slavePin
 			),
 		_screen_data(NULL)

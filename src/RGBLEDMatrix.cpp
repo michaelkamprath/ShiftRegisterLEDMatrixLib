@@ -35,6 +35,7 @@ RGBLEDMatrix::RGBLEDMatrix(
 	RGBLEDBitLayout bitLayout,
 	bool columnControlBitOn,
 	bool rowControlBitOn,
+	unsigned int interFrameOffTimeMicros,
 	int slavePin		
 ) :		BaseLEDMatrix(
 				rows,
@@ -43,6 +44,7 @@ RGBLEDMatrix::RGBLEDMatrix(
 				MAX_SCAN_PASS_COUNT,
 				columnControlBitOn,
 				rowControlBitOn,
+				interFrameOffTimeMicros,
 				slavePin
 			),
 		_bitLayout(bitLayout),
