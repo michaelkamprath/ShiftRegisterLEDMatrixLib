@@ -19,10 +19,6 @@
 #include "BaseLEDMatrix.h"
 #include "SRLEDMatrixUtils.h"
 
-#ifndef ICACHE_RAM_ATTR
-#define ICACHE_RAM_ATTR
-#endif
-
 const unsigned long UPDATE_INTERVAL = 2000;
 
 static BaseLEDMatrix* gSingleton = NULL;
@@ -448,12 +444,12 @@ void TC3_Handler()                              // Interrupt Service Routine (IS
 // scan timing. 
 //
 
-#define BASE_SCAN_TIMER_INTERVALS 12
+#define BASE_SCAN_TIMER_INTERVALS 24
 
 void BaseLEDMatrix::startScanning(void) {
 	this->setup();
 	
-	_interFrameOffTimeInterval = max(257 - (BASE_SCAN_TIMER_INTERVALS/5)*_interFrameOffTimeMicros, 0);
+	_interFrameOffTimeInterval = max(255 - _interFrameOffTimeMicros, 0);
 
 	noInterrupts(); // disable all interrupts
 
@@ -468,13 +464,13 @@ void BaseLEDMatrix::startScanning(void) {
 	// overflow only mode
 	TIMSK2 &= ~(1<<OCIE2A);
 
-	// configure to fire about every 5 micro-second 
-	TCCR2B |= (1<<CS22) ; 
-	TCCR2B &= ~(1<<CS20);
-	TCCR2B &= ~(1<<CS21);
+	// configure prescaler to /32 
+	TCCR2B |= (1<<CS20);
+	TCCR2B |= (1<<CS21);
+	TCCR2B &= ~(1<<CS22) ; 
 
 	// load counter start point and enable the timer
-	TCNT2 = this->nextRowScanTimerInterval();
+	TCNT2 = 0; // max interval for first timer fire
 	TIMSK2 |= (1<<TOIE2);
 	
   	interrupts(); // enable all interrupts
@@ -485,6 +481,7 @@ void BaseLEDMatrix::stopScanning(void) {
 }
 
 unsigned int BaseLEDMatrix::nextRowScanTimerInterval(void) const {
+	// this yields multiple of 50 microseconds on a 16 MHz chip
 	return  max(257 - this->baseIntervalMultiplier( _scanPass )*BASE_SCAN_TIMER_INTERVALS, 0 );
 }
 

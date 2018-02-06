@@ -25,6 +25,10 @@
 
 #define LED_MATRIX_MAX_SCAN_PASS_COUNT 1
 
+#ifndef ICACHE_RAM_ATTR
+#define ICACHE_RAM_ATTR
+#endif
+
 class BaseLEDMatrix : public TimerAction {
 	
 private:
@@ -84,7 +88,9 @@ public:
 	 *				 be waited until the next row update gets shifted out. Usually a value 
 	 *				 less than 3 microseconds is sufficient for most slow row power
 	 *				 switching.
-	 *  @param slavePin which ard pin is used for the latch signal.
+	 *  @param slavePin which pin is used for the latch signal.
+	 *  @param maxSPISpeed The requested max SPI speed. The board typically picks the 
+	 *				smaller of this and it's own max.
 	 */
 	BaseLEDMatrix(
 			unsigned int rows,

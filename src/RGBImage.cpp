@@ -65,7 +65,7 @@ MutableRGBImage::~MutableRGBImage()
 }
 
 void MutableRGBImage::drawGlyph(
-		const GlyphBase& glyph,
+		const LEDImageBase<bool>& glyph,
 		int row,
 		int column,
 		RGBColorType foreground,
@@ -107,7 +107,7 @@ void MutableRGBImage::drawGlyph(
 			yT++, yGlyph++ 
 		) { 
 		for (int colCounter = 0; colCounter < imageColumns; colCounter++) {
-			if (glyph.getBit(yGlyph,imageX+colCounter)) {
+			if (glyph.pixel(yGlyph,imageX+colCounter)) {
 				this->pixel(yT,thisX+colCounter) = foreground;
 			}
 			else if ( background != TRANSPARENT_COLOR ) {

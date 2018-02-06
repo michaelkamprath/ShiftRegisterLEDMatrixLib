@@ -48,7 +48,7 @@ public:
 	virtual ~MutableRGBImage();
 
 	void drawGlyph(
-			const GlyphBase& image,
+			const LEDImageBase<bool>& image,
 			int row,
 			int column,
 			RGBColorType foreground,

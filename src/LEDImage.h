@@ -196,8 +196,13 @@ public:
 	PixelType& pixel( int row, int column );
 	void setPixel( int row, int column, PixelType color );
 	
+	PixelType blackColor(void) const		{ return LEDBlackColor; }
+	PixelType transparentColor(void) const	{ return LEDTransparentColor; }
+	
 	void placeImageAt( const LEDImageBase<PixelType>& image, int row, int column );
 	void paintColor( PixelType color ); 
+	void eraseAll(void)						{ this->paintColor(this->blackColor()); }
+	
 	void drawLine(
 		int startRow,
 		int startColumn,
@@ -229,7 +234,7 @@ MutableLEDImage<PixelType,LEDBlackColor,LEDTransparentColor>::MutableLEDImage(in
 	_data(new PixelType[rows*columns]),
 	_dirty(false)
 {
-	this->paintColor(LEDBlackColor);
+	this->paintColor(this->blackColor());
 }
 
 template <class PixelType, PixelType LEDBlackColor, PixelType LEDTransparentColor> 
@@ -345,7 +350,7 @@ void MutableLEDImage<PixelType,LEDBlackColor,LEDTransparentColor>::placeImageAt(
 	for ( int yT = startRow, yO = imageY; (yT < this->rows()) && (yO < image.rows()); yT++, yO++ ) { 
 		for (int colCounter = 0; colCounter < imageColumns; colCounter++) {
 			PixelType color = image.pixel(yO,imageX+colCounter);
- 			if (color != LEDTransparentColor) {
+ 			if (color != this->transparentColor()) {
 				this->pixel(yT,thisX+colCounter) = color;
  			}
 		}

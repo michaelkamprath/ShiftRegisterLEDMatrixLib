@@ -1,4 +1,4 @@
-//     Shift Register LED Matrix Project - LEDMatrix
+//     Shift Register LED Matrix Project - GrayScaleLEDMatrix
 //     Copyright (C) 2017 Michael Kamprath
 //
 //     This file is part of Shift Register LED Matrix Project.
@@ -19,19 +19,19 @@
 #ifndef __LEDMATRIX_H__
 #define __LEDMATRIX_H__
 #include "BaseLEDMatrix.h"
-#include "Glyph.h"
+#include "GrayScaleImage.h"
 
 
-class LEDMatrix : public BaseLEDMatrix {
+class GrayScaleLEDMatrix : public BaseLEDMatrix {
 	
 private:
-	MutableGlyph *_screen_data;	
+	MutableGrayScaleImage *_screen_data;	
 	
 	void setRowBitsForFrame(
 			int row,
 			size_t frame,
 			LEDMatrixBits& frameBits,
-			const LEDImageBase<bool>& image
+			const LEDImageBase<GrayScaleColorType>& image
 		) const;
 
 protected:
@@ -44,7 +44,7 @@ public:
   
 
 	/**
-	 *	Constructs a mono-color LED matrix controller object.
+	 *	Constructs a gray-scale LED matrix controller object.
 	 *
 	 *	@param rows the number of  rows in the LED matrix. Rows are expected to have
 	 *	            shared power to the LEDs.
@@ -63,7 +63,7 @@ public:
 	 *				 switching.
 	 *  @param slavePin which ard pin is used for the latch signal.
 	 */
-	LEDMatrix(
+	GrayScaleLEDMatrix(
 			int rows,
 			int columns,
 			bool columnControlBitOn = LOW,
@@ -75,7 +75,7 @@ public:
 			int slavePin = 10	
 #endif
 		);
-	virtual ~LEDMatrix();
+	virtual ~GrayScaleLEDMatrix();
 	
 	/**
 	 * Should be called before any operations against this object is performed.
@@ -86,18 +86,18 @@ public:
 	 * Returns the image buffer for this matrix object. This is the 
 	 * image buffer that drawing should be done to.
 	 *
-	 * @return a MutableGlyph object reference that is the matrix's image buffer.
+	 * @return a MutableGrayScaleImage object reference that is the matrix's image buffer.
 	 */ 
-	MutableGlyph& image(void)				{ return *_screen_data; }
+	MutableGrayScaleImage& image(void)				{ return *_screen_data; }
 
 	/**
 	 * Returns a const reference to the image buffer for this matrix object. This is the 
 	 * image buffer that drawing should be done to, but is const here and thus should
 	 * be only read from.
 	 *
-	 * @return a const MutableGlyph object reference that is the matrix's image buffer.
+	 * @return a const MutableGrayScaleImage object reference that is the matrix's image buffer.
 	 */ 
-	const MutableGlyph& image(void) const	{ return *_screen_data; }
+	const MutableGrayScaleImage& image(void) const	{ return *_screen_data; }
 };
 
 #endif //__SCREEN_H__

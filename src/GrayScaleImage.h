@@ -1,4 +1,4 @@
-//     Shift Register LED Matrix Project - Glyph
+//     Shift Register LED Matrix Project - GrayScaleImage
 //     Copyright (C) 2017 Michael Kamprath
 //
 //     This file is part of Shift Register LED Matrix Project.
@@ -15,58 +15,37 @@
 // 
 //     You should have received a copy of the GNU General Public License
 //     along with Shift Register LED Matrix Project.  If not, see <http://www.gnu.org/licenses/>.
+#ifndef __GRAYSCALEIMAGE_H__
+#define __GRAYSCALEIMAGE_H__
 
-#ifndef __GLYPH_H__
-#define __GLYPH_H__
-
-/***
- * Glyph
- *
- * A Glyph is N x M array of bits that indicates pixels in an image devoid of color.
- * Glyphs are generally used to represent the image of letters in a font, but can be
- * used for any pixel image.
- *
- */
-
+#include "GrayScaleColor.h"
 #include "LEDImage.h"
 
-class Glyph : public LEDImage<bool> {
+class GrayScaleImage : public LEDImage<GrayScaleColorType> {
 public:
-	static bool* generateBitBoolArray( 
+	GrayScaleImage(
 			int rows,
 			int columns,
-			const unsigned char* data,
-			bool isFromProgramSpace
-		);
-
-	Glyph(
-			int rows,
-			int columns,
-			const bool* data,
+			const GrayScaleColorType* data,
 			bool isFromProgramSpace = false
 		);
-	Glyph(const LEDImageBase<bool>& other);
-	virtual ~Glyph();
+	GrayScaleImage(const LEDImageBase<GrayScaleColorType>& other);
+	virtual ~GrayScaleImage();
 
 };
 
-class MutableGlyph : public MutableLEDImage<bool,false,0x80> {
+class MutableGrayScaleImage : public MutableLEDImage<GrayScaleColorType,GRAYSCALE_BLACK,GRAYSCALE_TRANSPARENT> {
 public:
-	MutableGlyph(int rows, int columns);
-	MutableGlyph(
+	MutableGrayScaleImage(int rows, int columns);
+	MutableGrayScaleImage(
 			int rows,
 			int columns,
-			const bool* data,
+			const GrayScaleColorType* data,
 			bool isFromProgramSpace = false
 		);
-	MutableGlyph(const LEDImageBase<bool>& other);
-	virtual ~MutableGlyph();
-	
-	void setBit( int row, int column )			{ this->setPixel( row, column, true); }
-	void clearBit( int row, int column )		{ this->setPixel( row, column, false); }
-
-	void placeGlyphAt( const LEDImageBase<bool>& glyph, int row, int column );
-
+	MutableGrayScaleImage(const LEDImageBase<GrayScaleColorType>& other);
+	virtual ~MutableGrayScaleImage();
 };
 
-#endif
+
+#endif //__GRAYSCALEIMAGE_H__

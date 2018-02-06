@@ -1,4 +1,4 @@
-//     Shift Register LED Matrix Project - LEDMatrix
+//     Shift Register LED Matrix Project - GrayScaleLEDMatrix
 //     Copyright (C) 2017 Michael Kamprath
 //
 //     This file is part of Shift Register LED Matrix Project.
@@ -17,11 +17,11 @@
 //     along with Shift Register LED Matrix Project.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <Arduino.h>
-#include "LEDMatrix.h"
+#include "GrayScaleLEDMatrix.h"
 
 #define LED_MATRIX_MAX_SCAN_PASS_COUNT 1
 
-LEDMatrix::LEDMatrix( 
+GrayScaleLEDMatrix::GrayScaleLEDMatrix( 
 	int rows,
 	int columns,
 	bool columnControlBitOn,
@@ -32,7 +32,7 @@ LEDMatrix::LEDMatrix(
 				rows,
 				columns,
 				1,
-				LED_MATRIX_MAX_SCAN_PASS_COUNT,
+				3,
 				columnControlBitOn,
 				rowControlBitOn,
 				interFrameOffTimeMicros,
@@ -43,46 +43,46 @@ LEDMatrix::LEDMatrix(
 
 }
 
-void LEDMatrix::setup() {
+void GrayScaleLEDMatrix::setup() {
 	this->BaseLEDMatrix::setup();
 	
 	if (_screen_data == NULL) {
-		_screen_data = new MutableGlyph(this->rows(), this->columns());
+		_screen_data = new MutableGrayScaleImage(this->rows(), this->columns());
 	}
 }
 
-LEDMatrix::~LEDMatrix() {
+GrayScaleLEDMatrix::~GrayScaleLEDMatrix() {
 	if (_screen_data != NULL) {
 		delete _screen_data;
 	}
 }
 
-bool LEDMatrix::matrixNeedsUpdate(void) const {
+bool GrayScaleLEDMatrix::matrixNeedsUpdate(void) const {
 	return this->image().isDirty();
 }
-void LEDMatrix::matrixHasBeenUpdated(void) {
+void GrayScaleLEDMatrix::matrixHasBeenUpdated(void) {
 	this->image().setNotDirty();
 }
 
-void LEDMatrix::generateFrameBits(LEDMatrixBits& frameBits, size_t frame ) const {
+void GrayScaleLEDMatrix::generateFrameBits(LEDMatrixBits& frameBits, size_t frame ) const {
 	for (unsigned int row = 0; row < this->rows(); row++) {
 		this->setRowBitsForFrame(row, frame, frameBits, *_screen_data);
 	}
 }
 
-void LEDMatrix::setRowBitsForFrame(
+void GrayScaleLEDMatrix::setRowBitsForFrame(
 	int row,
 	size_t frame,
 	LEDMatrixBits& frameBits,
-	const LEDImageBase<bool>& image ) const 
+	const LEDImageBase<GrayScaleColorType>& image ) const 
 {	
 	if (!frameBits.isRowMemoized(row)) {
 		bool rowNeedsPower = false;
 		size_t colBitIdx = 0;
 		for (unsigned int col = 0; col < this->columns(); col++) {
-			bool isOn = image.pixel(row, col);
+			GrayScaleColorType color = image.pixel(row, col);
 			
-			if (isOn) {
+			if (color >= frame) {
 				frameBits.setColumnControlBit(row,colBitIdx,true);
 				rowNeedsPower = true;
 			}
@@ -93,7 +93,8 @@ void LEDMatrix::setRowBitsForFrame(
 	}	
 }
 
-ICACHE_RAM_ATTR unsigned int LEDMatrix::baseIntervalMultiplier( size_t frame ) const {
-	return  10;
+ICACHE_RAM_ATTR unsigned int GrayScaleLEDMatrix::baseIntervalMultiplier( size_t frame ) const {
+	
+	return frame*frame;
 }
 
