@@ -44,6 +44,7 @@ Other similar designs can be used with this library. Common variations would be:
 1. Using a DM13A sink driver to drive the cathode columns. It is not recommended to us a DM13A to drive the rows for common cathode RGB LEDs due to high current needs to drive the multiple LEDs in a single row. Using DM13A chips for the columns are nice because you can forgo the current limiting resistor for each column and the DM13A does the job of limiting the current.
 2. Using common cathode RGB LEDs. In this case NPN transistors would be used to sink the current for a row, and columns are sourced with the current of the high state on a 74HC595 pin. 
 3. When using acommon anode RGB LEDs, you could use a source driver, such as a UDN2981, to drive a row. This would be turned on with a `high` state on the row's shift register pin.
+4. Rather than ordering the column biots as alternating through R, G, and B colors, each color can be grouped together. This is convenient when using manufactored LED matrix modules that group the pins by colors rather than by columns. See [Bit Layouts](#bit-layouts).
 
 ## Library Architecture
 This library has three general facets: image handling, matrix driver, and animation management.
