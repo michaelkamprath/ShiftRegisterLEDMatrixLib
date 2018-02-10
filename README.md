@@ -8,10 +8,44 @@ Find at more about this library and hardware that it is designed for at:
 [www.kamprath.net/led-matrix/](http://www.kamprath.net/led-matrix/)
 
 # Design and Usage
-## Hardware support
+## Hardware Design
+The general hardware design of the matrix is to use shift registers to drive the matrix. This library can support either common anode or common cathode RGB LEDs, but default settings assume common anode. 
 
+Consider the following 4x4  matrix using common anode RGB LEDs as an example:
 
-## Architecture
+```
+                 Serial Bit Stream
+                          |
+ RGB--RGB--RGB--RGB- R1  LSB
+ |||  |||  |||  |||       | 
+ RGB--RGB--RGB--RGB- R2   |
+ |||  |||  |||  |||       |
+ RGB--RGB--RGB--RGB- R3   |
+ |||  |||  |||  |||       |
+ RGB--RGB--RGB--RGB- R4   |
+ |||  |||  |||  |||       |
+ CCC  CCC  CCC  CCC       |
+ 000  000  000  111       |
+ 123  456  789  012       |
+                          |
+ MSB <--------------------+
+```
+
+In this example, the RGB LED common anodes are connected into rows, and the cathodes are connected into columns aligned with the colors of each LED. To light any particular LED color, its row should be powered and the column sinked. If common cathode LEDs were used instead, this would be swapped with the rows becoming sinks and the columns being power source. The shift registers are connected in serial such that the most significant bit (MSB) being the first LED column and the least significant bit (LSB) being the first row.
+
+Since there are 16 bits needed to control the rows and columns, two 74HC595 shift registers will be used. The first one, U1, will contain the MSB, which will be the first bit shifted out. Give that, U1 should be a downstream slave to U2 and the MSB ultimately will reside in the Q7 pin of U1. U1's SER pin will need to be connected to the SER' (aka Q7') pin on U2. The input serial stream flows into U2, so the LSB will be on Q0 of U2.
+
+In this case, Q7 of the first 74HC595 (U1) would be attached to C01, Q6 to C02, and so on. Since there are 12 column and 4 rows, two 8-bit shift registers are needed. So the second 74HC595 (U2) would have its Q0 through Q3 attached to R1 through R4, and its Q4 through Q7 attached to C12 down through C09. In this configuration, the first bit shifted out in an update cycle is for C01, and the last bit shifted out is for R1.
+
+In this common anode set up, the rows would be "on" when the proper 74HC595 pin is in the `high` state and the column would "on" when its respective pin is in the `low` state. Basically, the shift register is sinking the columns and powering the rows. However, since the 74HC595 cannot source enough power to drive the multiple LEDs in the row, you might use a PNP transistor to drive the row. In this case, the row would be on if the its pin on the 74HC595 is `low`, which turns on the PNP transistor allowing current to flow. 
+
+Other similar designs can be used with this library. Common variations would be:
+
+1. Using a DM13A sink driver to drive the cathode columns. It is not recommended to us a DM13A to drive the rows for common cathode RGB LEDs due to high current needs to drive the multiple LEDs in a single row. Using DM13A chips for the columns are nice because you can forgo the current limiting resistor for each column and the DM13A does the job of limiting the current.
+2. Using common cathode RGB LEDs. In this case NPN transistors would be used to sink the current for a row, and columns are sourced with the current of the high state on a 74HC595 pin. 
+3. When using acommon anode RGB LEDs, you could use a source driver, such as a UDN2981, to drive a row. This would be turned on with a `high` state on the row's shift register pin.
+
+## Library Architecture
 This library has three general facets: image handling, matrix driver, and animation management.
 
 ### Image Handling
@@ -59,14 +93,20 @@ When constructing a matrix driver, you need to tell it a few details:
 * The matrix's size in rows and columns
 * Whether the shift registers used for controlling columns should be set to `HIGH` or `LOW` to turn on the column. 
 * Whether the shift registers used for controlling rows should be set to `HIGH` or `LOW` to turn on the row
+* The length of the delay that should be present between turning on each rows while multiplexing. By default, this delay is set to zero (no delay). However, if you are using slow switch for the row's power, such as a UDN2981 which has a 2 microsecond urn off time, introducing a short period of all rows being off in between each row update can eliminate LED ghosting.
 * The pin which will be used to send the latch signal.
 
 #### LEDMatrix
-The `LEDMatrix` driver is used for matrices of single color LEDs. This drive uses a `MutableGlyph` as its image buffer.
+The `LEDMatrix` driver is used for matrices of single color LEDs. This driver uses a `MutableGlyph` as its image buffer.
+
+#### GrayScaleLEDMatrix
+The `GrayScaleLEDMatrix` driver is used for matrices of single color LEDs, but will effect a grayscale using PWM on each LED. This driver uses a `MutableGrayScaleImage` as its image buffer.
+
 #### RGBLEDMatrix
 The `RGBLEDMatrix` driver is used for matrices of RGB color LEDs. This drive uses a `MutableRGBImage` as its image buffer.
 
 In addition to the basic options listed above, when constructing an `RGBLEDMatrix` object, you need to indicate the shift register bit layout for the RGB columns. See the [Bit Layouts](#bit-layouts) section of this document.
+
 ### Animation Management
 #### TimerAction
 A `TimerAction` object allows you to manage a variably timed action in a manner that does not require the use of a clock interrupt. Since timer interrupts are not used, the timing of action may not be precise, so this class should only be used for actions that are not sensitive to some variability in the action timing. The object has a `loop()` method that should be called in every call to the global `loop()` method. 
@@ -92,7 +132,6 @@ The default wiring for connecting the RGB LED Matrix to an Arduino using the ATm
 | **SER** | 11 | 51 | SPI MOSI Pin |
 | **CLK** | 13 | 52 | SPI SCK Pin |
 | **LATCH** | 10 | 10 | Pin 10 is default, but this can be changed when creating the `RGBLEDMatrix` object. |
-| **SER**' | _unused_ | _unused_ | Used to chain multiple boards together. Would connect to the SER of the next board.|
 
 Note that the SPI MISO pin is unused.
 
