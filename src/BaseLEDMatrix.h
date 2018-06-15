@@ -30,6 +30,17 @@
 #endif
 
 class BaseLEDMatrix : public TimerAction {
+public:
+
+	typedef enum {
+		// the left most column in the hardware and MSB in the shift register chain is column 0
+		LED_BIG_ENDIAN,
+		
+		// The columns are laid out in 8 column "bytes" with column 0 being the left most 
+		// bit in the right most byte. Column 8 would be the left most bit in the second 
+		// to the right byte.
+		LED_LITTLE_ENDIAN_8
+	} DeviceBitEndian;
 	
 private:
 	unsigned int _rows;
@@ -38,6 +49,7 @@ private:
 	unsigned int _pwmCycleScanCount;
 	unsigned int _interFrameOffTimeMicros;
 	unsigned int _interFrameOffTimeInterval;
+	DeviceBitEndian _bitEndian;
 	 
 	bool _columnControlBitOn;
 	bool _rowControlBitOn;
@@ -106,6 +118,7 @@ public:
 			int slavePin = 10	
 #endif
 			,
+			DeviceBitEndian bitEndian = LED_BIG_ENDIAN,
 			unsigned long maxSPISpeed = 18000000
 		);
 	virtual ~BaseLEDMatrix();
@@ -159,6 +172,8 @@ public:
 	 * Stops the LED matrix row scan timmer interrupt.
 	 */
 	void stopScanning(void);
+
+	DeviceBitEndian bitEndian(void) const			{ return _bitEndian; }
 
 	/**
 	 * This methods are "private" to this class but have to be declared public so 

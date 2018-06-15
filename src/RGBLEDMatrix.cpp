@@ -36,7 +36,8 @@ RGBLEDMatrix::RGBLEDMatrix(
 	bool columnControlBitOn,
 	bool rowControlBitOn,
 	unsigned int interFrameOffTimeMicros,
-	int slavePin		
+	int slavePin,
+	DeviceBitEndian bitEndian	
 ) :		BaseLEDMatrix(
 				rows,
 				columns,
@@ -45,7 +46,8 @@ RGBLEDMatrix::RGBLEDMatrix(
 				columnControlBitOn,
 				rowControlBitOn,
 				interFrameOffTimeMicros,
-				slavePin
+				slavePin,
+				bitEndian
 			),
 		_bitLayout(bitLayout),
 		_screen_data(NULL)
@@ -216,8 +218,22 @@ void RGBLEDMatrix::setRowBitsForFrame(
 			columnBitIdxIncrement = 1;
 		}
 		for (unsigned int col = 0; col < this->columns(); col++) {
-			RGBColorType rgbValue = image.pixel(row, col);
+			unsigned int endianCol = col;
+			
+			if (this->bitEndian() == LED_LITTLE_ENDIAN_8 ) {
+				// first get the column "byte"
+				unsigned int colByte = col/8;
 
+				// now column's "but" in the byte
+				unsigned int colBit = col%8;
+				
+				// calculate new column location by on "byte"
+				
+				endianCol = this->columns() - (colByte+1)*8 + colBit;
+			}
+			
+		
+			RGBColorType rgbValue = image.pixel(row, endianCol);
 			// a form of Binary Code Modulation is used to control
 			// the LED intensity at variou levels.
 		

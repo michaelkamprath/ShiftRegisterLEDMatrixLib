@@ -93,6 +93,8 @@ public:
 #else
 			int slavePin = 10	
 #endif
+			,
+			DeviceBitEndian bitEndian = LED_BIG_ENDIAN
 		);
 	virtual ~RGBLEDMatrix();
 	

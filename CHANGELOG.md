@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+
+## [Unreleased]
+
+### Changed
+
+### Added
+- Basic capability to specify the endian-ness of the column layout for a matrix. While column 0 is meant to indicate the left most column, the hardware layout of the matrix might not make the left most column the MSB in the shift register chain. This might happen if you make a mistake in your hardware (oops!). By setting the column endian value of the matrix,the high level software can still reference column 0 to mean the left most column, and the bit layout sent the shift registers will be adjusted according to where column 0 physically is in the hardware.
+
 ## [1.1.0] - 2018-02-09
 
 ### Changed

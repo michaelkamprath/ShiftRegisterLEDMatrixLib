@@ -32,6 +32,7 @@ BaseLEDMatrix::BaseLEDMatrix(
 	bool rowControlBitOn,
 	unsigned int interFrameOffTimeMicros,
 	int slavePin,
+	DeviceBitEndian bitEndian,
 	unsigned long maxSPISpeed
 ) :		TimerAction(UPDATE_INTERVAL),
 		_rows(rows),
@@ -39,6 +40,7 @@ BaseLEDMatrix::BaseLEDMatrix(
 		_columnBitWidth(columnBitWidth),
 		_pwmCycleScanCount(pwmCycleScanCount),
 		_interFrameOffTimeMicros(interFrameOffTimeMicros),
+		_bitEndian(bitEndian),
 		_columnControlBitOn(columnControlBitOn),
 		_rowControlBitOn(rowControlBitOn),
 		_curScreenBitFrames(NULL),
@@ -220,7 +222,7 @@ void BaseLEDMatrix::stopScanning(void) {
 
 unsigned int BaseLEDMatrix::nextRowScanTimerInterval(void) const {
 	// Calculates the microseconds for each scan	
-	return  5*this->baseIntervalMultiplier( _scanPass );
+	return  100*this->baseIntervalMultiplier( _scanPass );
 }
 
 #pragma mark ESP8266 Handlers
