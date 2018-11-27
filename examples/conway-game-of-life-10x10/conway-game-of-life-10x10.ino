@@ -28,6 +28,7 @@ public:
   const static LifeState BORN = 2;
   const static LifeState DYING = 3;  
   const static LifeState DEAD = 0;
+  const static LifeState GAME_OVER = 4;
   
 private:
 
@@ -37,7 +38,10 @@ private:
   LifeState* _cells;
   LifeState* _nextCells;
 
+  bool  _isReseting;
+  
   RGBColorType getColorForLifeState( LifeState state ) const;
+
   
 protected:
   virtual void action();
@@ -49,11 +53,12 @@ public:
     unsigned long updateMicros
   );
 
-  void setCellStatus(int row, int column, LifeState cellStatus);
-  LifeState getCellStatus(int row, int column) const;
-
-  bool isAlive(int row, int column) const;
-  int countAliveNeighbors(int row, int column) const;
+  void setCellStatus(unsigned int row, unsigned int column, LifeState cellStatus);
+  LifeState getCellStatus(unsigned int row, unsigned int column) const;
+  void createRandomState();
+  
+  bool isAlive(unsigned int row, unsigned int column) const;
+  int countAliveNeighbors(unsigned int row, unsigned int column) const;
 
   void drawToScreen();
 };
@@ -64,46 +69,47 @@ CellUniverse::CellUniverse(
 ) :   TimerAction(updateMicros),
       _leds(matrix),
       _cells(new LifeState[matrix.rows()*matrix.columns()]),
-      _nextCells(new LifeState[matrix.rows()*matrix.columns()])
+      _nextCells(new LifeState[matrix.rows()*matrix.columns()]),
+      _isReseting(false)
 {
   memset(_cells,DEAD,matrix.rows()*matrix.columns()*sizeof(LifeState));
   memset(_nextCells,DEAD,matrix.rows()*matrix.columns()*sizeof(LifeState));
 }
 
-void CellUniverse::setCellStatus(int row, int column, LifeState cellStatus) {
+void CellUniverse::setCellStatus(unsigned int row, unsigned int column, LifeState cellStatus) {
   if (row < 0 || row >= _leds.rows() || column < 0 || column >= _leds.columns()) {
     return;
   }
 
-  int idx = row*_leds.columns() + column;
+  unsigned int idx = row*_leds.columns() + column;
 
   _cells[idx] = cellStatus;
 }
 
-CellUniverse::LifeState CellUniverse::getCellStatus(int row, int column) const {
+CellUniverse::LifeState CellUniverse::getCellStatus(unsigned int row, unsigned int column) const {
   // this causes the matrix to be a toroidal array
-  int r = row < 0 ? row + _leds.rows() : ( row >= _leds.rows() ? row - _leds.rows() : row );
-  int c = column < 0 ? column + _leds.columns() : ( column >= _leds.columns() ? column - _leds.columns() : column );
+  unsigned int r = row < 0 ? row + _leds.rows() : ( row >= _leds.rows() ? row - _leds.rows() : row );
+  unsigned int c = column < 0 ? column + _leds.columns() : ( column >= _leds.columns() ? column - _leds.columns() : column );
 
   // double check just to be sure
   if (r < 0 || r >= _leds.rows() || c < 0 || c >= _leds.columns()) {
     return CellUniverse::DEAD;
   }
 
-  int idx = r*_leds.columns() + c;
+  unsigned int idx = r*_leds.columns() + c;
 
   return _cells[idx];
 }
 
-bool CellUniverse::isAlive(int row, int column) const {
+bool CellUniverse::isAlive(unsigned int row, unsigned int column) const {
   return (this->getCellStatus(row, column) == CellUniverse::ALIVE || this->getCellStatus(row, column) == CellUniverse::BORN);
 }
 
-int CellUniverse::countAliveNeighbors(int row, int column) const {
+int CellUniverse::countAliveNeighbors(unsigned int row, unsigned int column) const {
     int aliveCount = 0;
 
-    for (int x = column - 1; x <= column+1; x++) {
-      for (int y = row - 1; y <= row + 1; y++ ) {
+    for (unsigned int x = column - 1; x <= column+1; x++) {
+      for (unsigned int y = row - 1; y <= row + 1; y++ ) {
         if (this->isAlive(y, x) && !(x == column && y == row)) {
           aliveCount++;
         }
@@ -114,9 +120,18 @@ int CellUniverse::countAliveNeighbors(int row, int column) const {
 }
 
 void CellUniverse::action() {
+  if (_isReseting) {
+    delay(5000);
+    this->createRandomState();
+    _isReseting = false;
+    return;
+  }
+  
   _leds.startDrawing();
-  for (int x = 0; x < _leds.columns(); x++) {
-    for (int y = 0; y < _leds.rows(); y++ ) {
+  bool isSame = true;
+
+  for (unsigned int x = 0; x < _leds.columns(); x++) {
+    for (unsigned int y = 0; y < _leds.rows(); y++ ) {
       LifeState newState = DEAD;
       LifeState currentState = this->getCellStatus(y, x);
       int count = this->countAliveNeighbors(y, x);
@@ -139,8 +154,11 @@ void CellUniverse::action() {
           }
           break; 
       }
-
-      int idx = y*_leds.columns() + x;
+      if (currentState != newState) {
+        isSame = false;
+      }
+  
+      unsigned int idx = y*_leds.columns() + x;
       _nextCells[idx] = newState;
 
       RGBColorType cellColor = this->getColorForLifeState(newState);
@@ -149,13 +167,49 @@ void CellUniverse::action() {
   }
   _leds.stopDrawing();
 
+  // determine if life needs to start over
+  if (isSame) {
+    for (unsigned int x = 0; x < _leds.columns(); x++ ) {
+      for (unsigned int y = 0; y < _leds.rows(); y++ ) {
+        if (this->getCellStatus(y, x) == DEAD) {
+          this->setCellStatus(y, x, GAME_OVER);
+        }
+      }
+    }
+    this->drawToScreen();
+    _isReseting = true;
+  }
+  else {
     memcpy(_cells, _nextCells, _leds.rows()*_leds.columns()*sizeof(LifeState));
+  }
+
+}
+
+void CellUniverse::createRandomState() {
+  unsigned int numTotalCells = _leds.rows()*_leds.columns();
+
+  for (unsigned int x = 0; x < _leds.columns(); x++ ) {
+    for (unsigned int y = 0; y < _leds.rows(); y++ ) {
+      this->setCellStatus(y, x, CellUniverse::DEAD);
+    }
+  }
+  
+  unsigned int countStartingCells = random(0.25*numTotalCells, 0.75*numTotalCells);
+
+  for (unsigned int i = 0; i < countStartingCells; i++ ) {
+    int randomRow = random(0,_leds.rows());
+    int randomColumn = random(0,_leds.columns());
+
+    this->setCellStatus(randomRow, randomColumn, CellUniverse::BORN);
+  }
+  
+  this->drawToScreen();  
 }
 
 void CellUniverse::drawToScreen() {
   _leds.startDrawing();
-  for (int x = 0; x < _leds.columns(); x++) {
-    for (int y = 0; y < _leds.rows(); y++ ) {
+  for (unsigned int x = 0; x < _leds.columns(); x++) {
+    for (unsigned int y = 0; y < _leds.rows(); y++ ) {
       LifeState currentState = this->getCellStatus(y, x);
       RGBColorType cellColor = this->getColorForLifeState(currentState);
       _leds.image().pixel(y, x) = cellColor;
@@ -175,6 +229,9 @@ RGBColorType CellUniverse::getColorForLifeState( LifeState state ) const {
       break;
     case DYING:
       cellColor = RED_COLOR;
+      break;
+    case GAME_OVER:
+      cellColor = BLACK_COLOR;
       break;
     case DEAD:
     default:
