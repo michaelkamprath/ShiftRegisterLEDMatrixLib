@@ -71,6 +71,8 @@ public:
 			unsigned int interFrameOffTimeMicros = 0,
 #if defined ( ESP8266 )
 			int slavePin = D8	
+#elif defined( ESP32 )
+			int slavePin = 5	
 #else
 			int slavePin = 10	
 #endif

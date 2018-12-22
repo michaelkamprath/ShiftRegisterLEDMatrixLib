@@ -25,6 +25,7 @@
 							||defined(__AVR_ATmega1284__) \
 							||defined(__AVR_ATmega1284P__) \
 							||defined( ESP8266 ) \
+							||defined( ESP32 ) \
 							||defined(ARDUINO_SAMD_ZERO) \
 							||defined(_SAM3XA_)
 #endif

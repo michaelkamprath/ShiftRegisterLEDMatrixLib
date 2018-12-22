@@ -54,11 +54,11 @@ public:
   );
 
   void setCellStatus(unsigned int row, unsigned int column, LifeState cellStatus);
-  LifeState getCellStatus(unsigned int row, unsigned int column) const;
+  LifeState getCellStatus(int row, int column) const;
   void createRandomState();
   
-  bool isAlive(unsigned int row, unsigned int column) const;
-  int countAliveNeighbors(unsigned int row, unsigned int column) const;
+  bool isAlive(int row, int column) const;
+  int countAliveNeighbors(int row, int column) const;
 
   void drawToScreen();
 };
@@ -77,7 +77,7 @@ CellUniverse::CellUniverse(
 }
 
 void CellUniverse::setCellStatus(unsigned int row, unsigned int column, LifeState cellStatus) {
-  if (row < 0 || row >= _leds.rows() || column < 0 || column >= _leds.columns()) {
+  if (row >= _leds.rows() || column >= _leds.columns()) {
     return;
   }
 
@@ -86,13 +86,13 @@ void CellUniverse::setCellStatus(unsigned int row, unsigned int column, LifeStat
   _cells[idx] = cellStatus;
 }
 
-CellUniverse::LifeState CellUniverse::getCellStatus(unsigned int row, unsigned int column) const {
+CellUniverse::LifeState CellUniverse::getCellStatus(int row, int column) const {
   // this causes the matrix to be a toroidal array
   unsigned int r = row < 0 ? row + _leds.rows() : ( row >= _leds.rows() ? row - _leds.rows() : row );
   unsigned int c = column < 0 ? column + _leds.columns() : ( column >= _leds.columns() ? column - _leds.columns() : column );
 
   // double check just to be sure
-  if (r < 0 || r >= _leds.rows() || c < 0 || c >= _leds.columns()) {
+  if (r >= _leds.rows() || c >= _leds.columns()) {
     return CellUniverse::DEAD;
   }
 
@@ -101,15 +101,15 @@ CellUniverse::LifeState CellUniverse::getCellStatus(unsigned int row, unsigned i
   return _cells[idx];
 }
 
-bool CellUniverse::isAlive(unsigned int row, unsigned int column) const {
+bool CellUniverse::isAlive(int row, int column) const {
   return (this->getCellStatus(row, column) == CellUniverse::ALIVE || this->getCellStatus(row, column) == CellUniverse::BORN);
 }
 
-int CellUniverse::countAliveNeighbors(unsigned int row, unsigned int column) const {
+int CellUniverse::countAliveNeighbors(int row, int column) const {
     int aliveCount = 0;
 
-    for (unsigned int x = column - 1; x <= column+1; x++) {
-      for (unsigned int y = row - 1; y <= row + 1; y++ ) {
+    for (int x = column - 1; x <= column+1; x++) {
+      for (int y = row - 1; y <= row + 1; y++ ) {
         if (this->isAlive(y, x) && !(x == column && y == row)) {
           aliveCount++;
         }

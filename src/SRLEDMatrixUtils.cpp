@@ -16,7 +16,7 @@
 //     You should have received a copy of the GNU General Public License
 //     along with Shift Register LED Matrix Project.  If not, see <http://www.gnu.org/licenses/>.
 #include <Arduino.h>
-#if defined ( ESP8266 )
+#if defined( ESP8266 ) || defined( ESP32 )
   #include <pgmspace.h>
 #else
   #include <avr/pgmspace.h>
