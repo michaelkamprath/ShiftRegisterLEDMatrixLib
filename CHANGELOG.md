@@ -7,11 +7,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [1.1.1] - 2018-12-24
+
 ### Changed
 - Updated the Conway Game of Life example to auto-reset itself it the game evolves to a static, unchanging state.
 
 ### Added
 - Basic capability to specify the endian-ness of the column layout for a matrix. While column 0 is meant to indicate the left most column, the hardware layout of the matrix might not make the left most column the MSB in the shift register chain. This might happen if you make a mistake in your hardware (oops!). By setting the column endian value of the matrix,the high level software can still reference column 0 to mean the left most column, and the bit layout sent the shift registers will be adjusted according to where column 0 physically is in the hardware.
+- Added support for ESP32 microcontrollers. 
 
 ## [1.1.0] - 2018-02-09
 
@@ -39,6 +42,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## 1.0.0 - 2017-12-24
 Initial release
 
-[Unreleased]: https://github.com/michaelkamprath/ShiftRegisterLEDMatrixLib/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/michaelkamprath/ShiftRegisterLEDMatrixLib/compare/v1.1.1...HEAD
+[1.1.1]: https://github.com/michaelkamprath/ShiftRegisterLEDMatrixLib/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/michaelkamprath/ShiftRegisterLEDMatrixLib/compare/v1.0.1...v1.1.0
 [1.0.1]: https://github.com/michaelkamprath/ShiftRegisterLEDMatrixLib/compare/v1.0.0...v1.0.1

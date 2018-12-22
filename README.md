@@ -141,23 +141,23 @@ Using the Teensy 3.x as the driving micro-controller for the RGB LED Matrix is a
 
 To use this Teensy 3.x driver in the Arduino IDE, add the folder `RGB_LED_Matrix_Lib` as a library as described in [this document](https://www.arduino.cc/en/Guide/Libraries). Also, ensure that the Arduino IDE has been updated to support Teensy development ([see here for more information](https://www.pjrc.com/teensy/td_download.html)).
 
-### ESP8266 Boards
-ESP8266 boards are generally 3.3v logic level boards. 
+### ESP8266 and ESP32 Boards
+ESP8266 and ESP32 boards are generally 3.3v logic level boards. The default wiring for connecting the RGB LED Matrix to an ESP8266 or ESP32 board is:
 
-| LED Matrix Connection | Wemos D1 Mini | NodeMCU | Notes |
+| LED Matrix Connection | Wemos D1 Mini | NodeMCU | Wemos LOLIN32 Lite | Notes |
 |:-:|:-:|:--:|---|
-| **+5V** | 5V | Vin | |
-| **GND** | GND | GND | |
-| **SER** | D7 | D7 | SPI MOSI Pin |
-| **CLK** | D5 | D5 | SPI SCK Pin |
-| **LATCH** | D8  | D8 | SS pin | 
+| **+5V** | 5V | Vin | Separate 5V supply  | |
+| **GND** | GND | GND | GND, connect to 5V supply GND | |
+| **SER** | D7 | D7 | 23 | SPI MOSI Pin |
+| **CLK** | D5 | D5 | 18 | SPI SCK Pin |
+| **LATCH** | D8  | D8 | 5 | SS pin | 
 
 ### 3.3v Logic Level
 To use the RGB LED Matrices designed in this project with micro-controller boards that use a 3.3V logic level, you must convert the 3.3V logic signals to 5V levels to work with the shift registers. You can easily use a 74HCT125 buffer/line driver chip to do this transformation. For example, you can wire a Teensy 3.6, which is a 3.3v device, to a 74HCT125 chip in the manner shown in the diagram below to get all power and signal lines required to drive the RGB LED Matrix while the Teensy is connected to USB power:
 
 ![Teensy 3.6 Circuit to Drive RGB LED Matrix](extras/teensy36_5V_logic_circuit.png)
 
-An alternative to using this 74HCT125 circuit would be to replace the 74HC595 shift registers on the RGB LED Matrix with the 74HCT595 variety. However, this might be more expensive.
+An alternative to using this 74HCT125 circuit would be to replace the 74HC595 shift registers on the RGB LED Matrix with the 74HCT595 variety. However, this might be more expensive. Precise instructions on how to use a 74HCT595 is left as an exercise to the hacker.
 
 
 ## RGB LEB Matrices
@@ -168,6 +168,7 @@ This driver can support either 6-bit or 12-bit color. By default, this library u
 * Arduino Mega 2560
 * Wemos D1 mini Lite
 * NodeMCU
+* Wemos LOLIN32
 * Arduino Zero
 * Arduino Due
 
