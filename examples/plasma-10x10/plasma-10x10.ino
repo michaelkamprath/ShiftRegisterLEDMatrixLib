@@ -87,11 +87,11 @@ unsigned long loopCounter = 0;
 unsigned long timeCount = 0;
 bool timeIncrement = true;
 
-#if (defined(__arm__)&& defined(TEENSYDUINO))
-// slow things down for the Teensy
+#if (defined(__arm__)&& defined(TEENSYDUINO))||(defined( ESP32 ))
+// slow things down for the Teensy and other fast microcontrollers
 const unsigned long loopMod = 20000;
 #else
-const unsigned long loopMod = 50;
+const unsigned long loopMod = 500;
 #endif
 
 void loop() {
