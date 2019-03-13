@@ -144,13 +144,13 @@ To use this Teensy 3.x driver in the Arduino IDE, add the folder `RGB_LED_Matrix
 ### ESP8266 and ESP32 Boards
 ESP8266 and ESP32 boards are generally 3.3v logic level boards. The default wiring for connecting the RGB LED Matrix to an ESP8266 or ESP32 board is:
 
-| LED Matrix Connection | Wemos D1 Mini | NodeMCU | Wemos LOLIN32 Lite | Notes |
-|:-:|:-:|:-:|---|---|
-| **+5V** | 5V | Vin | Separate 5V supply  | |
-| **GND** | GND | GND | GND, connect to 5V supply GND | |
-| **SER** | D7 | D7 | 23 | SPI MOSI Pin |
-| **CLK** | D5 | D5 | 18 | SPI SCK Pin |
-| **LATCH** | D8  | D8 | 5 | SS pin | 
+| LED Matrix Connection | Wemos D1 Mini | NodeMCU | Wemos LOLIN32 Lite | NodeMCU ESP-32S | Notes |
+|:-:|:-:|:-:|:-:|:-:|---|
+| **+5V** | 5V | Vin | Separate 5V supply  | 5V | |
+| **GND** | GND | GND | GND, connect to 5V supply GND | GND | |
+| **SER** | D7 | D7 | 23 | D23 | SPI MOSI / HMOSI |
+| **CLK** | D5 | D5 | 18 | D18 | SPI SCK / HSCLK |
+| **LATCH** | D8  | D8 | 5 | D5 | SS / HCS | 
 
 ### 3.3v Logic Level
 To use the RGB LED Matrices designed in this project with micro-controller boards that use a 3.3V logic level, you must convert the 3.3V logic signals to 5V levels to work with the shift registers. You can easily use a 74HCT125 buffer/line driver chip to do this transformation. For example, you can wire a Teensy 3.6, which is a 3.3v device, to a 74HCT125 chip in the manner shown in the diagram below to get all power and signal lines required to drive the RGB LED Matrix while the Teensy is connected to USB power:
