@@ -198,9 +198,13 @@ Note that by setting up the circuit this way, the columns in each row group are 
 
 ![Example 8 row by 4 column matrix](extras/common-power-row-groups-bit-order.png)
 
-The common power row groups can be virtually rearrange as follows to find the equivalently wired horizontally laid out matrix:
+Note that left most column of Group B is the most significant bit, and the first row's control bit is the least significant bit. With this sort of bit ordering, the common power row groups can be virtually rearrange as follows to find the equivalently wired horizontally laid out matrix:
 
 ![Example 8 row by 4 column matrix](extras/common-power-row-groups-rearranged.png)
+
+In this way, a 4 column by 8 row matrix with common power row groups using a scan rate of 4:1 is electrically no different from an 8 column by 4 row matrix that does not use common power row groups. However, there is one important consideration here. The column bit ordering within a row group block can be any of the bit orderings that matrices without row groups could use with one nuance: the bit ordering within a row group block is independent from the other row group blocks. If, for example, matrix uses a `RGB_GROUPS` column bit ordering, the columns of one row group block would be sequenced separately from the other blocks.  To illustrate this, this is how the column control bits would be ordered if our example matrix was using `RGB_GROUPS` for the column bit ordering:
+
+![Example 8 row by 4 column matrix](extras/common-power-row-groups-rearranged-with-column-bits.pmg_
 
 When using this library in conjunction with a matrix that is set up to use common power row groups, you declare your matrix size according to how the image is laid out out. In this example's case, that would be the 8 row by 4 column arrangement. This library will take care of rearranging the bits to the equivalent horizontally laid out matrix.
 
