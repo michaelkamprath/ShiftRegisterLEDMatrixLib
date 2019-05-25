@@ -41,10 +41,10 @@ In this common anode set up, the rows would be "on" when the proper 74HC595 pin 
 
 Other similar designs can be used with this library. Common variations would be:
 
-1. Using a DM13A sink driver to drive the cathode columns. It is not recommended to us a DM13A to drive the rows for common cathode RGB LEDs due to high current needs to drive the multiple LEDs in a single row. Using DM13A chips for the columns are nice because you can forgo the current limiting resistor for each column and the DM13A does the job of limiting the current.
+1. Using a DM13A sink driver to drive the cathode columns. It is not recommended to use a DM13A to drive the rows for common cathode RGB LEDs due to high current needs to drive the multiple LEDs in a single row. Using DM13A chips for the columns is nice because you can forgo the current limiting resistor for each column and the DM13A does the job of limiting the current.
 2. Using common cathode RGB LEDs. In this case NPN transistors would be used to sink the current for a row, and columns are sourced with the current of the high state on a 74HC595 pin. 
-3. When using acommon anode RGB LEDs, you could use a source driver, such as a UDN2981, to drive a row. This would be turned on with a `high` state on the row's shift register pin.
-4. Rather than ordering the column biots as alternating through R, G, and B colors, each color can be grouped together. This is convenient when using manufactored LED matrix modules that group the pins by colors rather than by columns. See [Bit Layouts](#bit-layouts).
+3. When using a common anode RGB LEDs, you could use a source driver, such as a UDN2981, to drive a row. This would be turned on with a `high` state on the row's shift register pin.
+4. Rather than ordering the column bits as alternating through R, G, and B colors, each color can be grouped together. This is convenient when using manufactured LED matrix modules that group the pins by colors rather than by columns. See [Bit Layouts](#bit-layouts).
 
 ## Library Architecture
 This library has three general facets: image handling, matrix driver, and animation management.
@@ -182,3 +182,26 @@ The second supported bit layout groups all colors together in column order, then
 ![Default Bit Layout for RGB LED Matrix](extras/rgb-led-matrix-bit-layout-color-groups.png)
 
 When constructing the the `RGBLEDMatrix` object, the third argument is optional and it take a `RGBLEDBitLayout` enum value indicating which bit layout you are using. This argument defaults to `INDIVIDUAL_LEDS`, which is the first layout described above. The other potential value is `RGB_GROUPS`.
+
+#### Common Power Row Groups
+As matrices get large, it becomes more difficult to successfully scan through all the rows within the time needed to create gray scales and not create perceptible blinking. One way to resolve this problem is to design the large matrix with common power row groups. Common power rows groups are a circuit design mechanism for implementing [scan rates](https://www.sparkfun.com/sparkx/blog/2650) in the LED matrix.  What common power row groups does is effectively deconstruct a large LED matrix into smaller sub-matrices that all share the same set of rows, and thus the same set of row power control bits and switching transistors. The advantage of this design is that scan rate is implemented in hardware and as a result simplifies that hardware by reducing the row power transistors that are needed. The challenge with this approach is transforming the matrix image's logical layout (e.g., 16x16) to its actual circuit layout (e.g. 32x8). This transformation is handled in software by this library. Another challenge is that the row power transition would need to handle higher levels of current than matrices that don't use row groups. Be sure to select the row transistor appropriately. 
+
+To illustrate a common power row group works, consider this following 8 row by 4 columns matrix:
+
+![Example 8 row by 4 column matrix](extras/common-power-row-groups.png)
+
+Using an example scan rate of 4:1, that is, every 4th row is powered at any given time, the 8 rows of the matrix can be groups into two 4-row groups. Then, from a circuit perspective, the corresponding rows in each row group would be powered by the same transistor (BJT or MOSFET), like this:
+
+![Example 8 row by 4 column matrix](extras/common-power-row-groups-with-transistors.png)
+
+Note that by setting up the circuit this way, the columns in each row group are now independent columns. So effectively, the example 4-column matrix has an actual circuit with 8 columns. When wiring up the shift registers for these row groups, the columns of the bottom most row group should be the most significant bits of the shift register layout. So the bit ordering of our example 4 column by 8 row matrix with common power row groups using a scan rate of 4:1 would look something like this:
+
+![Example 8 row by 4 column matrix](extras/common-power-row-groups-bit-order.png)
+
+The common power row groups can be virtually rearrange as follows to find the equivalently wired horizontally laid out matrix:
+
+![Example 8 row by 4 column matrix](extras/common-power-row-groups-rearranged.png)
+
+When using this library in conjunction with a matrix that is set up to use common power row groups, you declare your matrix size according to how the image is laid out out. In this example's case, that would be the 8 row by 4 column arrangement. This library will take care of rearranging the bits to the equivalent horizontally laid out matrix.
+
+
