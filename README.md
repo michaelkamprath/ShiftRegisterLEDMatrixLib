@@ -5,7 +5,7 @@ This library provides a generalized API to create and drive an image on LED matr
 This driver uses SPI to transfer bits to the shift registers and uses one timer interrupt.
 
 Find at more about this library and hardware that it is designed for at:
-[www.kamprath.net/led-matrix/](http://www.kamprath.net/led-matrix/)
+[www.kamprath.net/hacks/led-matrix/](https://kamprath.net/hacks/led-matrix/)
 
 # Design and Usage
 ## Hardware Design
@@ -88,7 +88,7 @@ Bits   0   4
 
 An `RGBImage` can be initialized with an array of `RGBColorType` values sized to be the image's rows\*columns. 
 ### Matrix Driver
-The matrix driver is an object that manages rendering an image on an LED matrix. It does this using a double buffer approach. The first buffer is the image that is desired to be rendered on the LED matrix. The second buffer is the bit sequences that needs to be sent to the LED matrix's shift registers to render the image. The matrix drive object uses SPI to send the bits to the shift register. Since the rows on the matrix are multiplexed when rendering, the matrix driver object will use a system clock interrupt to ensure the multiplexing is consistently timed. 
+The matrix driver is an object that manages rendering an image on an LED matrix. It does this using a double buffer approach. The first buffer is the image that is desired to be rendered on the LED matrix. The second buffer is the bit sequences that needs to be sent to the LED matrix's shift registers to render the image. The matrix driver object uses SPI to send the bits to the shift register. Since the rows on the matrix are multiplexed when rendering, the matrix driver object will use a system clock interrupt to ensure the multiplexing is consistently timed. 
 
 When constructing a matrix driver, you need to tell it a few details:
 * The matrix's size in rows and columns
@@ -190,11 +190,11 @@ To illustrate a common power row group works, consider this following 8 row by 4
 
 ![Example 8 row by 4 column matrix](extras/common-power-row-groups.png)
 
-Using an example scan rate of 4:1, that is, every 4th row is powered at any given time, the 8 rows of the matrix can be groups into two 4-row groups. Then, from a circuit perspective, the corresponding rows in each row group would be powered by the same transistor (BJT or MOSFET), like this:
+Using an example scan rate of 1:4, that is, every 4th row is powered at any given time, the 8 rows of the matrix can be groups into two 4-row groups. Then, from a circuit perspective, the corresponding rows in each row group would be powered by the same transistor (BJT or MOSFET), like this:
 
 ![Example 8 row by 4 column matrix](extras/common-power-row-groups-with-transistors.png)
 
-Note that by setting up the circuit this way, the columns in each row group are now independent columns. So effectively, the example 4-column matrix has an actual circuit with 8 columns. When wiring up the shift registers for these row groups, the columns of the bottom most row group should be the most significant bits of the shift register layout. So the bit ordering of our example 4 column by 8 row matrix with common power row groups using a scan rate of 4:1 would look something like this:
+Note that by setting up the circuit this way, the columns in each row group are now independent columns. So effectively, the example 4-column matrix has an actual circuit with 8 columns. When wiring up the shift registers for these row groups, the columns of the bottom most row group should be the most significant bits of the shift register layout. So the bit ordering of our example 4 column by 8 row matrix with common power row groups using a scan rate of 1:4 would look something like this:
 
 ![Example 8 row by 4 column matrix](extras/common-power-row-groups-bit-order.png)
 
@@ -202,7 +202,7 @@ Note that left most column of Group B is the most significant bit, and the first
 
 ![Example 8 row by 4 column matrix](extras/common-power-row-groups-rearranged.png)
 
-In this way, a 4 column by 8 row matrix with common power row groups using a scan rate of 4:1 is electrically no different from an 8 column by 4 row matrix that does not use common power row groups. However, there is one important consideration here. The column bit ordering within a row group block can be any of the bit orderings that matrices without row groups could use with one nuance: the bit ordering within a row group block is independent from the other row group blocks. If, for example, matrix uses a `RGB_GROUPS` column bit ordering, the columns of one row group block would be sequenced separately from the other blocks.  To illustrate this, this is how the column control bits would be ordered if our example matrix was using `RGB_GROUPS` for the column bit ordering:
+In this way, a 4 column by 8 row matrix with common power row groups using a scan rate of 1:4 is electrically no different from an 8 column by 4 row matrix that does not use common power row groups. However, there is one important consideration here. The column bit ordering within a row group block can be any of the bit orderings that matrices without row groups could use with one nuance: the bit ordering within a row group block is independent from the other row group blocks. If, for example, matrix uses a `RGB_GROUPS` column bit ordering, the columns of one row group block would be sequenced separately from the other blocks.  To illustrate this, this is how the column control bits would be ordered if our example matrix was using `RGB_GROUPS` for the column bit ordering:
 
 ![Example 8 row by 4 column matrix](extras/common-power-row-groups-rearranged-with-column-bits.png)
 

@@ -36,7 +36,22 @@ public:
 		// All elements of the same color are consecutive in column order. The color
 		// are order Red, Blue, Green
 		// For a 4-column matrix, each row is ordered: RRRR-BBBB-GGGG
-		RBG_GROUPS
+		RBG_GROUPS,
+		
+		// Common Power Row Groups - Size 8 - With RGB column grouping
+		// Row groups sharing common power source. Rows are split in groups of 8 contiguous rows,
+		// and each row shares the power source with the corresponding rows in the other 
+		// groups. For example, in a matrix with 16 rows, there are be two groups of 8 rows,
+		// with group A having rows 1-8, and group B having rows 9-16. Rows 1 and 9 share
+		// the same power source, rows 2 and 10 the same, and so on. 
+		//
+		// Columns are group by color in consecutive column order, as with RGB_GROUPS. However,
+		// the columns in each row group are independently powered. The control bits for
+		// higher row groups are more significant in the bit sequence. So in an 16x16 matrix,
+		// for example, the column bit sequence would be R16b-G16b-B16b-R16a-G16a-B16a,
+		// where R16a is the red control bits for columns 1-16 in row group A,  and R16b
+		// are red columns 1-16 in row group B. Similarly for green and blue. 
+		RGB_GROUPS_CPRG8
 			
 	} RGBLEDBitLayout;
 
@@ -45,12 +60,24 @@ private:
 	MutableRGBImage *_screen_data;
 	
 
-	void setRowBitsForFrame(
-			int row,
+	void setControlRowBitsForFrame(
+			unsigned int controlRow,
+			size_t frame,
+			LEDMatrixBits& frameBits,
+			const MutableRGBImage& image 
+		) const ;
+	bool setColumnBitsForControlRowAndFrame(
+			unsigned int controlRow,
+			unsigned int rowGroup,
+			size_t redBitOffset,
+			size_t greenBitOffset,
+			size_t blueBitOffset,
+			size_t columnBitIdxIncrement,
 			size_t frame,
 			LEDMatrixBits& frameBits,
 			const MutableRGBImage& image
-		) const; 
+		) const;
+	
 	size_t maxFrameCountForValue(RGBColorType value) const;
 protected:
 	virtual void generateFrameBits(LEDMatrixBits& frameBits, size_t frame ) const;

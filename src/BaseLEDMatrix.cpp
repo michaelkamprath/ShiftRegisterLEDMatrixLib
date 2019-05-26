@@ -26,6 +26,8 @@ static BaseLEDMatrix* gSingleton = NULL;
 BaseLEDMatrix::BaseLEDMatrix( 
 	unsigned int rows,
 	unsigned int columns,
+	unsigned int controlRows,
+	unsigned int controlColumns,
 	unsigned int columnBitWidth,
 	unsigned int pwmCycleScanCount,
 	bool columnControlBitOn,
@@ -37,6 +39,9 @@ BaseLEDMatrix::BaseLEDMatrix(
 ) :		TimerAction(UPDATE_INTERVAL),
 		_rows(rows),
 		_columns(columns),
+		_controlRows(controlRows),
+		_controlColumns(controlColumns),
+		_rowGroups(columns/controlColumns),
 		_columnBitWidth(columnBitWidth),
 		_pwmCycleScanCount(pwmCycleScanCount),
 		_interFrameOffTimeMicros(interFrameOffTimeMicros),
@@ -60,8 +65,8 @@ void BaseLEDMatrix::setup() {
 	if (_curScreenBitFrames == NULL) {
 		for (unsigned int i = 0; i < 2*_pwmCycleScanCount; i++) {
 			_screenBitFrames[i] = new LEDMatrixBits(
-										this->rows(),
-										this->columns()*_columnBitWidth,
+										this->controlRows(),
+										this->controlColumns()*_columnBitWidth,
 										_columnControlBitOn,
 										_rowControlBitOn
 									);
@@ -71,8 +76,8 @@ void BaseLEDMatrix::setup() {
 
 		if (_interFrameOffTimeMicros > 0) {
 			_allOffBits = new LEDMatrixBits(
-											this->rows(),
-											this->columns()*_columnBitWidth,
+											this->controlRows(),
+											this->controlColumns()*_columnBitWidth,
 											_columnControlBitOn,
 											_rowControlBitOn
 										);
@@ -129,17 +134,17 @@ ICACHE_RAM_ATTR void BaseLEDMatrix::shiftOutAllOff(void) {
 	_allOffBits->transmitRow(_scanRow, _spi);
 	_interFrameTransmitOffToggle = false;
 }
-ICACHE_RAM_ATTR void BaseLEDMatrix::shiftOutCurrentRow( void ) {
-	this->shiftOutRow( _scanRow, _scanPass );	
+ICACHE_RAM_ATTR void BaseLEDMatrix::shiftOutCurrentControlRow( void ) {
+	this->shiftOutControlRow( _scanRow, _scanPass );	
 }
 
-ICACHE_RAM_ATTR void BaseLEDMatrix::shiftOutRow( int row, int scanPass ) {
+ICACHE_RAM_ATTR void BaseLEDMatrix::shiftOutControlRow( int row, int scanPass ) {
 	_curScreenBitFrames[scanPass-1]->transmitRow(row, _spi);
 }
 
 ICACHE_RAM_ATTR void BaseLEDMatrix::incrementScanRow( void ) {	
 	_scanRow++;
-	if (_scanRow >= this->rows()) {
+	if (_scanRow >= this->controlRows()) {
 		_scanRow = 0;
 		_scanPass++;
 		if (_scanPass > _pwmCycleScanCount) {
@@ -195,7 +200,7 @@ void time3InteruptHandler( void ) {
 		Timer3.setPeriod(gSingleton->rowOffTimerInterval());
 		Timer3.start(); 
 	} else {
-		gSingleton->shiftOutCurrentRow();
+		gSingleton->shiftOutCurrentControlRow();
 		// reload the timer
 		Timer3.setPeriod(gSingleton->nextRowScanTimerInterval());
 		Timer3.start(); 
@@ -236,7 +241,7 @@ void IRAM_ATTR onTimer() {
 	if (gSingleton->doInterFrameTransmitOff()) {
 		gSingleton->shiftOutAllOff();
 	} else {
-		gSingleton->shiftOutCurrentRow();
+		gSingleton->shiftOutCurrentControlRow();
 				
 		// update scan row. Done outside of interrupt stoppage since execution time can
 		// be inconsistent, which would lead to vary brightness in rows.
@@ -287,7 +292,7 @@ inline void timer0InteruptHandler (void){
 		timer0_write(ESP.getCycleCount() + 84*gSingleton->rowOffTimerInterval());		
 		interrupts();
 	} else {
-		gSingleton->shiftOutCurrentRow();
+		gSingleton->shiftOutCurrentControlRow();
 		
 		// reload the timer
 		timer0_write(ESP.getCycleCount() + 84*gSingleton->nextRowScanTimerInterval());
@@ -384,7 +389,7 @@ void TC7_Handler() {
 		NVIC_EnableIRQ(TC7_IRQn);
 		TC_Start(TC2, 1);
 	} else {
-		gSingleton->shiftOutCurrentRow();
+		gSingleton->shiftOutCurrentControlRow();
 
 		TC_SetRC(TC2, 1, gSingleton->nextRowScanTimerInterval()); 
 
@@ -470,7 +475,7 @@ void TC3_Handler()                              // Interrupt Service Routine (IS
 		while (TC->STATUS.bit.SYNCBUSY == 1); // wait for sync 
 	} else {
 		// shift out next row
-		gSingleton->shiftOutCurrentRow();
+		gSingleton->shiftOutCurrentControlRow();
 		// reload the timer
 		TC->CC[0].reg = gSingleton->nextRowScanTimerInterval();
 		while (TC->STATUS.bit.SYNCBUSY == 1); // wait for sync 
@@ -544,7 +549,7 @@ ISR(TIMER2_OVF_vect) {
 		interrupts();
 	} else {
 		// shift out next row
-		gSingleton->shiftOutCurrentRow();
+		gSingleton->shiftOutCurrentControlRow();
 	
 		// reload the timer
 		TCNT2 = gSingleton->nextRowScanTimerInterval();	

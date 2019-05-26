@@ -45,6 +45,9 @@ public:
 private:
 	unsigned int _rows;
 	unsigned int _columns;
+	unsigned int _controlRows;
+	unsigned int _controlColumns;
+	unsigned int _rowGroups;
 	unsigned int _columnBitWidth;
 	unsigned int _pwmCycleScanCount;
 	unsigned int _interFrameOffTimeMicros;
@@ -67,9 +70,13 @@ private:
 
 	SPIConnection	_spi;
 
-	void shiftOutRow( int row, int scanPass );
+	void shiftOutControlRow( int row, int scanPass );
 	
 protected:
+	unsigned int controlRows() const          			{ return _controlRows; }
+	unsigned int controlColumns() const       			{ return _controlColumns; }
+	unsigned int rowGroups() const						{ return _rowGroups; }
+	unsigned int columnBitWidth() const					{ return _columnBitWidth; }
 	virtual void action();
 	
 	virtual void generateFrameBits(LEDMatrixBits& frameBits, size_t frame ) const = 0;
@@ -82,9 +89,11 @@ public:
 	/**
 	 *	Constructs the base LED matrix controller object.
 	 *
-	 *	@param rows the number of  rows in the LED matrix. Rows are expected to have
-	 *	            shared power to the LEDs.
+	 *	@param rows the number of  rows in the LED matrix.
 	 *	@param columns the number of columns in the LED matrix.
+	 *	@param controlRows the number of powered rows in the LED matrix. Control rows are 
+	 *	            expected to have shared power to the LEDs.
+	 *	@param controlColumns the number of control columns in the LED matrix.
 	 *	@param columnBitWidth the number of bits needed to represent one physical LED in 
 	 *              a column. E.g., and RGB LED needs 3 bits.
 	 *	@param pwmCycleScanCount the number of row scans needed for the PWM cycle of the matrix.
@@ -107,6 +116,8 @@ public:
 	BaseLEDMatrix(
 			unsigned int rows,
 			unsigned int columns,
+			unsigned int controlRows,
+			unsigned int controlColumns,
 			unsigned int columnBitWidth,
 			unsigned int pwmCycleScanCount,
 			bool columnControlBitOn = LOW,
@@ -182,7 +193,7 @@ public:
 	 * the timer interrupt can access them.
 	 */
 	bool doInterFrameTransmitOff( void ) const;
-	void shiftOutCurrentRow(void);
+	void shiftOutCurrentControlRow(void);
 	void shiftOutAllOff(void);
 	unsigned int nextRowScanTimerInterval(void) const;
 	unsigned int rowOffTimerInterval(void) const;
