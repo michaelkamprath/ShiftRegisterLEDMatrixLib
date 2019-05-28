@@ -56,7 +56,8 @@ BaseLEDMatrix::BaseLEDMatrix(
 		_scanPass(1),
 		_scanRow(0),
 		_isDrawingCount(0),
-		_spi(slavePin, maxSPISpeed)
+		_spi(slavePin, maxSPISpeed),
+		_blankPin(-1)
 {
 
 }
@@ -156,6 +157,42 @@ ICACHE_RAM_ATTR void BaseLEDMatrix::incrementScanRow( void ) {
 		_interFrameTransmitOffToggle = true;
 	}
 }
+
+ICACHE_RAM_ATTR void BaseLEDMatrix::enableBlanking(int blankPin ) { 
+	_blankPin = blankPin;
+	_blankLevel = 0;
+	pinMode (_blankPin, OUTPUT);
+	digitalWrite (_blankPin, LOW);
+}
+
+ICACHE_RAM_ATTR void BaseLEDMatrix::disableBlanking( void )	{
+	if ( _blankPin >= 0 ) {
+		digitalWrite (_blankPin, LOW);
+	}
+	_blankPin = -1;
+	_blankLevel = 0;
+}
+
+ICACHE_RAM_ATTR void BaseLEDMatrix::blank(void) {
+	if ( _blankPin >= 0 ) {
+		if ( _blankLevel == 0 ) {
+			digitalWrite (_blankPin, HIGH);
+		}
+	
+		_blankLevel++;
+	}
+}
+
+ICACHE_RAM_ATTR void BaseLEDMatrix::unblank(void) {
+	if ((_blankPin >= 0) && (_blankLevel > 0)) {
+		_blankLevel--;
+		
+		if (_blankLevel == 0) {
+			digitalWrite (_blankPin, LOW);
+		}
+	}
+}
+
 
 // Number of 5 microsecond units
 ICACHE_RAM_ATTR unsigned int BaseLEDMatrix::baseIntervalMultiplier( size_t frame ) const {

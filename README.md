@@ -145,7 +145,7 @@ To use this Teensy 3.x driver in the Arduino IDE, add the folder `RGB_LED_Matrix
 ESP8266 and ESP32 boards are generally 3.3v logic level boards. The default wiring for connecting the RGB LED Matrix to an ESP8266 or ESP32 board is:
 
 | LED Matrix Connection | Wemos D1 Mini | NodeMCU | Wemos LOLIN32 Lite | Notes |
-|:-:|:-:|:--:|---|
+|:-:|:-:|:--:|:--:|---|
 | **+5V** | 5V | Vin | Separate 5V supply  | |
 | **GND** | GND | GND | GND, connect to 5V supply GND | |
 | **SER** | D7 | D7 | 23 | SPI MOSI Pin |

@@ -52,6 +52,7 @@ private:
 	unsigned int _pwmCycleScanCount;
 	unsigned int _interFrameOffTimeMicros;
 	unsigned int _interFrameOffTimeInterval;
+	unsigned int _blankLevel;
 	DeviceBitEndian _bitEndian;
 	 
 	bool _columnControlBitOn;
@@ -69,7 +70,8 @@ private:
 	int _isDrawingCount;
 
 	SPIConnection	_spi;
-
+	int _blankPin;
+	
 	void shiftOutControlRow( int row, int scanPass );
 	
 protected:
@@ -142,6 +144,11 @@ public:
 	 * class implementation of setup() before doing their own setup work.
 	 */
 	virtual void setup();  
+
+	void enableBlanking(int blankPin = 9 );
+	void disableBlanking( void );
+	void blank(void);
+	void unblank(void);
 
 	/**
 	 * Increments the draw lock. While a matrix has a non-zero draw lock, any changes to 
