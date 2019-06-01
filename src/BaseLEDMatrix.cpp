@@ -41,7 +41,7 @@ BaseLEDMatrix::BaseLEDMatrix(
 		_columns(columns),
 		_controlRows(controlRows),
 		_controlColumns(controlColumns),
-		_rowGroups(columns/controlColumns),
+		_rowGroups(controlColumns/columns),
 		_columnBitWidth(columnBitWidth),
 		_pwmCycleScanCount(pwmCycleScanCount),
 		_interFrameOffTimeMicros(interFrameOffTimeMicros),
