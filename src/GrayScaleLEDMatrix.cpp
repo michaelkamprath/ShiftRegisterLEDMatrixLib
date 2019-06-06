@@ -31,6 +31,8 @@ GrayScaleLEDMatrix::GrayScaleLEDMatrix(
 ) :		BaseLEDMatrix(
 				rows,
 				columns,
+				rows,
+				columns,
 				1,
 				3,
 				columnControlBitOn,

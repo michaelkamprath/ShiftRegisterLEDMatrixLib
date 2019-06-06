@@ -22,12 +22,16 @@
 #ifndef TWELVE_BIT_COLOR
 #define TWELVE_BIT_COLOR (defined(__arm__)&& defined(TEENSYDUINO)) \
 							||defined(__AVR_ATmega2560__) \
-							||defined(__AVR_ATmega1284__) \
-							||defined(__AVR_ATmega1284P__) \
-							||defined( ESP8266 ) \
 							||defined( ESP32 ) \
 							||defined(ARDUINO_SAMD_ZERO) \
-							||defined(_SAM3XA_)
+							||defined(_SAM3XA_) 
+							
+// You may wish to add the following platforms to the set that support 12-bit color
+//
+//							||defined( ESP8266 ) \
+// 							||defined(__AVR_ATmega1284__) \
+// 							||defined(__AVR_ATmega1284P__) 
+
 #endif
 
 #if TWELVE_BIT_COLOR

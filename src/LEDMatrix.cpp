@@ -31,6 +31,8 @@ LEDMatrix::LEDMatrix(
 ) :		BaseLEDMatrix(
 				rows,
 				columns,
+				rows,
+				columns,
 				1,
 				LED_MATRIX_MAX_SCAN_PASS_COUNT,
 				columnControlBitOn,

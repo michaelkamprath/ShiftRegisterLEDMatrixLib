@@ -29,6 +29,12 @@
 
 const unsigned long UPDATE_INTERVAL = 2000;
 
+#define CONTROL_ROWS( rows, columns, layout)	\
+	(layout == RGBLEDMatrix::RGB_GROUPS_CPRG8) ? 8 : rows
+
+#define CONTROL_COLUMNS( rows, columns, layout)	\
+	(layout == RGBLEDMatrix::RGB_GROUPS_CPRG8) ? (rows/8)*columns : columns
+
 RGBLEDMatrix::RGBLEDMatrix( 
 	int rows,
 	int columns,
@@ -41,6 +47,8 @@ RGBLEDMatrix::RGBLEDMatrix(
 ) :		BaseLEDMatrix(
 				rows,
 				columns,
+				CONTROL_ROWS( rows, columns, bitLayout),
+				CONTROL_COLUMNS( rows, columns, bitLayout),
 				3,
 				MAX_SCAN_PASS_COUNT,
 				columnControlBitOn,
@@ -74,12 +82,6 @@ bool RGBLEDMatrix::matrixNeedsUpdate(void) const {
 }
 void RGBLEDMatrix::matrixHasBeenUpdated(void) {
 	this->image().setNotDirty();
-}
-
-void RGBLEDMatrix::generateFrameBits(LEDMatrixBits& frameBits, size_t frame ) const {
-	for (unsigned int row = 0; row < this->rows(); row++) {
-		this->setRowBitsForFrame(row, frame, frameBits, *_screen_data);
-	}
 }
 
 size_t RGBLEDMatrix::maxFrameCountForValue(RGBColorType value) const {
@@ -193,20 +195,25 @@ size_t RGBLEDMatrix::maxFrameCountForValue(RGBColorType value) const {
 #endif
 }
 
-void RGBLEDMatrix::setRowBitsForFrame(
-	int row,
+void RGBLEDMatrix::generateFrameBits(LEDMatrixBits& frameBits, size_t frame ) const {
+	for (unsigned int row = 0; row < this->controlRows(); row++) {
+		this->setControlRowBitsForFrame(row, frame, frameBits, *_screen_data);
+	}
+}
+
+void RGBLEDMatrix::setControlRowBitsForFrame(
+	unsigned int controlRow,
 	size_t frame,
 	LEDMatrixBits& frameBits,
 	const MutableRGBImage& image ) const 
 {	
-	if (!frameBits.isRowMemoized(row)) {
+	if (!frameBits.isRowMemoized(controlRow)) {
 		bool rowNeedsPower = false;
-		size_t colBitIdx = 0;
 		size_t redBitOffset = 0;
 		size_t greenBitOffset = 1;
 		size_t blueBitOffset = 2;
 		size_t columnBitIdxIncrement = 3;
-		if (_bitLayout == RGB_GROUPS) {
+		if (_bitLayout == RGB_GROUPS || _bitLayout == RGB_GROUPS_CPRG8) {
 			redBitOffset = 0;
 			greenBitOffset = this->columns();
 			blueBitOffset = 2*this->columns();
@@ -217,53 +224,83 @@ void RGBLEDMatrix::setRowBitsForFrame(
 			blueBitOffset = this->columns();
 			columnBitIdxIncrement = 1;
 		}
-		for (unsigned int col = 0; col < this->columns(); col++) {
-			unsigned int endianCol = col;
-			
-			if (this->bitEndian() == LED_LITTLE_ENDIAN_8 ) {
-				// first get the column "byte"
-				unsigned int colByte = col/8;
-
-				// now column's "but" in the byte
-				unsigned int colBit = col%8;
-				
-				// calculate new column location by on "byte"
-				
-				endianCol = this->columns() - (colByte+1)*8 + colBit;
-			}
-			
 		
-			RGBColorType rgbValue = image.pixel(row, endianCol);
-			// a form of Binary Code Modulation is used to control
-			// the LED intensity at variou levels.
-		
-			// red
-			RGBColorType redValue = rgbValue & RED_MASK;
-			if (redValue && frame <= RGBLEDMatrix::maxFrameCountForValue(redValue) ) {
-				frameBits.setColumnControlBit(row,colBitIdx+redBitOffset,true);
-				rowNeedsPower = true;
-			}
-			
-			// green
-			RGBColorType greenValue = rgbValue & GREEN_MASK;
-			if (greenValue && frame <= RGBLEDMatrix::maxFrameCountForValue(greenValue) ) {
-				frameBits.setColumnControlBit(row,colBitIdx+greenBitOffset,true);
-				rowNeedsPower = true;
-			}
-					
-			// blue
-			RGBColorType blueValue = (rgbValue & BLUE_MASK);
-			if (blueValue && frame <= RGBLEDMatrix::maxFrameCountForValue(blueValue) ) {
-				frameBits.setColumnControlBit(row,colBitIdx+blueBitOffset,true);
-				rowNeedsPower = true;
-			}
-			colBitIdx += columnBitIdxIncrement;
-			
+		for (unsigned int rowGroup = 0; rowGroup < this->rowGroups(); rowGroup++) {
+			rowNeedsPower |= this->setColumnBitsForControlRowAndFrame(
+				controlRow,
+				rowGroup,
+				redBitOffset,
+				greenBitOffset,
+				blueBitOffset,
+				columnBitIdxIncrement,
+				frame,
+				frameBits,
+				image
+			);
 		}		
-		frameBits.setRowControlBit(row,rowNeedsPower);
+		frameBits.setRowControlBit(controlRow,rowNeedsPower);
 	} 
 }
 
+bool RGBLEDMatrix::setColumnBitsForControlRowAndFrame(
+	unsigned int controlRow,
+	unsigned int rowGroup,
+	size_t redBitOffset,
+	size_t greenBitOffset,
+	size_t blueBitOffset,
+	size_t columnBitIdxIncrement,
+	size_t frame,
+	LEDMatrixBits& frameBits,
+	const MutableRGBImage& image ) const 
+{
+	bool rowNeedsPower = false;	
+	size_t colBitIdx = rowGroup*this->columns()*this->columnBitWidth();
+	unsigned int imageRow = (this->rowGroups() - 1 - rowGroup)*this->controlRows() + controlRow;
+
+	for (unsigned int col = 0; col < this->columns(); col++) {
+		unsigned int endianCol = col;
+		
+		if (this->bitEndian() == LED_LITTLE_ENDIAN_8 ) {
+			// first get the column "byte"
+			unsigned int colByte = col/8;
+
+			// now column's "but" in the byte
+			unsigned int colBit = col%8;
+			
+			// calculate new column location by on "byte"
+			
+			endianCol = this->columns() - (colByte+1)*8 + colBit;
+		}
+		
+		RGBColorType rgbValue = image.pixel(imageRow, endianCol);
+		// a form of Binary Code Modulation is used to control
+		// the LED intensity at variou levels.
+	
+		// red
+		RGBColorType redValue = rgbValue & RED_MASK;
+		if (redValue && frame <= RGBLEDMatrix::maxFrameCountForValue(redValue) ) {
+			frameBits.setColumnControlBit(controlRow,colBitIdx+redBitOffset,true);
+			rowNeedsPower = true;
+		}
+		
+		// green
+		RGBColorType greenValue = rgbValue & GREEN_MASK;
+		if (greenValue && frame <= RGBLEDMatrix::maxFrameCountForValue(greenValue) ) {
+			frameBits.setColumnControlBit(controlRow,colBitIdx+greenBitOffset,true);
+			rowNeedsPower = true;
+		}
+				
+		// blue
+		RGBColorType blueValue = (rgbValue & BLUE_MASK);
+		if (blueValue && frame <= RGBLEDMatrix::maxFrameCountForValue(blueValue) ) {
+			frameBits.setColumnControlBit(controlRow,colBitIdx+blueBitOffset,true);
+			rowNeedsPower = true;
+		}
+		colBitIdx += columnBitIdxIncrement;		
+	}
+	
+	return 	rowNeedsPower;
+}
 
 // Number of 5 microsecond units
 unsigned int RGBLEDMatrix::baseIntervalMultiplier( size_t frame ) const {
