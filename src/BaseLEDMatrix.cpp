@@ -232,12 +232,13 @@ void time3InteruptHandler( void ) {
 	
 	if (gSingleton->doInterFrameTransmitOff()) {
 		gSingleton->shiftOutAllOff();
-		
+
 		// reload the timer
 		Timer3.setPeriod(gSingleton->rowOffTimerInterval());
 		Timer3.start(); 
 	} else {
 		gSingleton->shiftOutCurrentControlRow();
+
 		// reload the timer
 		Timer3.setPeriod(gSingleton->nextRowScanTimerInterval());
 		Timer3.start(); 

@@ -6,12 +6,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 
 ## [Unreleased]
+## [1.2.0] - 2018-12-24
+
 ### Fixed
 - Correct the code for the 4x4 matrix example
 
+### Changed
+- Removed ESP8266 and 8 bit AVR microcontrollers for list officially supported for 12-bit color. This was done primarily due to realistic assessment of their computational speed. 
+
 ### Added
 - Support for the "Common Power Row Groups" matrix layout outs. This layout is intended for matrices with a large number of rows, too large to effectively doe a single pass scan. With this layout, rows are grouped together into row groups and corresponding rows between each group are powered together through the same switching transistor. For example, in a 16 row matrix that is split up into groups of 8, rows 1 and 9 are powered together, and so on. As a result of row groups each having a row powered simultaneously, the columns are independently controlled in each row group.  For now, the only layout supported with this scheme are ones with arow groups of size 8 and columns within each group use the RGB grouping bit layout. 
-- Support for sending a `blank` single to the shift registers either automatically in between row updates or on demand. 
+- Support for sending a `blank` single to the shift registers on demand. 
 
 ## [1.1.1] - 2018-12-24
 
@@ -48,7 +53,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## 1.0.0 - 2017-12-24
 Initial release
 
-[Unreleased]: https://github.com/michaelkamprath/ShiftRegisterLEDMatrixLib/compare/v1.1.1...HEAD
+[Unreleased]: https://github.com/michaelkamprath/ShiftRegisterLEDMatrixLib/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/michaelkamprath/ShiftRegisterLEDMatrixLib/compare/v1.1.1...v1.2.0
 [1.1.1]: https://github.com/michaelkamprath/ShiftRegisterLEDMatrixLib/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/michaelkamprath/ShiftRegisterLEDMatrixLib/compare/v1.0.1...v1.1.0
 [1.0.1]: https://github.com/michaelkamprath/ShiftRegisterLEDMatrixLib/compare/v1.0.0...v1.0.1
