@@ -265,7 +265,7 @@ void BaseLEDMatrix::stopScanning(void) {
 
 unsigned int BaseLEDMatrix::nextRowScanTimerInterval(void) const {
 	// Calculates the microseconds for each scan	
-	return  100*this->baseIntervalMultiplier( _scanPass );
+	return  50*this->baseIntervalMultiplier( _scanPass );
 }
 
 #pragma mark ESP32 Handlers

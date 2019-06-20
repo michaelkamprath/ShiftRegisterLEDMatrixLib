@@ -28,7 +28,7 @@ const float VERT_SPACE_STRETCH_FACTOR = 3.0;
 const float HORIZ_SPACE_STRETCH_FACTOR = 3.0;
 const float TIME_DILATION = 20.0;
 
-RGBLEDMatrix leds(16,16, RGBLEDMatrix::RGB_GROUPS_CPRG8, HIGH, LOW);
+RGBLEDMatrix leds(16,16, RGBLEDMatrix::RGB_GROUPS_CPRG8, HIGH, LOW, 3);
 
 int mapSineToRange( float sineValue, int rangeMax ) {
   return rangeMax*(sineValue+1.0)/2.0;

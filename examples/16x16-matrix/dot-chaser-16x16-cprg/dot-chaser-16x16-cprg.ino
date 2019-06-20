@@ -88,7 +88,7 @@ public:
   
 };
 
-RGBLEDMatrix leds(16,16, RGBLEDMatrix::RGB_GROUPS_CPRG8, HIGH, LOW);
+RGBLEDMatrix leds(16,16, RGBLEDMatrix::RGB_GROUPS_CPRG8, HIGH, LOW, 3);
 Animation ani(&leds);
 
 void setup() {

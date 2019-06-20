@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 
 ## [Unreleased]
+### Fixed
+- Added 3 micro-seconds of inter-scan blank time to the 16x16 CPRG examples to give the hardware some tiem to drain the parasitic capacitance from the LEDs.
+- Adjust the Teensy scan rate faster as under some circumstances subtle scan blinking was perceptible. 
+
 ## [1.2.0] - 2018-12-24
 
 ### Fixed

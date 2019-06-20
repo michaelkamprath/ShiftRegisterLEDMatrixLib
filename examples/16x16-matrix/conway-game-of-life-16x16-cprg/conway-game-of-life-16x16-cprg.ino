@@ -246,7 +246,7 @@ RGBColorType CellUniverse::getColorForLifeState( LifeState state ) const {
 // PROGRAM BEGINS
 //
 
-RGBLEDMatrix leds(16,16, RGBLEDMatrix::RGB_GROUPS_CPRG8, HIGH, LOW);
+RGBLEDMatrix leds(16,16, RGBLEDMatrix::RGB_GROUPS_CPRG8, HIGH, LOW, 3);
 
 CellUniverse uni(leds, 500000);
 
