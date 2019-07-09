@@ -111,10 +111,10 @@ bool RGBLEDMatrix::allowedFrameForValue(uint16_t value, size_t frame) const {
 	switch (frame) {
 		case 0:
 			// bit 0 of each of RGB
-			return (value&0x38E7) != 0;
+			return (value&0x31E6) != 0;
 			break;
 		case 1:
-			return (value&0x4308) != 0;
+			return (value&0x4208) != 0;
 			break;
 		case 2:
 			return (value&0x8410) != 0;
