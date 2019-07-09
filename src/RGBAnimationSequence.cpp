@@ -15,6 +15,7 @@
 // 
 //     You should have received a copy of the GNU General Public License
 //     along with Shift Register LED Matrix Project.  If not, see <http://www.gnu.org/licenses/>.
+#if 0
 
 #include <Arduino.h>
 #include "RGBAnimationSequence.h"
@@ -201,3 +202,4 @@ void RGBAnimationSequence::action() {
 		}
 	}
 }
+#endif

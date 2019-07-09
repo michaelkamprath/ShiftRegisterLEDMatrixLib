@@ -20,22 +20,23 @@
 #include "RGBColor.h"
 #include "SRLEDMatrixUtils.h"
 
-#if TWELVE_BIT_COLOR
 
-#define RGB_SCALE_VALUE 17
-#define MAX_COLOR_VALUE 0xF
+#define RED_SCALE_VALUE 0x08
+#define GREEN_SCALE_VALUE 0x04
+#define BLUE_SCALE_VALUE 0x08
 
-#else
+#define RED_BIT_SHIFT 11
+#define GREEN_BIT_SHIFT 5
+#define BLUE_BIT_SHIFT 0
 
-#define RGB_SCALE_VALUE 85
-#define MAX_COLOR_VALUE 0x3
-
-#endif
+#define RED_MAX_VALUE 0x1F
+#define GREEN_MAX_VALUE 0x3F
+#define BLUE_MAX_VALUE 0x1F
 
 RGBColorType RGBColor::fromRGB(int red, int green, int blue) {
-	RGBColorType r = red/RGB_SCALE_VALUE;
-	RGBColorType g = green/RGB_SCALE_VALUE;
-	RGBColorType b = blue/RGB_SCALE_VALUE;
+	RGBColorType r = red/RED_SCALE_VALUE;
+	RGBColorType g = green/GREEN_SCALE_VALUE;
+	RGBColorType b = blue/BLUE_SCALE_VALUE;
 
 	RGBColorType color = (r<<RED_BIT_SHIFT)|(g<<GREEN_BIT_SHIFT)|(b);
 	
@@ -78,9 +79,9 @@ RGBColorType RGBColor::fromHSV(float hue, float saturation, float value) {
 		b = X;
 	}
 
-	RGBColorType color = (int( (r+m)*MAX_COLOR_VALUE )<<RED_BIT_SHIFT)
-						|(int( (g+m)*MAX_COLOR_VALUE )<<GREEN_BIT_SHIFT)
-						|(int( (b+m)*MAX_COLOR_VALUE ));	
+	RGBColorType color = (int( (r+m)*RED_MAX_VALUE )<<RED_BIT_SHIFT)
+						|(int( (g+m)*GREEN_MAX_VALUE )<<GREEN_BIT_SHIFT)
+						|(int( (b+m)*BLUE_MAX_VALUE ));	
 						
 	return color;
 }
@@ -121,9 +122,9 @@ RGBColorType RGBColor::fromHSL(float hue, float saturation, float lightness) {
 		b = X;
 	}
 
-	RGBColorType color = (int( (r+m)*MAX_COLOR_VALUE )<<RED_BIT_SHIFT)
-						|(int( (g+m)*MAX_COLOR_VALUE )<<GREEN_BIT_SHIFT)
-						|(int( (b+m)*MAX_COLOR_VALUE ));	
+	RGBColorType color = (int( (r+m)*RED_MAX_VALUE )<<RED_BIT_SHIFT)
+						|(int( (g+m)*GREEN_MAX_VALUE )<<GREEN_BIT_SHIFT)
+						|(int( (b+m)*BLUE_MAX_VALUE ));	
 						
 	return color;
 }
@@ -134,9 +135,9 @@ RGBColorType RGBColor::fromCMYK(float cyan, float magenta, float yellow, float b
 	float g = (1.0-magenta)*(1.0-black);
 	float b = (1.0-yellow)*(1.0-black);
 
-	RGBColorType color = (int( r*MAX_COLOR_VALUE )<<RED_BIT_SHIFT)
-						|(int( g*MAX_COLOR_VALUE )<<GREEN_BIT_SHIFT)
-						|(int( b*MAX_COLOR_VALUE ));	
+	RGBColorType color = (int( r*RED_MAX_VALUE )<<RED_BIT_SHIFT)
+						|(int( g*GREEN_MAX_VALUE )<<GREEN_BIT_SHIFT)
+						|(int( b*BLUE_MAX_VALUE ));	
 						
 	return color;
 }

@@ -1,9 +1,4 @@
-#include <LEDMatrix.h>
 #include <RGBLEDMatrix.h>
-#include <RGBImage.h>
-#include <Glyph.h>
-#include <RGBAnimation.h>
-#include <RGBAnimationSequence.h>
 #include <TimerAction.h>
 
 //
@@ -162,7 +157,7 @@ void CellUniverse::action() {
       _nextCells[idx] = newState;
 
       RGBColorType cellColor = this->getColorForLifeState(newState);
-      _leds.image().pixel(y, x) = cellColor;
+      _leds.writePixel(y, x, cellColor);
     }
   }
   _leds.stopDrawing();
@@ -212,7 +207,7 @@ void CellUniverse::drawToScreen() {
     for (unsigned int y = 0; y < _leds.rows(); y++ ) {
       LifeState currentState = this->getCellStatus(y, x);
       RGBColorType cellColor = this->getColorForLifeState(currentState);
-      _leds.image().pixel(y, x) = cellColor;
+      _leds.writePixel(y, x, cellColor);
     }
   }
   _leds.stopDrawing();

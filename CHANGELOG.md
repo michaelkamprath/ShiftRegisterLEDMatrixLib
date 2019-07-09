@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 
 ## [Unreleased]
+### Changed
+- Transition library to use Adafruit's GFX library to handle the graphics API. The befit of this is that it immediately brings you a wealth of functionality pertaining to the programatic construction of the image. The backend operations of the driver is still the same, though. The Adafruit GFX library is only used for the image buffer.
+
 ### Fixed
 - Added 3 micro-seconds of inter-scan blank time to the 16x16 CPRG examples to give the hardware some tiem to drain the parasitic capacitance from the LEDs.
 - Adjust the Teensy scan rate faster as under some circumstances subtle scan blinking was perceptible. 

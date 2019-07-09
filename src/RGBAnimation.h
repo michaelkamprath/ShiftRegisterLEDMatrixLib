@@ -15,7 +15,7 @@
 // 
 //     You should have received a copy of the GNU General Public License
 //     along with Shift Register LED Matrix Project.  If not, see <http://www.gnu.org/licenses/>.
-
+#if 0
 #ifndef __RGBANIMATION_H__
 #define __RGBANIMATION_H__
 #include "TimerAction.h"
@@ -142,4 +142,5 @@ public:
 };
 
 
+#endif
 #endif

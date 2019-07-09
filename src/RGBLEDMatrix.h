@@ -18,10 +18,11 @@
 
 #ifndef __RGBLEDMATRIX_H__
 #define __RGBLEDMATRIX_H__
+#include <Adafruit_GFX.h>
 #include "BaseLEDMatrix.h"
-#include "RGBImage.h"
+#include "RGBColor.h"
 
-class RGBLEDMatrix : public BaseLEDMatrix {
+class RGBLEDMatrix : public BaseLEDMatrix, public GFXcanvas16 {
 public:
 	typedef enum {
 		// Each individual LED's RGB bits are consecutive in column order.
@@ -57,14 +58,13 @@ public:
 
 private:
 	const RGBLEDBitLayout _bitLayout;
-	MutableRGBImage *_screen_data;
 	
-
+	bool		_matrixNeedsUpdate;
+	
 	void setControlRowBitsForFrame(
 			unsigned int controlRow,
 			size_t frame,
-			LEDMatrixBits& frameBits,
-			const MutableRGBImage& image 
+			LEDMatrixBits& frameBits
 		) const ;
 	bool setColumnBitsForControlRowAndFrame(
 			unsigned int controlRow,
@@ -74,16 +74,18 @@ private:
 			size_t blueBitOffset,
 			size_t columnBitIdxIncrement,
 			size_t frame,
-			LEDMatrixBits& frameBits,
-			const MutableRGBImage& image
+			LEDMatrixBits& frameBits
 		) const;
 	
-	size_t maxFrameCountForValue(RGBColorType value) const;
+	bool allowedFrameForValue(uint16_t value, size_t frame) const;
 protected:
 	virtual void generateFrameBits(LEDMatrixBits& frameBits, size_t frame ) const;
 	virtual bool matrixNeedsUpdate(void) const;
 	virtual void matrixHasBeenUpdated(void);
 	virtual unsigned int baseIntervalMultiplier( size_t frame ) const;
+
+	uint16_t rawPixel( int16_t rawX, int16_t rawY ) const;  
+
 public:
   
 	/**
@@ -129,23 +131,11 @@ public:
 	
 	virtual void setup();
 	
-	/**
-	 * Returns the image buffer for this matrix object. This is the 
-	 * image buffer that drawing should be done to.
-	 *
-	 * @return a MutableRGBImage object reference that is the matrix's image buffer.
-	 */ 
-	MutableRGBImage& image(void)				{ return *_screen_data; }
-
-	/**
-	 * Returns a const reference to the image buffer for this matrix object. This is the 
-	 * image buffer that drawing should be done to, but is const here and thus should
-	 * be only read from.
-	 *
-	 * @return a const MutableRGBImage object reference that is the matrix's image buffer.
-	 */ 
-	const MutableRGBImage& image(void) const	{ return *_screen_data; }
-  
+	uint16_t pixel( int16_t x, int16_t y ) const;  
+	virtual void drawPixel(int16_t x, int16_t y, uint16_t color);
+	virtual void fillScreen(uint16_t color);
+	
+	void debugPrintImageData(void) const;
 };
 
 #endif //__SCREEN_H__

@@ -205,6 +205,9 @@ public:
 	unsigned int nextRowScanTimerInterval(void) const;
 	unsigned int rowOffTimerInterval(void) const;
 	void incrementScanRow( void );
+
+	void debugPrintFrames( void ) const;
+
 };
 
 #endif //__SCREEN_H__
