@@ -1,7 +1,7 @@
 #include <RGBLEDMatrix.h>
 #include <RGBColor.h>
 
-RGBLEDMatrix leds(10,10);
+RGBLEDMatrix leds(16,16, RGBLEDMatrix::RGB_GROUPS_CPRG8, HIGH, LOW, 3);
 
 #define MAX_DISTANCE (leds.columns() - 1)
 

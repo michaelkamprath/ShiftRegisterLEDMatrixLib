@@ -8,9 +8,6 @@
  * 
  */
 
-
-#include <Glyph.h>
-#include <RGBImage.h>
 #include <RGBLEDMatrix.h>
 #include <TimerAction.h>
 #include <RGBAnimation.h>
@@ -18,275 +15,274 @@
 
 RGBLEDMatrix leds(10,10);
 
-PROGMEM bool const invader1A[64] = {
-    0,0,0,1,1,0,0,0, 
-    0,0,1,1,1,1,0,0,
-    0,1,1,1,1,1,1,0,
-    1,1,0,1,1,0,1,1,
-    1,1,1,1,1,1,1,1,
-    0,0,1,0,0,1,0,0,
-    0,1,0,1,1,0,1,0,
-    1,0,1,0,0,1,0,1
+PROGMEM const uint8_t invader1A[8] = {
+	B00011000, 
+    B00111100,
+    B01111110,
+    B11011011,
+    B11111111,
+    B00100100,
+    B01011010,
+    B10100101
 };
 
-PROGMEM bool const invader1B[64] = {
-    0,0,0,1,1,0,0,0,
-    0,0,1,1,1,1,0,0,
-    0,1,1,1,1,1,1,0,
-    1,1,0,1,1,0,1,1,
-    1,1,1,1,1,1,1,1,
-    0,0,1,0,0,1,0,0,
-    0,1,0,1,1,0,1,0,
-    0,1,0,0,0,0,1,0
+PROGMEM const uint8_t invader1B[8] = {
+    B00011000,
+    B00111100,
+    B01111110,
+    B11011011,
+    B11111111,
+    B00100100,
+    B01011010,
+    B01000010
 };
 
 
-PROGMEM bool const invader2A[64] = {
-  0,0,0,0,0,0,0,0,
-  0,0,1,1,1,1,0,0,
-  0,1,1,1,1,1,1,0,
-  1,1,0,1,1,0,1,1,
-  1,1,0,1,1,0,1,1,
-  0,1,1,1,1,1,1,0,
-  0,0,1,0,0,1,0,0,
-  1,1,0,0,0,0,1,1
+PROGMEM const uint8_t invader2A[8] = {
+    B00000000,
+    B00111100,
+    B01111110,
+    B11011011,
+    B11011011,
+    B01111110,
+    B00100100,
+    B11000011
 };
 
-PROGMEM bool const invader2B[64] = {
-  0,0,1,1,1,1,0,0,
-  0,1,1,1,1,1,1,0,
-  1,1,0,1,1,0,1,1,
-  1,1,0,1,1,0,1,1,
-  0,1,1,1,1,1,1,0,
-  0,0,1,0,0,1,0,0,
-  0,0,1,0,0,1,0,0,
-  0,0,1,0,0,1,0,0
+PROGMEM const uint8_t invader2B[8] = {
+    B00111100,
+    B01111110,
+    B11011011,
+    B11011011,
+    B01111110,
+    B00100100,
+    B00100100,
+    B00100100
 };
 
-PROGMEM bool const invader3A[64] = {
-  0,0,1,0,0,1,0,0,
-  0,0,1,0,0,1,0,0,
-  0,1,1,1,1,1,1,0,
-  1,1,0,1,1,0,1,1,
-  1,1,1,1,1,1,1,1,
-  1,1,1,1,1,1,1,1,
-  1,0,1,0,0,1,0,1,
-  0,0,1,0,0,1,0,0
+PROGMEM const uint8_t invader3A[8] = {
+    B00100100,
+    B00100100,
+    B01111110,
+    B11011011,
+    B11111111,
+    B11111111,
+    B10100101,
+    B00100100
 };
 
-PROGMEM bool const invader3B[64] = {
-  0,0,1,0,0,1,0,0,
-  1,0,1,0,0,1,0,1,
-  1,1,1,1,1,1,1,1,
-  1,1,0,1,1,0,1,1,
-  1,1,1,1,1,1,1,1,
-  0,1,1,1,1,1,1,0,
-  0,0,1,0,0,1,0,0,
-  0,1,0,0,0,0,1,0
+PROGMEM const uint8_t invader3B[8] = {
+    B00100100,
+    B10100101,
+    B11111111,
+    B11011011,
+    B11111111,
+    B01111110,
+    B00100100,
+    B01000010
 };
 
-PROGMEM bool const invader4A[64] = {
-  0,0,1,1,1,1,0,0,
-  0,1,1,1,1,1,1,0,
-  0,0,1,1,0,0,1,1,
-  0,1,1,1,1,1,1,0,
-  0,0,1,1,1,1,0,0,
-  0,0,0,0,0,0,0,0,
-  0,0,0,0,1,0,0,0,
-  0,0,0,0,0,0,0,0
+PROGMEM const uint8_t invader4A[8] = {
+    B00111100,
+    B01111110,
+    B00110011,
+    B01111110,
+    B00111100,
+    B00000000,
+    B00001000,
+    B00000000
 };
  
-PROGMEM bool const invader4B[64] = {
-  0,0,1,1,1,1,0,0,
-  0,1,1,1,1,1,1,0,
-  1,0,0,1,1,0,0,1,
-  0,1,1,1,1,1,1,0,
-  0,0,1,1,1,1,0,0,
-  0,0,0,0,0,0,0,0,
-  0,0,0,0,1,0,0,0,
-  0,0,0,0,1,0,0,0
+PROGMEM const uint8_t invader4B[8] = {
+    B00111100,
+    B01111110,
+    B10011001,
+    B01111110,
+    B00111100,
+    B00000000,
+    B00001000,
+    B00001000
 };
  
-PROGMEM bool const invader4C[64] = {
-  0,0,1,1,1,1,0,0,
-  0,1,1,1,1,1,1,0,
-  1,1,0,0,1,1,0,0,
-  0,1,1,1,1,1,1,0,
-  0,0,1,1,1,1,0,0,
-  0,0,0,0,0,0,0,0,
-  0,0,0,0,0,0,0,0,
-  0,0,0,0,1,0,0,0
+PROGMEM const uint8_t invader4C[8] = {
+    B00111100,
+    B01111110,
+    B11001100,
+    B01111110,
+    B00111100,
+    B00000000,
+    B00000000,
+    B00001000
 };
  
-PROGMEM bool const invader4D[64] = {
-  0,0,1,1,1,1,0,0,
-  0,1,1,1,1,1,1,0,
-  0,1,1,0,0,1,1,0,
-  0,1,1,1,1,1,1,0,
-  0,0,1,1,1,1,0,0,
-  0,0,0,0,0,0,0,0,
-  0,0,0,0,0,0,0,0,
-  0,0,0,0,0,0,0,0
+PROGMEM const uint8_t invader4D[8] = {
+    B00111100,
+    B01111110,
+    B01100110,
+    B01111110,
+    B00111100,
+    B00000000,
+    B00000000,
+    B00000000
 };
-
-Glyph a1a(8, 8, invader1A, true);
-Glyph a1b(8, 8, invader1B, true);
-Glyph a2a(8, 8, invader2A, true);
-Glyph a2b(8, 8, invader2B, true);
-Glyph a3a(8, 8, invader3A, true);
-Glyph a3b(8, 8, invader3B, true);
-Glyph a4a(8, 8, invader4A, true);
-Glyph a4b(8, 8, invader4B, true);
-Glyph a4c(8, 8, invader4C, true);
-Glyph a4d(8, 8, invader4D, true);
 
 // first
-GlyphSequenceAnimation::Frame ani1[2] = {
+MonoBitmapSequenceAnimation::Frame ani1[2] = {
   {
-    &a1a,
+    invader1A,
+    8, 8,
     1, 1,
-    500,
     DARK_GREEN_COLOR,
-    BLACK_COLOR
+    BLACK_COLOR,
+    500
   },
   {
-    &a1b,
+    invader1B,
+    8, 8,
     1, 1,
-    500,
     DARK_GREEN_COLOR,
-    BLACK_COLOR
+    BLACK_COLOR,
+    500
   },
 };
 
 // second
-GlyphSequenceAnimation::Frame ani2[2] = {
+MonoBitmapSequenceAnimation::Frame ani2[2] = {
   {
-    &a2a,
+    invader2A,
+    8, 8,
     1, 1,
-    500,
     RED_COLOR,
-    BLACK_COLOR
+    BLACK_COLOR,
+    500
   },
   {
-    &a2b,
+    invader2B,
+    8, 8,
     1, 1,
-    500,
     RED_COLOR,
-    BLACK_COLOR
+    BLACK_COLOR,
+    500
   },
 };
  
 // third
-GlyphSequenceAnimation::Frame ani3[2] = {
+MonoBitmapSequenceAnimation::Frame ani3[2] = {
   {
-    &a3a,
+    invader3A,
+    8, 8,
     1, 1,
-    500,
     ORANGE_COLOR,
-    BLACK_COLOR
+    BLACK_COLOR,
+    500
   },
   {
-    &a3b,
+	invader3B,
+    8, 8,
     1, 1,
-    500,
     ORANGE_COLOR,
-    BLACK_COLOR
+    BLACK_COLOR,
+    500
   },
 };
 
 // fourth
-GlyphSequenceAnimation::Frame ani4[4] = {
+MonoBitmapSequenceAnimation::Frame ani4[4] = {
   {
-    &a4a,
+    invader4A,
+    8, 8,
     1, 1,
-    250,
     BLUE_COLOR,
-    BLACK_COLOR
+    BLACK_COLOR,
+    250
   },
   {
-    &a4b,
+    invader4B,
+    8, 8,
     1, 1,
-    250,
     BLUE_COLOR,
-    BLACK_COLOR
+    BLACK_COLOR,
+    250
   },
   {
-    &a4c,
+    invader4C,
+    8, 8,
     1, 1,
-    250,
     BLUE_COLOR,
-    BLACK_COLOR
+    BLACK_COLOR,
+    250
   },
   {
-    &a4d,
+    invader4D,
+    8, 8,
     1, 1,
-    250,
     BLUE_COLOR,
-    BLACK_COLOR
+    BLACK_COLOR,
+    250
   }
 };
 
 // animation
 const int ANIMATION_ITEMS_SIZE = 9;
-RGBAnimationSequence::AnimationItem aniItems[ANIMATION_ITEMS_SIZE] {
+RGBAnimationSequence::AnimationItem aniItems[ANIMATION_ITEMS_SIZE] = {
   {
-    new GlyphSequenceAnimation( leds, ani1, 2 ),
+    new MonoBitmapSequenceAnimation( leds, ani1, 2 ),
     4000,
     2000,
     RGBAnimationSequence::TRANSITION_SLIDE_LEFT,
     2
   },
   {
-    new GlyphSequenceAnimation( leds, ani1, 2 ),
+    new MonoBitmapSequenceAnimation( leds, ani1, 2 ),
     4000,
     2000,
     RGBAnimationSequence::TRANSITION_SLIDE_DOWN,
     2
   },
   {
-    new GlyphSequenceAnimation( leds, ani2, 2 ),
+    new MonoBitmapSequenceAnimation( leds, ani2, 2 ),
     4000,
     2000,
     RGBAnimationSequence::TRANSITION_SLIDE_RIGHT,
     2
   },
   {
-    new GlyphSequenceAnimation( leds, ani2, 2 ),
+    new MonoBitmapSequenceAnimation( leds, ani2, 2 ),
     4000,
     2000,
     RGBAnimationSequence::TRANSITION_SLIDE_DOWN,
     2
   },
   {
-    new GlyphSequenceAnimation( leds, ani3, 2 ),
+    new MonoBitmapSequenceAnimation( leds, ani3, 2 ),
     4000,
     2000,
     RGBAnimationSequence::TRANSITION_SLIDE_LEFT,
     2
   },
   {
-    new GlyphSequenceAnimation( leds, ani3, 2 ),
+    new MonoBitmapSequenceAnimation( leds, ani3, 2 ),
     4000,
     2000,
     RGBAnimationSequence::TRANSITION_SLIDE_DOWN,
     2
   },
   {
-    new GlyphSequenceAnimation( leds, ani4, 4 ),
+    new MonoBitmapSequenceAnimation( leds, ani4, 4 ),
     6000,
     2000,
     RGBAnimationSequence::TRANSITION_SLIDE_UP,
     2
   },
   {
-    new GlyphSequenceAnimation( leds, ani3, 2 ),
+    new MonoBitmapSequenceAnimation( leds, ani3, 2 ),
     0,
     2000,
     RGBAnimationSequence::TRANSITION_SLIDE_UP,
     2
   },
   {
-    new GlyphSequenceAnimation( leds, ani2, 2 ),
+    new MonoBitmapSequenceAnimation( leds, ani2, 2 ),
     0,
     2000,
     RGBAnimationSequence::TRANSITION_SLIDE_UP,

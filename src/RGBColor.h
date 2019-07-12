@@ -51,7 +51,7 @@ Or, the following big masks are used:
 							||defined(__AVR_ATmega2560__) \
 							||defined( ESP32 ) \
 							||defined(ARDUINO_SAMD_ZERO) \
-							||defined(_SAM3XA_) 
+							||defined(_SAM3XA_)
 							
 // You may wish to add the following platforms to the set that support 12-bit color
 //
@@ -72,16 +72,16 @@ const RGBColorType BLUE_COLOR_MASK = 0x001F;
 const RGBColorType BLACK_COLOR = 0;
 const RGBColorType BLUE_COLOR = BLUE_COLOR_MASK;
 // const RGBColorType BROWN_COLOR = 0x0941;
-// const RGBColorType CORAL_COLOR = 0x0F75;
+const RGBColorType CORAL_COLOR = 0xF8E5;
 const RGBColorType DARK_BLUE_COLOR = 0x0004;
 // const RGBColorType DARK_GRAY_COLOR = 0x0444;
-// const RGBColorType DARK_GREEN_COLOR = 0x0040;
+const RGBColorType DARK_GREEN_COLOR = 0x0020;
 // const RGBColorType DARK_RED_COLOR = 0x0400;
 // const RGBColorType GRAY_COLOR = 0x0999;
 const RGBColorType GREEN_COLOR = GREEN_COLOR_MASK;
-// const RGBColorType LIME_COLOR = 0x03C3;
+const RGBColorType LIME_COLOR = 0x1983;
 const RGBColorType MAGENTA_COLOR = 0xF81F;
-// const RGBColorType ORANGE_COLOR = 0x0FA0;
+const RGBColorType ORANGE_COLOR = 0xF8E0;
 // const RGBColorType PINK_COLOR = 0x0F6A;
 // const RGBColorType PURPLE_COLOR = 0x092E;
  const RGBColorType RED_COLOR = RED_COLOR_MASK;
@@ -90,8 +90,8 @@ const RGBColorType MAGENTA_COLOR = 0xF81F;
 // const RGBColorType TRANSPARENT_COLOR = 0x8000;
 // const RGBColorType TURQUOISE_COLOR = 0x05FA;
 // const RGBColorType VIOLET_COLOR = 0x0E7E;
-// const RGBColorType WHITE_COLOR = 0x0FFF;
-// const RGBColorType YELLOW_COLOR = 0x0FF0;
+const RGBColorType WHITE_COLOR = 0xFFFF;
+const RGBColorType YELLOW_COLOR = 0xFFE0;
 
 namespace RGBColor {
 
