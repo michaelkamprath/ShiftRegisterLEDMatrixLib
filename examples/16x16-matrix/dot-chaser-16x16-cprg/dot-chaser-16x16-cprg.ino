@@ -22,11 +22,7 @@ protected:
           color = DARK_BLUE_COLOR;
         }
         if ( x == _xStack[3] && y == _yStack[3] ) {
-#if TWELVE_BIT_COLOR
-          color = 0x0009;
-#else
-          color = B00000010;
-#endif
+          color = 0x0007;
         }
         if ( x == _xStack[2] && y == _yStack[2] ) {
           color = BLUE_COLOR;
@@ -38,7 +34,7 @@ protected:
           color = RED_COLOR;
         }
 
-        _screen->image().pixel(x,y) = color;
+        _screen->writePixel(y,x, color);
       }
     }
     _screen->stopDrawing();

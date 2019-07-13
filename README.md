@@ -1,6 +1,6 @@
 # Arduino Driver for Shift Register LED Matrices
 
-This library provides a generalized API to create and drive an image on LED matrix where shift registers, such as the 74HC595 or DM13a, are used to control the rows and columns of the matrix. Both single color and RGB LED matrices are supported. To use this driver in the Arduino IDE, add the folder `ShiftRegisterLEDMatrixLib` as a library as described in [this document](https://www.arduino.cc/en/Guide/Libraries), or install via the libraries manager in the Arduino IDE.
+This library provides a generalized API to create and drive an image on LED matrix where shift registers, such as the 74HC595 or DM13a, are used to control the rows and columns of the matrix. Both single color and RGB LED matrices are supported. To use this driver in the Arduino IDE, add the folder `ShiftRegisterLEDMatrixLib` as a library as described in [this document](https://www.arduino.cc/en/Guide/Libraries), or install via the libraries manager in the Arduino IDE. This driver also depends on the [Adafruit GFX Library](https://github.com/adafruit/Adafruit-GFX-Library), which can be installed via the libraries manager.
 
 This driver uses SPI to transfer bits to the shift registers and uses one timer interrupt.
 
@@ -50,43 +50,53 @@ Other similar designs can be used with this library. Common variations would be:
 This library has three general facets: image handling, matrix driver, and animation management.
 
 ### Image Handling
-#### Glyph
-A Glyph is a black and white image with no gray scale. There are two types of Glyphs, the immutable `Glyph` object and the mutable `MutableGlyph` object. The advantage of the immutable `Glyph` object is that it can be initialized with a `PROGMEM` block, thus reducing the RAM footprint for statically constructed `Glyph` objects.
+All image drawing is handled by the [Adafruit GFX API](https://learn.adafruit.com/adafruit-gfx-graphics-library/). Please refer to its documentation for information on how to draw an image to a matrix. 
 
-There are two ways to initialize a `Glyph` object: with a bit array and with a boolean array. The bit array approach use a bit sequence as long of the Glyph's rows\*columns, and the bit sequence is stored in an appropriately sized `char` array.  If being constructed instead with a boolean array, the `bool` array should be as long os the Glyph's row\*columns size. 
-#### RGBImage
-A RGBImage is a color image using one of two color modes: 6 bit and 12 bit. There are two types of RGBImage object, the immutable `RGBImage` object and the mutable `MutableRGBImage` object. The advantage of the immutable `RGBImage` object is that it can be initialized with a `PROGMEM` block, thus reducing the RAM footprint for statically constructed `RGBImage` objects.
-
-Color for the image is represented by a `RGBColorType` value. When the preprocessor macro 	`TWELVE_BIT_COLOR` is defined to `1`, `RGBColorType` will be an `unsigned int` with the following bit layout:
+For RGB color matrices, there are two color modes supported: 9 bit and 16 bit color. Color for the image is represented by a `RGBColorType` value. When the preprocessor macro 	`SIXTEEN_BIT_COLOR` is defined to `1`, `RGBColorType` will use following bit layout (notice green gets 6 bits while red and blue each get 5 bits):
 
 ```
-Bits   0   4   8  12  
-       |---|---|---|---
-       TUUURRRRGGGGBBBB
+	Bits   0   4   8  12  
+		   |---|---|---|---
+ 		   RRRRRGGGGGGBBBBB
 
-	T = transparent
-	U = unused
 	R = Red
 	G = Green
 	B = Blue
 ``` 
-Color can easily be set in hexadecimal format, as the 2nd byte is red, the third byte is green, and the fourth byte is blue. The left most bit of the first byte is used to indicate whether the color is transparent or not. For operations that support transparency, any other color bits are ignored when the transparency bit is set. Transparency is primarily used when drawing one `RGBImage` onto another. Transparent colors will not change the color of the underlying pixel the `RGBImage` is being drawn on top of.
-
-When the preprocessor macro `TWELVE_BIT_COLOR` is defined to `0`, `RGBColorType` will be an `unsigned char` with the following bit layout:
+Color can easily be set in hexadecimal format. For example, the following colors are defined in `RGBColor.h`:
 
 ```
-Bits   0   4
-       |---|---
-       TURRGGBB
-       
-	T = transparent
-	U = unused
-	R = Red
-	G = Green
-	B = Blue
+const RGBColorType RED_COLOR_MASK = 0xF800;
+const RGBColorType GREEN_COLOR_MASK = 0x07E0;
+const RGBColorType BLUE_COLOR_MASK = 0x001F;
+
+const RGBColorType AQUA_COLOR = GREEN_COLOR_MASK|BLUE_COLOR_MASK;
+const RGBColorType BLACK_COLOR = 0;
+const RGBColorType BLUE_COLOR = BLUE_COLOR_MASK;
+const RGBColorType BROWN_COLOR = 0xA145;
+const RGBColorType CORAL_COLOR = 0xF8E5;
+const RGBColorType DARK_BLUE_COLOR = 0x0004;
+const RGBColorType DARK_GRAY_COLOR = 0x821;
+const RGBColorType DARK_GREEN_COLOR = 0x0020;
+const RGBColorType DARK_RED_COLOR = 0x0800;
+const RGBColorType GRAY_COLOR = 0x39E7;
+const RGBColorType GREEN_COLOR = GREEN_COLOR_MASK;
+const RGBColorType LIME_COLOR = 0x1983;
+const RGBColorType MAGENTA_COLOR = 0xF81F;
+const RGBColorType ORANGE_COLOR = 0xF8E0;
+const RGBColorType PINK_COLOR = 0xF8B2;
+const RGBColorType PURPLE_COLOR = 0x3807;
+const RGBColorType RED_COLOR = RED_COLOR_MASK;
+const RGBColorType SKY_BLUE_COLOR = 0x867D;
+const RGBColorType SLATE_BLUE_COLOR = 0x6ADB;
+const RGBColorType TURQUOISE_COLOR = 0x471A;
+const RGBColorType VIOLET_COLOR = 0x901A;
+const RGBColorType WHITE_COLOR = 0xFFFF;
+const RGBColorType YELLOW_COLOR = RED_COLOR_MASK|GREEN_COLOR_MASK;
 ```
 
-An `RGBImage` can be initialized with an array of `RGBColorType` values sized to be the image's rows\*columns. 
+When the preprocessor macro `SIXTEEN_BIT_COLOR` is defined to `0`, the library will use a subset of bits `RGBColorType` that effectively makes the color range based on 3 bits per red, green, and blue. This is done automatically, and you can still use the 16 bit color definitions illustrated above.
+
 ### Matrix Driver
 The matrix driver is an object that manages rendering an image on an LED matrix. It does this using a double buffer approach. The first buffer is the image that is desired to be rendered on the LED matrix. The second buffer is the bit sequences that needs to be sent to the LED matrix's shift registers to render the image. The matrix driver object uses SPI to send the bits to the shift register. Since the rows on the matrix are multiplexed when rendering, the matrix driver object will use a system clock interrupt to ensure the multiplexing is consistently timed. 
 
@@ -98,25 +108,30 @@ When constructing a matrix driver, you need to tell it a few details:
 * The pin which will be used to send the latch signal.
 
 #### LEDMatrix
-The `LEDMatrix` driver is used for matrices of single color LEDs. This driver uses a `MutableGlyph` as its image buffer.
+The `LEDMatrix` driver is used for matrices of single color LEDs. This driver uses the [Adafruit GFX API](https://learn.adafruit.com/adafruit-gfx-graphics-library/) to draw to the image buffer. However, it only supports two colors:
 
-#### GrayScaleLEDMatrix
-The `GrayScaleLEDMatrix` driver is used for matrices of single color LEDs, but will effect a grayscale using PWM on each LED. This driver uses a `MutableGrayScaleImage` as its image buffer.
+```
+typedef uint16_t LEDColor;
+
+const LEDColor LED_BLACK = 0; // same as LED off
+const LEDColor LED_WHITE = 1; // same as LED on
+````
 
 #### RGBLEDMatrix
-The `RGBLEDMatrix` driver is used for matrices of RGB color LEDs. This drive uses a `MutableRGBImage` as its image buffer.
+The `RGBLEDMatrix` driver is used for matrices of RGB color LEDs. This driver uses the [Adafruit GFX API](https://learn.adafruit.com/adafruit-gfx-graphics-library/) to draw to the image buffer.
 
 In addition to the basic options listed above, when constructing an `RGBLEDMatrix` object, you need to indicate the shift register bit layout for the RGB columns. See the [Bit Layouts](#bit-layouts) section of this document.
 
 ### Animation Management
 #### TimerAction
 A `TimerAction` object allows you to manage a variably timed action in a manner that does not require the use of a clock interrupt. Since timer interrupts are not used, the timing of action may not be precise, so this class should only be used for actions that are not sensitive to some variability in the action timing. The object has a `loop()` method that should be called in every call to the global `loop()` method. 
+
 ## Usage
 The basic pattern of usage is:
 
 1. Create a `LEDMatrix` or `RGBLEDMatrix` matrix object passing the appropriate arguments
 1. In the global `setup()` method, call the `setup()` method of the matrix object to initialize all fields. Then call `startScanning()` on the matrix object to cause bits to be transmitted to the shift registers in the matrix. 
-1. Draw to the `image()` object on the matrix object, but do call the `startDrawing()` matrix object method prior to any drawing, and balance the call with a call to `stopDrawing()` on the matrix object. These method prevent the image display on the matrix's LEDs from being altered while you are drawing to to the image buffer.
+1. Draw to the the matrix object using the [Adafruit GFX API](https://learn.adafruit.com/adafruit-gfx-graphics-library/), but do call the `startDrawing()` matrix object method prior to any drawing, and balance the call with a call to `stopDrawing()` on the matrix object. These method prevent the image display on the matrix's LEDs from being altered while you are drawing to to the image buffer.
 1. Call the matrix object's `loop()` method in the global `loop()` function.
 
 
@@ -139,7 +154,7 @@ Note that the SPI MISO pin is unused.
 ### Teensy 3.x Boards
 Using the Teensy 3.x as the driving micro-controller for the RGB LED Matrix is a good choice because it's higher clock speed will allow your code to do more work without interrupting the PWM activities that are also happening at the driver level.
 
-To use this Teensy 3.x driver in the Arduino IDE, add the folder `RGB_LED_Matrix_Lib` as a library as described in [this document](https://www.arduino.cc/en/Guide/Libraries). Also, ensure that the Arduino IDE has been updated to support Teensy development ([see here for more information](https://www.pjrc.com/teensy/td_download.html)).
+To use this Teensy 3.x driver in the Arduino IDE, ensure that the Arduino IDE has been updated to support Teensy development ([see here for more information](https://www.pjrc.com/teensy/td_download.html)).
 
 ### ESP8266 and ESP32 Boards
 ESP8266 and ESP32 boards are generally 3.3v logic level boards. The default wiring for connecting the RGB LED Matrix to an ESP8266 or ESP32 board is:
@@ -162,7 +177,7 @@ An alternative to using this 74HCT125 circuit would be to replace the 74HC595 sh
 
 ## RGB LEB Matrices
 ### Color Modes
-This driver can support either 6-bit or 12-bit color. By default, this library uses 6-bit color. You can enable 12 bit color in this library by setting the preprocessor macro `TWELVE_BIT_COLOR` to a value of 1 (note, not in your `ino` file, but at compile time for all files). You can do this either by editing the `RGBImage.h` file or setting a compiler flag. However, note that 12 bit color requires more RAM than an Arduino Uno or Nano has. Due its memory requirements, 12 bit color should work on most 32 bit boards and the Arduino Mega 2560. 12 bit color has been tested to work on the following boards:
+This driver can support either 9-bit or 16-bit color. By default, this library uses 9-bit color. The library will default to either 9 bit or 16 bit color based on the type of microcontroller it is being compiled for. You can directly enable 16 bit color in this library by setting the preprocessor macro `SIXTEEN_BIT_COLOR` to a value of 1 (note, not in your `ino` file, but at compile time for all files). You can do this either by editing the `RGBColor.h` file or setting a compiler flag. However, note that 16 bit color requires more RAM than an Arduino Uno or Nano has. Due its memory requirements, 16 bit color should work on most 32 bit boards and the Arduino Mega 2560. 16 bit color has been tested to work on the following boards:
 
 * Teensy 3.6 
 * Arduino Mega 2560

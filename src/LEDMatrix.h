@@ -18,20 +18,23 @@
 
 #ifndef __LEDMATRIX_H__
 #define __LEDMATRIX_H__
+#include <Adafruit_GFX.h>
 #include "BaseLEDMatrix.h"
-#include "Glyph.h"
 
+typedef uint16_t LEDColor;
 
-class LEDMatrix : public BaseLEDMatrix {
+const LEDColor LED_BLACK = 0;
+const LEDColor LED_WHITE = 1;
+
+class LEDMatrix : public BaseLEDMatrix, public GFXcanvas1 {
 	
 private:
-	MutableGlyph *_screen_data;	
+	bool		_matrixNeedsUpdate;
 	
 	void setRowBitsForFrame(
-			int row,
+			uint16_t row,
 			size_t frame,
-			LEDMatrixBits& frameBits,
-			const LEDImageBase<bool>& image
+			LEDMatrixBits& frameBits
 		) const;
 
 protected:
@@ -39,6 +42,8 @@ protected:
 	virtual bool matrixNeedsUpdate(void) const;
 	virtual void matrixHasBeenUpdated(void);
 	virtual unsigned int baseIntervalMultiplier( size_t frame ) const;
+
+	uint16_t rawPixel( int16_t rawX, int16_t rawY ) const;  
 	
 public:
   
@@ -64,8 +69,8 @@ public:
 	 *  @param slavePin which ard pin is used for the latch signal.
 	 */
 	LEDMatrix(
-			int rows,
-			int columns,
+			uint16_t rows,
+			uint16_t columns,
 			bool columnControlBitOn = LOW,
 			bool rowControlBitOn = LOW,
 			unsigned int interFrameOffTimeMicros = 0,
@@ -83,23 +88,14 @@ public:
 	 * Should be called before any operations against this object is performed.
 	 */
 	virtual void setup();
-	
-	/**
-	 * Returns the image buffer for this matrix object. This is the 
-	 * image buffer that drawing should be done to.
-	 *
-	 * @return a MutableGlyph object reference that is the matrix's image buffer.
-	 */ 
-	MutableGlyph& image(void)				{ return *_screen_data; }
 
-	/**
-	 * Returns a const reference to the image buffer for this matrix object. This is the 
-	 * image buffer that drawing should be done to, but is const here and thus should
-	 * be only read from.
-	 *
-	 * @return a const MutableGlyph object reference that is the matrix's image buffer.
-	 */ 
-	const MutableGlyph& image(void) const	{ return *_screen_data; }
+	//
+	// Adafruit GFX Support
+	//
+	
+	uint16_t pixel( int16_t x, int16_t y ) const;  
+	virtual void drawPixel(int16_t x, int16_t y, uint16_t color);
+	virtual void fillScreen(uint16_t color);
 };
 
 #endif //__SCREEN_H__

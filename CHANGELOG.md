@@ -4,11 +4,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-
 ## [Unreleased]
+
+## [2.0.0]
+### Changed
+- Transition library to use [Adafruit's GFX Library](https://github.com/adafruit/Adafruit-GFX-Library) to handle the graphics API. The befit of this is that it immediately brings a wealth of functionality pertaining to the programatic construction of the image, especially fonts and text drawing. The Adafruit GFX library is only used for the primary image buffer. The backend operations of the driver (i.e., the secondary buffer for the shift register bits) is still the same. This is a significant change to the library, likely requiring you to change your code. In the process, dropped support for simulating gray scale on monochrome LED matrices. This might be brought back later.
+
 ### Fixed
 - Added 3 micro-seconds of inter-scan blank time to the 16x16 CPRG examples to give the hardware some tiem to drain the parasitic capacitance from the LEDs.
 - Adjust the Teensy scan rate faster as under some circumstances subtle scan blinking was perceptible. 
+- Corrected the binary code modulation implementation.
 
 ## [1.2.0] - 2018-12-24
 
@@ -57,7 +62,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## 1.0.0 - 2017-12-24
 Initial release
 
-[Unreleased]: https://github.com/michaelkamprath/ShiftRegisterLEDMatrixLib/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/michaelkamprath/ShiftRegisterLEDMatrixLib/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/michaelkamprath/ShiftRegisterLEDMatrixLib/compare/v1.2.0...v2.0.0
 [1.2.0]: https://github.com/michaelkamprath/ShiftRegisterLEDMatrixLib/compare/v1.1.1...v1.2.0
 [1.1.1]: https://github.com/michaelkamprath/ShiftRegisterLEDMatrixLib/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/michaelkamprath/ShiftRegisterLEDMatrixLib/compare/v1.0.1...v1.1.0

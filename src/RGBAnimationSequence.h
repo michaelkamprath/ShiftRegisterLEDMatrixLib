@@ -15,7 +15,6 @@
 // 
 //     You should have received a copy of the GNU General Public License
 //     along with Shift Register LED Matrix Project.  If not, see <http://www.gnu.org/licenses/>.
-
 #ifndef __RGBANIMATIONSEQUENCE_H__
 #define __RGBANIMATIONSEQUENCE_H__
 #include "RGBAnimation.h"

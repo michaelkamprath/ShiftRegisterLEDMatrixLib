@@ -22,8 +22,8 @@
 #define LED_MATRIX_MAX_SCAN_PASS_COUNT 1
 
 LEDMatrix::LEDMatrix( 
-	int rows,
-	int columns,
+	uint16_t rows,
+	uint16_t columns,
 	bool columnControlBitOn,
 	bool rowControlBitOn,
 	unsigned int interFrameOffTimeMicros,
@@ -40,51 +40,45 @@ LEDMatrix::LEDMatrix(
 				interFrameOffTimeMicros,
 				slavePin
 			),
-		_screen_data(NULL)
+		GFXcanvas1(columns, rows),
+		_matrixNeedsUpdate(false)
 {
 
 }
 
 void LEDMatrix::setup() {
 	this->BaseLEDMatrix::setup();
-	
-	if (_screen_data == NULL) {
-		_screen_data = new MutableGlyph(this->rows(), this->columns());
-	}
 }
 
 LEDMatrix::~LEDMatrix() {
-	if (_screen_data != NULL) {
-		delete _screen_data;
-	}
 }
 
 bool LEDMatrix::matrixNeedsUpdate(void) const {
-	return this->image().isDirty();
+	return _matrixNeedsUpdate;
 }
 void LEDMatrix::matrixHasBeenUpdated(void) {
-	this->image().setNotDirty();
+	_matrixNeedsUpdate = false;
 }
 
 void LEDMatrix::generateFrameBits(LEDMatrixBits& frameBits, size_t frame ) const {
-	for (unsigned int row = 0; row < this->rows(); row++) {
-		this->setRowBitsForFrame(row, frame, frameBits, *_screen_data);
+	for (uint16_t row = 0; row < this->rows(); row++) {
+		this->setRowBitsForFrame(row, frame, frameBits);
 	}
 }
 
 void LEDMatrix::setRowBitsForFrame(
-	int row,
+	uint16_t row,
 	size_t frame,
-	LEDMatrixBits& frameBits,
-	const LEDImageBase<bool>& image ) const 
+	LEDMatrixBits& frameBits
+) const 
 {	
 	if (!frameBits.isRowMemoized(row)) {
 		bool rowNeedsPower = false;
 		size_t colBitIdx = 0;
-		for (unsigned int col = 0; col < this->columns(); col++) {
-			bool isOn = image.pixel(row, col);
+		for (uint16_t col = 0; col < this->columns(); col++) {
+			uint16_t pixel = this->rawPixel(col, row);
 			
-			if (isOn) {
+			if (pixel > 0) {
 				frameBits.setColumnControlBit(row,colBitIdx,true);
 				rowNeedsPower = true;
 			}
@@ -99,3 +93,46 @@ ICACHE_RAM_ATTR unsigned int LEDMatrix::baseIntervalMultiplier( size_t frame ) c
 	return  10;
 }
 
+#pragma mark - Adafruit GFX Support
+
+uint16_t LEDMatrix::rawPixel( int16_t x, int16_t y ) const {
+	if((x < 0) || (y < 0) || (x >= _width) || (y >= _height)) return 0;
+	if(this->getBuffer()) {
+		uint8_t *buffer = this->getBuffer();
+		uint8_t *ptr  = &buffer[(x / 8) + y * ((WIDTH + 7) / 8)];
+		
+		return ((*ptr) & (0x80 >> (x & 7))) != 0;
+	}
+	return 0;
+}
+
+uint16_t LEDMatrix::pixel( int16_t x, int16_t y ) const {
+	int16_t t;
+	switch(this->getRotation()) {
+		case 1:
+			t = x;
+			x = WIDTH  - 1 - y;
+			y = t;
+			break;
+		case 2:
+			x = WIDTH  - 1 - x;
+			y = HEIGHT - 1 - y;
+			break;
+		case 3:
+			t = x;
+			x = y;
+			y = HEIGHT - 1 - t;
+			break;
+	}	
+	return this->rawPixel(x, y);
+}
+
+void LEDMatrix::drawPixel(int16_t x, int16_t y, uint16_t color) {
+	this->GFXcanvas1::drawPixel(x, y, color);
+	_matrixNeedsUpdate = true;
+}
+
+void LEDMatrix::fillScreen(uint16_t color) {
+	this->GFXcanvas1::fillScreen(color);
+	_matrixNeedsUpdate = true;
+}

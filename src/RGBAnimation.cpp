@@ -15,10 +15,8 @@
 // 
 //     You should have received a copy of the GNU General Public License
 //     along with Shift Register LED Matrix Project.  If not, see <http://www.gnu.org/licenses/>.
-
 #include <Arduino.h>
 #include "RGBAnimation.h"
-#include "Glyph.h"
 #include "RGBLEDMatrix.h"
 
 #pragma mark - RGBAnimationBase
@@ -28,19 +26,15 @@ RGBAnimationBase::RGBAnimationBase(
 			RGBLEDMatrix& matrix,
 			int maxSequenceIndex
 	) :	TimerAction(intervalMicros),
-		_originRow(0),
-		_originColumn(0),
+		_originX(0),
+		_originY(0),
 		_sequenceIndex(0),
 		_maxSequenceIndex(maxSequenceIndex),
 		_matrix(matrix),
 		_rightPadSize(0),
-		_rightPadColor(BLACK_COLOR),
 		_leftPadSize(0),
-		_leftPadColor(BLACK_COLOR),
 		_topPadSize(0),
-		_topPadColor(BLACK_COLOR),
-		_bottomPadSize(0),
-		_bottomPadColor(BLACK_COLOR)
+		_bottomPadSize(0)
 {
 
 }
@@ -52,77 +46,89 @@ void RGBAnimationBase::action()
 	this->update();
 }
 
-void RGBAnimationBase::update() {
+void RGBAnimationBase::erase() {
 	_matrix.startDrawing();
-	this->draw(_matrix.image());
-	if (_rightPadSize > 0) {
-		int imgRightColumn = this->getOriginColumn() + _matrix.image().columns();
-		for (	int x = imgRightColumn >= 0 ? imgRightColumn : 0;
-				(x < _matrix.image().columns())&&(x < imgRightColumn + _rightPadSize);
-				x++ )
-		{
-			for (int y = 0; y < _matrix.image().rows(); y++) {
-				_matrix.image().pixel(y,x) = _rightPadColor;
-			}
-		}
-	}
-	if (_leftPadSize > 0) {
-		int imgLeftColumn = this->getOriginColumn();
-		for (	int x = imgLeftColumn - _leftPadSize >= 0 ? imgLeftColumn - _leftPadSize : 0;
-				(x < _matrix.image().columns())&&(x < imgLeftColumn);
-				x++ )
-		{
-			for (int y = 0; y < _matrix.image().rows(); y++) {
-				_matrix.image().pixel(y,x) = _leftPadColor;
-			}
-		}
-	}
-	if (_topPadSize > 0) {
-		int imgTopRow = this->getOriginRow();
-		for (	int y = imgTopRow - _topPadSize >= 0 ? imgTopRow - _topPadSize : 0;
-				(y < _matrix.image().rows())&&(y < imgTopRow);
-				y++ )
-		{
-			for (int x = 0; x < _matrix.image().columns(); x++) {
-				_matrix.image().pixel(y,x) = _topPadColor;
-			}
-		}
-	}
-	if (_bottomPadSize > 0) {
-		int imgBottomRow = this->getOriginRow() + _matrix.image().rows();
-		for (	int y = imgBottomRow >= 0 ? imgBottomRow : 0;
-				(y < _matrix.image().rows())&&(y < imgBottomRow + _bottomPadSize);
-				y++ )
-		{
-			for (int x = 0; x < _matrix.image().columns(); x++) {
-				_matrix.image().pixel(y,x) = _bottomPadColor;
-			}
-		}
-	}
-
+	this->erase(_matrix);
 	_matrix.stopDrawing();
 }
 
-void RGBAnimationBase::setRightPad( int padSize, RGBColorType padColor ) {
+void RGBAnimationBase::update() {
+	_matrix.startDrawing();
+	this->draw(_matrix);
+	_matrix.stopDrawing();
+}
+
+void RGBAnimationBase::setRightPad( int padSize ) {
 	_rightPadSize = padSize;
-	_rightPadColor = padColor;
 }
-void RGBAnimationBase::setLeftPad( int padSize, RGBColorType padColor ) {
+void RGBAnimationBase::setLeftPad( int padSize ) {
 	_leftPadSize = padSize;
-	_leftPadColor = padColor;
 }
-void RGBAnimationBase::setTopPad( int padSize, RGBColorType padColor ) {
+void RGBAnimationBase::setTopPad( int padSize ) {
 	_topPadSize = padSize;
-	_topPadColor = padColor;
 }
-void RGBAnimationBase::setBottomPad( int padSize, RGBColorType padColor ) {
+void RGBAnimationBase::setBottomPad( int padSize ) {
 	_bottomPadSize = padSize;
-	_bottomPadColor = padColor;
 }
 
-#pragma mark - GlyphSequenceAnimation
+#pragma mark - ColorBitmapSequenceAnimation
 
-GlyphSequenceAnimation::GlyphSequenceAnimation(
+ColorBitmapSequenceAnimation::ColorBitmapSequenceAnimation(
+			RGBLEDMatrix& matrix,
+			const Frame* frameArray,
+			int	frameArraySize,
+			RGBColorType backgroundColor
+	) :	RGBAnimationBase(1000,matrix,frameArraySize),
+		_frameArray(frameArray),
+		_frameArraySize(frameArraySize),
+		_lastDrawnSequenceIdx( 0 ),
+		_backgroundColor(backgroundColor)
+{
+}
+
+void ColorBitmapSequenceAnimation::erase(RGBLEDMatrix& matrix) {
+	int idx = this->getSequenceIndex();
+
+	matrix.writeFillRect(
+		this->getOriginX() - _leftPadSize,
+		this->getOriginY() - _topPadSize,
+		this->columns() + _leftPadSize + _rightPadSize,
+		this->rows()  + _topPadSize + _bottomPadSize,
+		_backgroundColor
+	);
+}
+	
+void ColorBitmapSequenceAnimation::draw(RGBLEDMatrix& matrix)
+{
+	int idx = this->getSequenceIndex();
+
+	matrix.writeFillRect(
+		this->getOriginX(),
+		this->getOriginY(),
+		this->columns(),
+		this->rows(),
+		_backgroundColor
+	);
+			
+	matrix.drawRGBBitmap(
+		this->getOriginX() + _frameArray[idx].x,
+		this->getOriginY() + _frameArray[idx].y,
+		_frameArray[idx].bitmap,
+		_frameArray[idx].bitmapWidth,
+		_frameArray[idx].bitmapHeight
+	);
+
+	// this function may be called multiple times in a given interval. Only
+	// 
+	if ( idx != _lastDrawnSequenceIdx ) {
+		this->setIntervalMillis(_frameArray[idx].interval);
+	}
+	_lastDrawnSequenceIdx = idx;
+}
+
+#pragma mark - MonoBitmapSequenceAnimation
+
+MonoBitmapSequenceAnimation::MonoBitmapSequenceAnimation(
 			RGBLEDMatrix& matrix,
 			const Frame* frameArray,
 			int	frameArraySize
@@ -132,25 +138,38 @@ GlyphSequenceAnimation::GlyphSequenceAnimation(
 		_lastDrawnSequenceIdx( 0 )
 {
 }
-		
-void GlyphSequenceAnimation::draw( MutableRGBImage& buffer)
+
+void MonoBitmapSequenceAnimation::erase(RGBLEDMatrix& matrix) {
+	int idx = this->getSequenceIndex();
+
+	matrix.writeFillRect(
+		this->getOriginX() - _leftPadSize,
+		this->getOriginY() - _topPadSize,
+		this->columns() + _leftPadSize + _rightPadSize,
+		this->rows()  + _topPadSize + _bottomPadSize,
+		_frameArray[idx].background
+	);
+}
+
+void MonoBitmapSequenceAnimation::draw(RGBLEDMatrix& matrix)
 {
 	int idx = this->getSequenceIndex();
 
-	buffer.drawRectangle(
-		this->getOriginRow(),
-		this->getOriginColumn(),
-		this->getOriginRow() + buffer.rows() - 1,
-		this->getOriginColumn() + buffer.columns() - 1,
-		_frameArray[idx].background,
-		true
+	matrix.writeFillRect(
+		this->getOriginX(),
+		this->getOriginY(),
+		this->columns(),
+		this->rows(),
+		_frameArray[idx].background
 	);
 			
-	buffer.drawGlyph(
-		*_frameArray[idx].glyph,
-		this->getOriginRow() + _frameArray[idx].row,
-		this->getOriginColumn() + _frameArray[idx].column,
-		_frameArray[idx].foreground,
+	matrix.drawBitmap(
+		this->getOriginX() + _frameArray[idx].x,
+		this->getOriginY() + _frameArray[idx].y,
+		_frameArray[idx].bitmap,
+		_frameArray[idx].bitmapWidth,
+		_frameArray[idx].bitmapHeight,
+		_frameArray[idx].color,
 		_frameArray[idx].background
 	);
 
@@ -162,45 +181,4 @@ void GlyphSequenceAnimation::draw( MutableRGBImage& buffer)
 	_lastDrawnSequenceIdx = idx;
 }
 
-
-#pragma mark - ImageSequenceAnimation
-
-ImageSequenceAnimation::ImageSequenceAnimation(
-			RGBLEDMatrix& matrix,
-			const ImageSequenceAnimation::Frame* frameArray,
-			int	frameArraySize
-	) :	RGBAnimationBase(1000,matrix,frameArraySize),
-		_frameArray(frameArray),
-		_frameArraySize(frameArraySize),
-		_lastDrawnSequenceIdx( 0 )
-{
-}
-		
-
-void ImageSequenceAnimation::draw( MutableRGBImage& buffer)
-{
-	int idx = this->getSequenceIndex();
-
-	buffer.drawRectangle(
-		this->getOriginRow(),
-		this->getOriginColumn(),
-		this->getOriginRow() + buffer.rows() - 1,
-		this->getOriginColumn() + buffer.columns() - 1,
-		BLACK_COLOR,
-		true
-	);
-
-	buffer.placeImageAt(
-		*_frameArray[idx].image,
-		this->getOriginRow() + _frameArray[idx].row,
-		this->getOriginColumn() + _frameArray[idx].column
-	);
-
-	// this function may be called multiple times in a given interval. Only
-	// 
-	if ( idx != _lastDrawnSequenceIdx ) {
-		this->setIntervalMillis(_frameArray[idx].interval);
-	}
-	_lastDrawnSequenceIdx = idx;
-}
 

@@ -15,8 +15,8 @@ private:
 protected:
   virtual void action() {
     _screen->startDrawing();
-    for (int x = 0; x < _screen->rows(); ++x) {
-      for (int y = 0; y < _screen->columns(); ++y ) {
+    for (int x = 0; x < _screen->columns(); ++x) {
+      for (int y = 0; y < _screen->rows(); ++y ) {
         RGBColorType color = 0;
         if ( x == _xStack[4] && y == _yStack[4] ) {
           color = DARK_BLUE_COLOR;
@@ -38,7 +38,7 @@ protected:
           color = RED_COLOR;
         }
 
-        _screen->image().pixel(x,y) = color;
+        _screen->writePixel(x,y, color);
       }
     }
     _screen->stopDrawing();

@@ -38,7 +38,7 @@ protected:
           color = RED_COLOR;
         }
 
-        _screen->image().pixel(x,y) = color;
+        _screen->writePixel(x, y, color);
       }
     }
     _screen->stopDrawing();

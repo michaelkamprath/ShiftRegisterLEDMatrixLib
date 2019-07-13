@@ -19,127 +19,78 @@
 #define __RGBCOLOR_H__
 #include <Arduino.h>
 
-#ifndef TWELVE_BIT_COLOR
-#define TWELVE_BIT_COLOR (defined(__arm__)&& defined(TEENSYDUINO)) \
+/***
+RGB Color
+
+RGB color is a 16-bit color fit into a uint16_t. The red and blue components each get 5 bits
+of data, and green gets 6. The bit layout for the uint16_t is as follows:
+
+	Bits   0   4   8  12  
+		   |---|---|---|---
+ 		   RRRRRGGGGGGBBBBB
+ 
+Even though the color information is encoded into a 16 bit format, some microcontrollers
+may only leverage effectively 9 bits of information, or three bits of information per color. 
+This is not done for memory space savings , but instead because some microcontrollers 
+cannot scan through the LED rows fast enough to enable 16 bit color. When in 6-bit mode,
+these are the bits considered when determining the color level:
+
+	Bits   0   4   8  12  
+		   |---|---|---|---
+ 		   R-R-RG-G--GB-B-B
+ 		   
+Or, the following big masks are used:
+
+	RED_MASK_6BIT 	= 0xA800
+	GREEN_MASK_6BIT	= 0x0540
+	BLUE_MASK_6BIT	= 0x0015
+***/
+
+#ifndef SIXTEEN_BIT_COLOR
+#define SIXTEEN_BIT_COLOR (defined(__arm__)&& defined(TEENSYDUINO)) \
 							||defined(__AVR_ATmega2560__) \
 							||defined( ESP32 ) \
 							||defined(ARDUINO_SAMD_ZERO) \
-							||defined(_SAM3XA_) 
+							||defined(_SAM3XA_)
 							
 // You may wish to add the following platforms to the set that support 12-bit color
 //
-//							||defined( ESP8266 ) \
-// 							||defined(__AVR_ATmega1284__) \
+//							||defined( ESP8266 ) 
+// 							||defined(__AVR_ATmega1284__) 
 // 							||defined(__AVR_ATmega1284P__) 
 
 #endif
 
-#if TWELVE_BIT_COLOR
-/***
-
-Each byte controls one LED. Each color get four bits to indicate color intensity (0-15).
-The bits of the byte are laid out as follows in a 2-byte integer:
-
-	Bits   0   4   8  12  
-		   |---|---|---|---
- 		   TUUURRRRGGGGBBBB
-
-	T = transparent
-	U = unused
-	R = Red
-	G = Green
-	B = Blue
-
-*/
-
 typedef uint16_t RGBColorType;
 
+const RGBColorType RED_COLOR_MASK = 0xF800;
+const RGBColorType GREEN_COLOR_MASK = 0x07E0;
+const RGBColorType BLUE_COLOR_MASK = 0x001F;
 
-const RGBColorType AQUA_COLOR = 0x00FF;
+
+const RGBColorType AQUA_COLOR = GREEN_COLOR_MASK|BLUE_COLOR_MASK;
 const RGBColorType BLACK_COLOR = 0;
-const RGBColorType BLUE_COLOR = 0x000F;
-const RGBColorType BROWN_COLOR = 0x0941;
-const RGBColorType CORAL_COLOR = 0x0F75;
+const RGBColorType BLUE_COLOR = BLUE_COLOR_MASK;
+const RGBColorType BROWN_COLOR = 0xA145;
+const RGBColorType CORAL_COLOR = 0xF8E5;
 const RGBColorType DARK_BLUE_COLOR = 0x0004;
-const RGBColorType DARK_GRAY_COLOR = 0x0444;
-const RGBColorType DARK_GREEN_COLOR = 0x0040;
-const RGBColorType DARK_RED_COLOR = 0x0400;
-const RGBColorType GRAY_COLOR = 0x0999;
-const RGBColorType GREEN_COLOR = 0x00F0;
-const RGBColorType LIME_COLOR = 0x03C3;
-const RGBColorType MAGENTA_COLOR = 0x0F0F;
-const RGBColorType ORANGE_COLOR = 0x0FA0;
-const RGBColorType PINK_COLOR = 0x0F6A;
-const RGBColorType PURPLE_COLOR = 0x092E;
-const RGBColorType RED_COLOR = 0x0F00;
-const RGBColorType SKY_BLUE_COLOR = 0x08CF;
-const RGBColorType SLATE_BLUE_COLOR = 0x065C;
-const RGBColorType TRANSPARENT_COLOR = 0x8000;
-const RGBColorType TURQUOISE_COLOR = 0x05FA;
-const RGBColorType VIOLET_COLOR = 0x0E7E;
-const RGBColorType WHITE_COLOR = 0x0FFF;
-const RGBColorType YELLOW_COLOR = 0x0FF0;
-
-const static RGBColorType RED_MASK = 0x0F00;
-const static unsigned int RED_BIT_SHIFT = 8;
-
-const static RGBColorType GREEN_MASK = 0x00F0;
-const static unsigned int GREEN_BIT_SHIFT = 4;
-
-const static RGBColorType BLUE_MASK = 0x000F;
-const static unsigned int BLUE_BIT_SHIFT = 0;
-
-#else
-
-/***
-Each byte controls one LED. Each color get two bits to indicate color intensity (0,1,2,3).
-The bits of the byte are laid out as follows:
-	Bits   0   4
-		   |---|---
-		   TURRGGBB
-	T = transparent
-	U = unused
-	R = Red
-	G = Green
-	B = Blue
-*/
-
-typedef unsigned char RGBColorType;
-
-const RGBColorType AQUA_COLOR = 0x0F;
-const RGBColorType BLACK_COLOR = 0;
-const RGBColorType BLUE_COLOR = 0x03;
-const RGBColorType CORAL_COLOR = 0x39;
-const RGBColorType DARK_BLUE_COLOR = B00000001;
-const RGBColorType DARK_GRAY_COLOR = 0x15;
-const RGBColorType DARK_GREEN_COLOR = B00000100;
-const RGBColorType DARK_RED_COLOR = B00010000;
-const RGBColorType GRAY_COLOR = 0x2A;
-const RGBColorType GREEN_COLOR = 0x0C;
-const RGBColorType LIME_COLOR = 0x2D;
-const RGBColorType MAGENTA_COLOR = 0x33;
-const RGBColorType ORANGE_COLOR = 0x38;
-const RGBColorType PINK_COLOR = 0x26;
-const RGBColorType PURPLE_COLOR = B00010001;
-const RGBColorType RED_COLOR = 0x30;
-const RGBColorType SKY_BLUE_COLOR = B00010110;
-const RGBColorType SLATE_BLUE_COLOR = 0x16;
-const RGBColorType TRANSPARENT_COLOR = B10000000;
-const RGBColorType TURQUOISE_COLOR = 0x1E;
-const RGBColorType VIOLET_COLOR = 0x27;
-const RGBColorType WHITE_COLOR = 0x3F;
-const RGBColorType YELLOW_COLOR = 0x3C;
-
-const static RGBColorType RED_MASK = 0x30;
-const static unsigned char RED_BIT_SHIFT = 4;
-
-const static RGBColorType GREEN_MASK = 0x0C;
-const static unsigned char GREEN_BIT_SHIFT = 2;
-
-const static RGBColorType BLUE_MASK = 0x03;
-const static unsigned char BLUE_BIT_SHIFT = 0;
-#endif //TWELVE_BIT_COLOR
-
+const RGBColorType DARK_GRAY_COLOR = 0x821;
+const RGBColorType DARK_GREEN_COLOR = 0x0020;
+const RGBColorType DARK_RED_COLOR = 0x0800;
+const RGBColorType GRAY_COLOR = 0x39E7;
+const RGBColorType GREEN_COLOR = GREEN_COLOR_MASK;
+const RGBColorType LIME_COLOR = 0x1983;
+const RGBColorType MAGENTA_COLOR = 0xF81F;
+const RGBColorType ORANGE_COLOR = 0xF8E0;
+const RGBColorType PINK_COLOR = 0xF8B2;
+const RGBColorType PURPLE_COLOR = 0x3807;
+const RGBColorType RED_COLOR = RED_COLOR_MASK;
+const RGBColorType SKY_BLUE_COLOR = 0x867D;
+const RGBColorType SLATE_BLUE_COLOR = 0x6ADB;
+const RGBColorType TURQUOISE_COLOR = 0x471A;
+const RGBColorType VIOLET_COLOR = 0x901A;
+const RGBColorType WHITE_COLOR = 0xFFFF;
+const RGBColorType YELLOW_COLOR = RED_COLOR_MASK|GREEN_COLOR_MASK;
 
 namespace RGBColor {
 

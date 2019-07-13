@@ -21,8 +21,9 @@
 
 // #define SPICACHEPADBITS(rows,cols)	(rows*3 + cols)%8 ? 8 - (rows*3 + cols)%8 : 0
 // #define SPICACHESIZE(rows,cols)	1+((rows*3 + cols)-1)/8
-#if TWELVE_BIT_COLOR
-#define MAX_SCAN_PASS_COUNT 15
+
+#if SIXTEEN_BIT_COLOR
+#define MAX_SCAN_PASS_COUNT 6
 #else
 #define MAX_SCAN_PASS_COUNT 3
 #endif
@@ -57,139 +58,71 @@ RGBLEDMatrix::RGBLEDMatrix(
 				slavePin,
 				bitEndian
 			),
+		GFXcanvas16(columns, rows),
 		_bitLayout(bitLayout),
-		_screen_data(NULL)
+		_matrixNeedsUpdate(false)
 {
 
 }
 
 void RGBLEDMatrix::setup() {
 	this->BaseLEDMatrix::setup();
-	
-	if (_screen_data == NULL) {
-		_screen_data = new MutableRGBImage(this->rows(), this->columns());
-	}
 }
 
 RGBLEDMatrix::~RGBLEDMatrix() {
-	if (_screen_data != NULL) {
-		delete _screen_data;
-	}
 }
 
 bool RGBLEDMatrix::matrixNeedsUpdate(void) const {
-	return this->image().isDirty();
+	return _matrixNeedsUpdate;
 }
 void RGBLEDMatrix::matrixHasBeenUpdated(void) {
-	this->image().setNotDirty();
+	_matrixNeedsUpdate = false;
 }
 
-size_t RGBLEDMatrix::maxFrameCountForValue(RGBColorType value) const {
-#if TWELVE_BIT_COLOR
-	switch (value) {
+
+bool RGBLEDMatrix::allowedFrameForValue(uint16_t value, size_t frame) const {
+#if SIXTEEN_BIT_COLOR
+	switch (frame) {
 		case 0:
-			return 0;
+			// bit 0 of each of RGB
+			return (value&0x0821) != 0;
 			break;
-		case 0x0100:
-		case 0x0010:
-		case 0x0001:
-			return 1;
+		case 1:
+			// green has a bit specific to this pass, on for that.
+			return ( (value&0x0040) != 0 ) ||
+			// only one for red and blue if both the prior pass and next pass are on
+					(value&0x1800 == 0x1800) || (value&0x0003 == 0x0003);
+				break;
+		case 2:
+			// red bit 2, green bit 3, blue bit 2
+			return (value&0x1082) != 0;
 			break;
-		case 0x0200:
-		case 0x0020:
-		case 0x0002:
-			return 2;
+		case 3:
+			return (value&0x2104) != 0;
 			break;
-		case 0x0300:
-		case 0x0030:
-		case 0x0003:
-			return 3;
+		case 4:
+			return (value&0x4208) != 0;
 			break;
-		case 0x0400:
-		case 0x0040:
-		case 0x0004:
-			return 4;
-			break;
-		case 0x0500:
-		case 0x0050:
-		case 0x0005:
-			return 5;
-			break;
-		case 0x0600:
-		case 0x0060:
-		case 0x0006:
-			return 6;
-			break;
-		case 0x0700:
-		case 0x0070:
-		case 0x0007:
-			return 7;
-			break;
-		case 0x0800:
-		case 0x0080:
-		case 0x0008:
-			return 8;
-			break;
-		case 0x0900:
-		case 0x0090:
-		case 0x0009:
-			return 9;
-			break;
-		case 0x0A00:
-		case 0x00A0:
-		case 0x000A:
-			return 10;
-			break;
-		case 0x0B00:
-		case 0x00B0:
-		case 0x000B:
-			return 11;
-			break;
-		case 0x0C00:
-		case 0x00C0:
-		case 0x000C:
-			return 12;
-			break;
-		case 0x0D00:
-		case 0x00D0:
-		case 0x000D:
-			return 13;
-			break;
-		case 0x0E00:
-		case 0x00E0:
-		case 0x000E:
-			return 14;
-			break;
-		case 0x0F00:
-		case 0x00F0:
-		case 0x000F:
-			return 15;
+		case 5:
+			return (value&0x8410) != 0;
 			break;
 		default:
-			return MAX_SCAN_PASS_COUNT;
-			break;
+			return false;
 	}
 #else
-	// we expect only on of the 4 bit sets in the value to be on
-	switch (value) {
+	switch (frame) {
 		case 0:
-			return 0;
+			// bit 0 of each of RGB
+			return (value&0x31E6) != 0;
 			break;
-		case B00010000:
-		case B00000100:
-		case B00000001:
-			return 1;
+		case 1:
+			return (value&0x4208) != 0;
 			break;
-		case B00100000:
-		case B00001000:
-		case B00000010:		
-			return 2;
+		case 2:
+			return (value&0x8410) != 0;
 			break;
-		case B00110000:
-		case B00001100:
-		case B00000011:		
 		default:
-			return MAX_SCAN_PASS_COUNT;
+			return false;
 			break;
 	}
 #endif
@@ -197,15 +130,14 @@ size_t RGBLEDMatrix::maxFrameCountForValue(RGBColorType value) const {
 
 void RGBLEDMatrix::generateFrameBits(LEDMatrixBits& frameBits, size_t frame ) const {
 	for (unsigned int row = 0; row < this->controlRows(); row++) {
-		this->setControlRowBitsForFrame(row, frame, frameBits, *_screen_data);
+		this->setControlRowBitsForFrame(row, frame, frameBits);
 	}
 }
 
 void RGBLEDMatrix::setControlRowBitsForFrame(
 	unsigned int controlRow,
 	size_t frame,
-	LEDMatrixBits& frameBits,
-	const MutableRGBImage& image ) const 
+	LEDMatrixBits& frameBits ) const 
 {	
 	if (!frameBits.isRowMemoized(controlRow)) {
 		bool rowNeedsPower = false;
@@ -234,8 +166,7 @@ void RGBLEDMatrix::setControlRowBitsForFrame(
 				blueBitOffset,
 				columnBitIdxIncrement,
 				frame,
-				frameBits,
-				image
+				frameBits
 			);
 		}		
 		frameBits.setRowControlBit(controlRow,rowNeedsPower);
@@ -250,8 +181,7 @@ bool RGBLEDMatrix::setColumnBitsForControlRowAndFrame(
 	size_t blueBitOffset,
 	size_t columnBitIdxIncrement,
 	size_t frame,
-	LEDMatrixBits& frameBits,
-	const MutableRGBImage& image ) const 
+	LEDMatrixBits& frameBits ) const 
 {
 	bool rowNeedsPower = false;	
 	size_t colBitIdx = rowGroup*this->columns()*this->columnBitWidth();
@@ -272,27 +202,27 @@ bool RGBLEDMatrix::setColumnBitsForControlRowAndFrame(
 			endianCol = this->columns() - (colByte+1)*8 + colBit;
 		}
 		
-		RGBColorType rgbValue = image.pixel(imageRow, endianCol);
+		RGBColorType rgbValue = this->rawPixel(endianCol, imageRow);
 		// a form of Binary Code Modulation is used to control
 		// the LED intensity at variou levels.
 	
 		// red
-		RGBColorType redValue = rgbValue & RED_MASK;
-		if (redValue && frame <= RGBLEDMatrix::maxFrameCountForValue(redValue) ) {
+		RGBColorType redValue = rgbValue & RED_COLOR_MASK;
+		if (redValue && RGBLEDMatrix::allowedFrameForValue(redValue, frame) ) {
 			frameBits.setColumnControlBit(controlRow,colBitIdx+redBitOffset,true);
 			rowNeedsPower = true;
 		}
 		
 		// green
-		RGBColorType greenValue = rgbValue & GREEN_MASK;
-		if (greenValue && frame <= RGBLEDMatrix::maxFrameCountForValue(greenValue) ) {
+		RGBColorType greenValue = rgbValue & GREEN_COLOR_MASK;
+		if (greenValue && RGBLEDMatrix::allowedFrameForValue(greenValue, frame) ) {
 			frameBits.setColumnControlBit(controlRow,colBitIdx+greenBitOffset,true);
 			rowNeedsPower = true;
 		}
 				
 		// blue
-		RGBColorType blueValue = (rgbValue & BLUE_MASK);
-		if (blueValue && frame <= RGBLEDMatrix::maxFrameCountForValue(blueValue) ) {
+		RGBColorType blueValue = (rgbValue & BLUE_COLOR_MASK);
+		if (blueValue && RGBLEDMatrix::allowedFrameForValue(blueValue, frame) ) {
 			frameBits.setColumnControlBit(controlRow,colBitIdx+blueBitOffset,true);
 			rowNeedsPower = true;
 		}
@@ -304,24 +234,63 @@ bool RGBLEDMatrix::setColumnBitsForControlRowAndFrame(
 
 // Number of 5 microsecond units
 unsigned int RGBLEDMatrix::baseIntervalMultiplier( size_t frame ) const {
-#if TWELVE_BIT_COLOR
-#if defined(__AVR_ATmega2560__)||defined(__AVR_ATmega1284__)||defined(__AVR_ATmega1284P__)
-	unsigned int multiplier = frame/8 + 1;
-#else
-	unsigned int multiplier = frame/4 + 1;
-#endif
+	return (1 << frame);
+}
 
-#else
-	unsigned int multiplier = 1;
-	switch (frame) {
+#pragma mark - Adafruit GFX Support
+
+uint16_t RGBLEDMatrix::rawPixel( int16_t x, int16_t y ) const {
+	if((x < 0) || (y < 0) || (x >= _width) || (y >= _height)) return 0;
+	if(this->getBuffer()) {
+		return this->getBuffer()[x + y * this->WIDTH];
+	}
+	return 0;
+}
+
+uint16_t RGBLEDMatrix::pixel( int16_t x, int16_t y ) const {
+	int16_t t;
+	switch(this->getRotation()) {
+		case 1:
+			t = x;
+			x = WIDTH  - 1 - y;
+			y = t;
+			break;
 		case 2:
-			multiplier = 3;
+			x = WIDTH  - 1 - x;
+			y = HEIGHT - 1 - y;
 			break;
 		case 3:
-			multiplier = 8;
+			t = x;
+			x = y;
+			y = HEIGHT - 1 - t;
 			break;
+	}	
+	return this->rawPixel(x, y);
+}
+
+void RGBLEDMatrix::drawPixel(int16_t x, int16_t y, uint16_t color) {
+	this->GFXcanvas16::drawPixel(x, y, color);
+	_matrixNeedsUpdate = true;
+}
+
+void RGBLEDMatrix::fillScreen(uint16_t color) {
+	this->GFXcanvas16::fillScreen(color);
+	_matrixNeedsUpdate = true;
+}
+
+#pragma mark - Debugging
+
+void RGBLEDMatrix::debugPrintImageData(void) const {
+	char c[8];
+	Serial.println("Current image data:");
+	for (uint16_t y = 0; y < this->HEIGHT; y++ ) {
+		Serial.print("    ");
+		for (uint16_t x = 0; x < this->WIDTH; x++) {
+			Serial.print("0x");
+			sprintf(c, "%04x", this->rawPixel(x,y));
+			Serial.print(c);
+			Serial.print(" ");
+		}
+		Serial.print("\n");
 	}
-#endif
-	
-	return  multiplier;
 }

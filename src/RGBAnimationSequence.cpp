@@ -15,7 +15,6 @@
 // 
 //     You should have received a copy of the GNU General Public License
 //     along with Shift Register LED Matrix Project.  If not, see <http://www.gnu.org/licenses/>.
-
 #include <Arduino.h>
 #include "RGBAnimationSequence.h"
 
@@ -54,8 +53,8 @@ void RGBAnimationSequence::action() {
 
 	if (_curState == ANIMATION_START) {
 		RGBAnimationBase* curAni = _aniArray[_curItemIdx].animation;
-		curAni->setOriginRow(0);
-		curAni->setOriginColumn(0);
+		curAni->setOriginX(0);
+		curAni->setOriginY(0);
 		_itemIsInView[0] = true;
 		this->setIntervalMillis(_aniArray[_curItemIdx].appearMillis);
 		
@@ -73,8 +72,8 @@ void RGBAnimationSequence::action() {
 			
 			RGBAnimationBase* curAni = _aniArray[_curItemIdx].animation;
 			curAni = _aniArray[_curItemIdx].animation;
-			curAni->setOriginRow(0);
-			curAni->setOriginColumn(0);
+			curAni->setOriginX(0);
+			curAni->setOriginY(0);
 			_itemIsInView[_curItemIdx] = true;
 			
 			this->setIntervalMillis(_aniArray[_curItemIdx].appearMillis);
@@ -120,10 +119,10 @@ void RGBAnimationSequence::action() {
 				_nextItemOriginY = 0;
 			}
 			
-			curAni->setOriginRow(_curItemOriginY);
-			curAni->setOriginColumn(_curItemOriginX);
-			nextAni->setOriginRow(_nextItemOriginY);
-			nextAni->setOriginColumn(_nextItemOriginX);
+			curAni->setOriginY(_curItemOriginY);
+			curAni->setOriginX(_curItemOriginX);
+			nextAni->setOriginY(_nextItemOriginY);
+			nextAni->setOriginX(_nextItemOriginX);
 			
 			if ( _aniArray[_curItemIdx].transition == TRANSITION_SLIDE_RIGHT
 				|| _aniArray[_curItemIdx].transition == TRANSITION_SLIDE_LEFT )
@@ -161,10 +160,13 @@ void RGBAnimationSequence::action() {
 			_nextItemOriginY--;
 		}
 
-		curAni->setOriginRow(_curItemOriginY);
-		curAni->setOriginColumn(_curItemOriginX);
-		nextAni->setOriginRow(_nextItemOriginY);
-		nextAni->setOriginColumn(_nextItemOriginX);
+		curAni->erase();
+		nextAni->erase();
+
+		curAni->setOriginY(_curItemOriginY);
+		curAni->setOriginX(_curItemOriginX);
+		nextAni->setOriginY(_nextItemOriginY);
+		nextAni->setOriginX(_nextItemOriginX);
 		
 		curAni->update();
 		nextAni->update();

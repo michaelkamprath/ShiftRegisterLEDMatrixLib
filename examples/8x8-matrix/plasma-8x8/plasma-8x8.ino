@@ -13,7 +13,6 @@
  */
 #include <RGBLEDMatrix.h>
 #include <RGBColor.h>
-#include <RGBImage.h>
 
 /* Color Schemes
  *  
@@ -71,7 +70,7 @@ void drawPlasma( unsigned long counter ) {
 
       RGBColorType color = RGBColor::fromRGB(r, g, b);
                               
-      leds.image().pixel(row, col) = color;
+      leds.writePixel(col, row, color);
     }
   }
   leds.stopDrawing();

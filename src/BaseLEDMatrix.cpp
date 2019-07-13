@@ -115,7 +115,7 @@ void BaseLEDMatrix::action() {
 			
 			for (size_t i = 0;  i < _pwmCycleScanCount; i++) {
 				_screenBitFrames[i+idxOffset]->reset();		
-				this->generateFrameBits(*_screenBitFrames[i+idxOffset], i+1);
+				this->generateFrameBits(*_screenBitFrames[i+idxOffset], i);
 			}
 	
 			noInterrupts(); // disable all interrupts
@@ -206,6 +206,25 @@ ICACHE_RAM_ATTR unsigned int BaseLEDMatrix::rowOffTimerInterval(void) const {
 	return  _interFrameOffTimeInterval;
 }
 
+#pragma mark - Debugging
+void BaseLEDMatrix::debugPrintFrames( void ) const {
+	size_t idxOffset = 0;
+	if (_screenBitFrameToggle) {
+		idxOffset = _pwmCycleScanCount;
+	}
+	Serial.println("\nThe matrix frames currently are:");
+	for (unsigned int i = 0; i < _pwmCycleScanCount*2; i++ ) {
+		Serial.print("Frame #");
+		Serial.print(i);
+		if (i == idxOffset) {
+			Serial.print(" (CURRENT BASE)");
+		}
+		Serial.print(" :\n");
+		_screenBitFrames[i]->streamToSerial();
+	}
+}
+
+
 /*
  * Interrupt Handlers
  *
@@ -265,7 +284,7 @@ void BaseLEDMatrix::stopScanning(void) {
 
 unsigned int BaseLEDMatrix::nextRowScanTimerInterval(void) const {
 	// Calculates the microseconds for each scan	
-	return  50*this->baseIntervalMultiplier( _scanPass );
+	return  10*this->baseIntervalMultiplier( _scanPass );
 }
 
 #pragma mark ESP32 Handlers
