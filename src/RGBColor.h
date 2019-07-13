@@ -68,30 +68,29 @@ const RGBColorType GREEN_COLOR_MASK = 0x07E0;
 const RGBColorType BLUE_COLOR_MASK = 0x001F;
 
 
-// const RGBColorType AQUA_COLOR = 0x00FF;
+const RGBColorType AQUA_COLOR = GREEN_COLOR_MASK|BLUE_COLOR_MASK;
 const RGBColorType BLACK_COLOR = 0;
 const RGBColorType BLUE_COLOR = BLUE_COLOR_MASK;
-// const RGBColorType BROWN_COLOR = 0x0941;
+const RGBColorType BROWN_COLOR = 0xA145;
 const RGBColorType CORAL_COLOR = 0xF8E5;
 const RGBColorType DARK_BLUE_COLOR = 0x0004;
-// const RGBColorType DARK_GRAY_COLOR = 0x0444;
+const RGBColorType DARK_GRAY_COLOR = 0x821;
 const RGBColorType DARK_GREEN_COLOR = 0x0020;
-// const RGBColorType DARK_RED_COLOR = 0x0400;
-// const RGBColorType GRAY_COLOR = 0x0999;
+const RGBColorType DARK_RED_COLOR = 0x0800;
+const RGBColorType GRAY_COLOR = 0x39E7;
 const RGBColorType GREEN_COLOR = GREEN_COLOR_MASK;
 const RGBColorType LIME_COLOR = 0x1983;
 const RGBColorType MAGENTA_COLOR = 0xF81F;
 const RGBColorType ORANGE_COLOR = 0xF8E0;
-// const RGBColorType PINK_COLOR = 0x0F6A;
-// const RGBColorType PURPLE_COLOR = 0x092E;
- const RGBColorType RED_COLOR = RED_COLOR_MASK;
-// const RGBColorType SKY_BLUE_COLOR = 0x08CF;
-// const RGBColorType SLATE_BLUE_COLOR = 0x065C;
-// const RGBColorType TRANSPARENT_COLOR = 0x8000;
-// const RGBColorType TURQUOISE_COLOR = 0x05FA;
-// const RGBColorType VIOLET_COLOR = 0x0E7E;
+const RGBColorType PINK_COLOR = 0xF8B2;
+const RGBColorType PURPLE_COLOR = 0x3807;
+const RGBColorType RED_COLOR = RED_COLOR_MASK;
+const RGBColorType SKY_BLUE_COLOR = 0x867D;
+const RGBColorType SLATE_BLUE_COLOR = 0x6ADB;
+const RGBColorType TURQUOISE_COLOR = 0x471A;
+const RGBColorType VIOLET_COLOR = 0x901A;
 const RGBColorType WHITE_COLOR = 0xFFFF;
-const RGBColorType YELLOW_COLOR = 0xFFE0;
+const RGBColorType YELLOW_COLOR = RED_COLOR_MASK|GREEN_COLOR_MASK;
 
 namespace RGBColor {
 

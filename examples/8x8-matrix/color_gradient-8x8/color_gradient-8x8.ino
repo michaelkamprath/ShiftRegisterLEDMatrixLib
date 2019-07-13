@@ -1,133 +1,34 @@
 #include <RGBLEDMatrix.h>
-#include <RGBImage.h>
-#include <Glyph.h>
-#include <RGBAnimation.h>
-#include <RGBAnimationSequence.h>
-#include <TimerAction.h>
-
-//
-// This program will cause a diagonal rainbow gradient to cycle through on the LED matrix
-// Will work in either 6-bit or 24-bit color. 
-//
+#include <RGBColor.h>
 
 RGBLEDMatrix leds(8,8);
 
-const int ROW_COLOR_LIST_SIZE = 15;
-RGBColorType rowColors[ROW_COLOR_LIST_SIZE];
-
-RGBColorType currentColor = RED_COLOR;
-
-RGBColorType redIncrement = 1 << RED_BIT_SHIFT;
-RGBColorType greenIncrement = 1 << GREEN_BIT_SHIFT;
-RGBColorType blueIncrement = 1 << BLUE_BIT_SHIFT;
-RGBColorType greenAndBlueIncrement =  greenIncrement|blueIncrement;
-const int SEQUENCE_LENGTH = 7;
-
-// This is the list of main colors we want to cycle through. Agradient will be calculated between them.
-RGBColorType colorSequence[SEQUENCE_LENGTH] = { 
-    RED_COLOR,
-    RED_COLOR+GREEN_COLOR,
-    GREEN_COLOR,
-    GREEN_COLOR+BLUE_COLOR,
-    BLUE_COLOR,
-    RED_COLOR+BLUE_COLOR,
-    RED_COLOR+GREEN_COLOR+BLUE_COLOR,
-};
-
-// This is the list of step values needed to transition to the next color.
-RGBColorType colorIncrements[SEQUENCE_LENGTH] = {
-    greenIncrement,
-    redIncrement,
-    blueIncrement,
-    greenIncrement,
-    redIncrement,
-    greenIncrement,
-    greenAndBlueIncrement
-  };
-
-// since RGBColorType is an unsigned value, we need to keep track whether we are
-// adding or subtracting the increment.
-boolean incrementType[SEQUENCE_LENGTH] = {
-    true,
-    false,
-    true,
-    false,
-    true,
-    true,
-    false   
-  };
-
-int sequenceIdx = 0;
-int loopCounter = 0;
-
-int getCurrentIdx() {
-  return sequenceIdx;
-}
-
-int getNextIdx() {
-  if (sequenceIdx == (SEQUENCE_LENGTH-1)) {
-    return 0;
-  }
-  else  {
-    return sequenceIdx+1;
-  }
-}
-
-RGBColorType getNextColor() {
-  if ( currentColor == colorSequence[getNextIdx()] ) {
-    sequenceIdx++;
-    if (sequenceIdx == SEQUENCE_LENGTH) {
-      sequenceIdx = 0;
-    }
-  }
-
-  if (incrementType[getCurrentIdx()]) {
-    currentColor += colorIncrements[getCurrentIdx()];
-  }
-  else {
-    currentColor -= colorIncrements[getCurrentIdx()];
-  }
-
-  return currentColor;
-}
+#define MAX_DISTANCE (leds.columns() - 1)
 
 void setup() {
-  leds.setup();
+	leds.setup();
+	leds.startDrawing();
+	for (int y = 0; y < leds.rows(); y++ ) {
+		for (int x = 0; x < leds.columns(); x++ ) {
+			float dx = leds.columns() - x - 1;
+			float dy = leds.rows()-y - 1;
+			float dmy = leds.rows()/2.0-y;
 
-  for (int i = 0; i < ROW_COLOR_LIST_SIZE; i++) {
-    rowColors[i] = getNextColor();
-  }
+			float d_tl = max(1.0-sqrt(x*x + y*y)/MAX_DISTANCE, 0);
+			float d_tr = max(1.0-sqrt(dx*dx + y*y)/MAX_DISTANCE, 0);
+			float d_bl = max(1.0-sqrt(x*x + (leds.rows()-y)*(leds.rows()))/MAX_DISTANCE, 0);
+			float d_br = max(1.0-sqrt(dx*dx + dy*dy)/MAX_DISTANCE, 0);
+			float d_rm = max(1.0-sqrt(dx*dx + dmy*dmy)/(MAX_DISTANCE*3.0/4.0), 0);
 
-  leds.image().paintColor(BLACK_COLOR);
-  leds.startScanning();
+			RGBColorType c = RGBColor::fromRGB( d_tl*255, d_br*194, d_bl*255);
+			leds.writePixel(x, y, c);
+		} 
+	}
+	leds.stopDrawing();
+	leds.loop();
+	leds.startScanning();
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-  if (loopCounter == 10000) {
-    for (int i = 0; i < ROW_COLOR_LIST_SIZE - 1; ++i) {
-      rowColors[i] = rowColors[i+1];
-    }
-    
-    rowColors[ROW_COLOR_LIST_SIZE-1] = getNextColor();  
-    
-    leds.startDrawing();    
-    for (int i = 0; i < ROW_COLOR_LIST_SIZE; i++ ) {
-      // determine if we are in the upper or lower diagonal
-      if (i/leds.rows() == 0) {
-        leds.image().drawLine(i,0,0,i,rowColors[i]);
-      }
-      else {
-        leds.image().drawLine(leds.rows()-1,i%leds.rows() + 1,i%leds.rows() + 1,leds.columns()-1,rowColors[i]);
-      }
-    }   
-    leds.stopDrawing();
-    
-    loopCounter = 0;
-  }
-  else {
-    loopCounter++;
-  }
-
-  leds.loop();
+	leds.loop();
 }

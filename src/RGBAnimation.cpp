@@ -17,7 +17,6 @@
 //     along with Shift Register LED Matrix Project.  If not, see <http://www.gnu.org/licenses/>.
 #include <Arduino.h>
 #include "RGBAnimation.h"
-#include "Glyph.h"
 #include "RGBLEDMatrix.h"
 
 #pragma mark - RGBAnimationBase

@@ -5,9 +5,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 
-## [Unreleased]
+## [2.0.0]
 ### Changed
-- Transition library to use Adafruit's GFX library to handle the graphics API. The befit of this is that it immediately brings you a wealth of functionality pertaining to the programatic construction of the image. The backend operations of the driver is still the same, though. The Adafruit GFX library is only used for the image buffer.
+- Transition library to use Adafruit's GFX library to handle the graphics API. The befit of this is that it immediately brings you a wealth of functionality pertaining to the programatic construction of the image. The backend operations of the driver is still the same, though. The Adafruit GFX library is only used for the image buffer. This is a significant change to the library, likely requiring you to change your code. 
 
 ### Fixed
 - Added 3 micro-seconds of inter-scan blank time to the 16x16 CPRG examples to give the hardware some tiem to drain the parasitic capacitance from the LEDs.
@@ -60,7 +60,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## 1.0.0 - 2017-12-24
 Initial release
 
-[Unreleased]: https://github.com/michaelkamprath/ShiftRegisterLEDMatrixLib/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/michaelkamprath/ShiftRegisterLEDMatrixLib/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/michaelkamprath/ShiftRegisterLEDMatrixLib/compare/v1.2.0...v2.0.0
 [1.2.0]: https://github.com/michaelkamprath/ShiftRegisterLEDMatrixLib/compare/v1.1.1...v1.2.0
 [1.1.1]: https://github.com/michaelkamprath/ShiftRegisterLEDMatrixLib/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/michaelkamprath/ShiftRegisterLEDMatrixLib/compare/v1.0.1...v1.1.0
