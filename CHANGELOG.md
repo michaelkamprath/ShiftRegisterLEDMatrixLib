@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Changed
+- Moved methods for accessing raw pixel color values to the AdaFruit GFX library. This has no net change to the user, but improves the architecture of the code. Depends on [pull request #237 in the AdaFruit GFX repository](https://github.com/adafruit/Adafruit-GFX-Library/pull/237). 
+
 ## [2.0.0]
 ### Changed
 - Transition library to use [Adafruit's GFX Library](https://github.com/adafruit/Adafruit-GFX-Library) to handle the graphics API. The befit of this is that it immediately brings a wealth of functionality pertaining to the programatic construction of the image, especially fonts and text drawing. The Adafruit GFX library is only used for the primary image buffer. The backend operations of the driver (i.e., the secondary buffer for the shift register bits) is still the same. This is a significant change to the library, likely requiring you to change your code. In the process, dropped support for simulating gray scale on monochrome LED matrices. This might be brought back later.

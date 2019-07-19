@@ -202,7 +202,7 @@ bool RGBLEDMatrix::setColumnBitsForControlRowAndFrame(
 			endianCol = this->columns() - (colByte+1)*8 + colBit;
 		}
 		
-		RGBColorType rgbValue = this->rawPixel(endianCol, imageRow);
+		RGBColorType rgbValue = this->getRawPixel(endianCol, imageRow);
 		// a form of Binary Code Modulation is used to control
 		// the LED intensity at variou levels.
 	
@@ -239,35 +239,6 @@ unsigned int RGBLEDMatrix::baseIntervalMultiplier( size_t frame ) const {
 
 #pragma mark - Adafruit GFX Support
 
-uint16_t RGBLEDMatrix::rawPixel( int16_t x, int16_t y ) const {
-	if((x < 0) || (y < 0) || (x >= _width) || (y >= _height)) return 0;
-	if(this->getBuffer()) {
-		return this->getBuffer()[x + y * this->WIDTH];
-	}
-	return 0;
-}
-
-uint16_t RGBLEDMatrix::pixel( int16_t x, int16_t y ) const {
-	int16_t t;
-	switch(this->getRotation()) {
-		case 1:
-			t = x;
-			x = WIDTH  - 1 - y;
-			y = t;
-			break;
-		case 2:
-			x = WIDTH  - 1 - x;
-			y = HEIGHT - 1 - y;
-			break;
-		case 3:
-			t = x;
-			x = y;
-			y = HEIGHT - 1 - t;
-			break;
-	}	
-	return this->rawPixel(x, y);
-}
-
 void RGBLEDMatrix::drawPixel(int16_t x, int16_t y, uint16_t color) {
 	this->GFXcanvas16::drawPixel(x, y, color);
 	_matrixNeedsUpdate = true;
@@ -287,7 +258,7 @@ void RGBLEDMatrix::debugPrintImageData(void) const {
 		Serial.print("    ");
 		for (uint16_t x = 0; x < this->WIDTH; x++) {
 			Serial.print("0x");
-			sprintf(c, "%04x", this->rawPixel(x,y));
+			sprintf(c, "%04x", this->getRawPixel(x,y));
 			Serial.print(c);
 			Serial.print(" ");
 		}

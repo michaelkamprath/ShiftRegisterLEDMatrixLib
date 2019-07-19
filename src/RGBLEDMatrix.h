@@ -84,8 +84,6 @@ protected:
 	virtual void matrixHasBeenUpdated(void);
 	virtual unsigned int baseIntervalMultiplier( size_t frame ) const;
 
-	uint16_t rawPixel( int16_t rawX, int16_t rawY ) const;  
-
 public:
   
 	/**
@@ -130,11 +128,16 @@ public:
 	virtual ~RGBLEDMatrix();
 	
 	virtual void setup();
-	
-	uint16_t pixel( int16_t x, int16_t y ) const;  
+
+	//
+	// Adafruit GFX Support
+	//
 	virtual void drawPixel(int16_t x, int16_t y, uint16_t color);
 	virtual void fillScreen(uint16_t color);
 	
+	//
+	// debug
+	//
 	void debugPrintImageData(void) const;
 };
 
