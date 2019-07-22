@@ -13,6 +13,8 @@ LEDMatrix leds(16,32, HIGH, HIGH, 3);
 
 uint16_t loopCounter;
 int16_t xpos = leds.columns() + 1;
+int16_t lineCounter = 0;
+int16_t lineCounterIncrement = 1;
 uint16_t textWidth;
 uint16_t textHeight;
 const char* str = "Hello World!";
@@ -42,8 +44,15 @@ void loop() {
 	loopCounter++;
 	if (loopCounter >= 2000) {
 		loopCounter = 0;
+		lineCounter += lineCounterIncrement;
+		if (lineCounter == 0) {
+			lineCounterIncrement = 1;
+		} else if ( lineCounter == leds.rows()/2 - 1) {
+			lineCounterIncrement = -1;
+		}
 		leds.startDrawing();
-		leds.fillRect(0, leds.rows()/2, leds.columns(), leds.rows()/2, LED_BLACK);
+		leds.fillRect(0, 0, leds.columns(), leds.rows(), LED_BLACK);
+		leds.drawLine(0, lineCounter, leds.columns(), leds.rows()/2-1-lineCounter, LED_WHITE);
 		xpos--;
 		if (xpos < -((int16_t)textWidth)) {
 			xpos = leds.columns() + 1;
