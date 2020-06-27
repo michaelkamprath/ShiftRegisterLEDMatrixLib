@@ -9,10 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Specify library dependencies in library.properties
 
 ### Changed
-- Moved methods for accessing raw pixel color values to the AdaFruit GFX library. This has no net change to the user, but improves the architecture of the code. Depends on [pull request #237 in the AdaFruit GFX repository](https://github.com/adafruit/Adafruit-GFX-Library/pull/237). 
-
-### Changed
-- Moved methods for accessing raw pixel color values to the AdaFruit GFX library. This has no net change to the user, but improves the architecture of the code. Depends on [pull request #237 in the AdaFruit GFX repository](https://github.com/adafruit/Adafruit-GFX-Library/pull/237). 
+- Moved methods for accessing raw pixel color values to the AdaFruit GFX library. This has no net change to the user, but improves the architecture of the code. Depends on [pull request #237 in the AdaFruit GFX repository](https://github.com/adafruit/Adafruit-GFX-Library/pull/237), which was incorporated in v1.9.0 of the GFX library. 
 
 ## [2.0.0]
 ### Changed
