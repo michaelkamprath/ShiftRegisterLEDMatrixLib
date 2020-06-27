@@ -76,7 +76,7 @@ void LEDMatrix::setRowBitsForFrame(
 		bool rowNeedsPower = false;
 		size_t colBitIdx = 0;
 		for (uint16_t col = 0; col < this->columns(); col++) {
-			uint16_t pixel = this->rawPixel(col, row);
+			uint16_t pixel = this->getRawPixel(col, row);
 			
 			if (pixel > 0) {
 				frameBits.setColumnControlBit(row,colBitIdx,true);
@@ -94,38 +94,6 @@ ICACHE_RAM_ATTR unsigned int LEDMatrix::baseIntervalMultiplier( size_t frame ) c
 }
 
 #pragma mark - Adafruit GFX Support
-
-uint16_t LEDMatrix::rawPixel( int16_t x, int16_t y ) const {
-	if((x < 0) || (y < 0) || (x >= _width) || (y >= _height)) return 0;
-	if(this->getBuffer()) {
-		uint8_t *buffer = this->getBuffer();
-		uint8_t *ptr  = &buffer[(x / 8) + y * ((WIDTH + 7) / 8)];
-		
-		return ((*ptr) & (0x80 >> (x & 7))) != 0;
-	}
-	return 0;
-}
-
-uint16_t LEDMatrix::pixel( int16_t x, int16_t y ) const {
-	int16_t t;
-	switch(this->getRotation()) {
-		case 1:
-			t = x;
-			x = WIDTH  - 1 - y;
-			y = t;
-			break;
-		case 2:
-			x = WIDTH  - 1 - x;
-			y = HEIGHT - 1 - y;
-			break;
-		case 3:
-			t = x;
-			x = y;
-			y = HEIGHT - 1 - t;
-			break;
-	}	
-	return this->rawPixel(x, y);
-}
 
 void LEDMatrix::drawPixel(int16_t x, int16_t y, uint16_t color) {
 	this->GFXcanvas1::drawPixel(x, y, color);
