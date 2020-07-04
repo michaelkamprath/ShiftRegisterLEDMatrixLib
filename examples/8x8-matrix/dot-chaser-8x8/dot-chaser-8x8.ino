@@ -8,15 +8,15 @@ private:
   int _xVel;
   int _yVel;
 
-  int _xStack[5] = {-1,-1,-1,-1,-1};
-  int _yStack[5] = {-1,-1,-1,-1,-1};
+  unsigned int _xStack[5] = {0xFFFF,0xFFFF,0xFFFF,0xFFFF,0xFFFF};
+  unsigned int _yStack[5] = {0xFFFF,0xFFFF,0xFFFF,0xFFFF,0xFFFF};
   
   
 protected:
   virtual void action() {
     _screen->startDrawing();
-    for (int x = 0; x < _screen->rows(); ++x) {
-      for (int y = 0; y < _screen->columns(); ++y ) {
+    for (unsigned int x = 0; x < _screen->rows(); ++x) {
+      for (unsigned int y = 0; y < _screen->columns(); ++y ) {
         RGBColorType color = 0;
         if ( x == _xStack[4] && y == _yStack[4] ) {
           color = DARK_BLUE_COLOR;

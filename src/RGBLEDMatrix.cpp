@@ -91,7 +91,7 @@ bool RGBLEDMatrix::allowedFrameForValue(uint16_t value, size_t frame) const {
 			// green has a bit specific to this pass, on for that.
 			return ( (value&0x0040) != 0 ) ||
 			// only one for red and blue if both the prior pass and next pass are on
-					(value&0x1800 == 0x1800) || (value&0x0003 == 0x0003);
+					((value&0x1800) == 0x1800) || ((value&0x0003) == 0x0003);
 				break;
 		case 2:
 			// red bit 2, green bit 3, blue bit 2
