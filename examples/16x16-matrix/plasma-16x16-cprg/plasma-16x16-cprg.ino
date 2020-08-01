@@ -88,42 +88,35 @@ void setup() {
   leds.startScanning();
 }
 
-unsigned long loopCounter = 0;
 unsigned long timeCount = 0;
 bool timeIncrement = true;
 
-#if (defined(__arm__)&& defined(TEENSYDUINO) || defined(ESP32))
-// slow things down for the Teensy
-const unsigned long loopMod = 10000;
-#else
-const unsigned long loopMod = 50;
-#endif
-
 void loop() {
   leds.loop();
-  loopCounter++;
 
-  if (loopCounter == loopMod) {
-    if (timeIncrement) {
-      timeCount++;
-      
-      //
-      // set a maximum to timeCount because floats only have
-      // a max precision of 5 significant digits. Otherwise, when timeCount
-      // gets too large, the animation will get choppy because calls to drawPlasma()
-      // will not have a noticable change to timeCount/TIME_DILATION. for several
-      // consecutive calls.
-      //
-      if (timeCount >= 1000*PI) {
-        timeIncrement = false;
-      }
-    } else {
-      timeCount--;
-      if (timeCount == 0) {
-        timeIncrement = true;
-      }
+  // update frame every 40 milleseconds. AVR chips are slow enough to not need this delay.
+  #if !defined(ARDUINO_ARCH_AVR)
+  delay(40);
+  #endif
+
+  if (timeIncrement) {
+    timeCount++;
+  
+    //
+    // set a maximum to timeCount because floats only have
+    // a max precision of 5 significant digits. Otherwise, when timeCount
+    // gets too large, the animation will get choppy because calls to drawPlasma()
+    // will not have a noticable change to timeCount/TIME_DILATION. for several
+    // consecutive calls.
+    //
+    if (timeCount >= 1000*PI) {
+      timeIncrement = false;
     }
-    drawPlasma(timeCount);
-    loopCounter = 0;
+  } else {
+    timeCount--;
+    if (timeCount == 0) {
+      timeIncrement = true;
+    }
   }
+  drawPlasma(timeCount);
 }
