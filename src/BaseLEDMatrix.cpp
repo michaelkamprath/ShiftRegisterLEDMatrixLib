@@ -240,9 +240,51 @@ void BaseLEDMatrix::debugPrintFrames( void ) const {
  */
  
 #pragma mark Teensy Handlers
-#if (defined(__arm__) && defined(TEENSYDUINO))
+#if ((defined(__IMXRT1062__)||defined(__arm__)) && defined(TEENSYDUINO))
+#if defined(__IMXRT1062__)
+// Use IntervalTimer on Teensy 4+ to drive scan timing
+#include <IntervalTimer.h>
+
+IntervalTimer ledMatrixTimer;
+
+void timerInteruptHandler( void ) {
+	ledMatrixTimer.end();
+	
+	if (gSingleton->doInterFrameTransmitOff()) {
+		gSingleton->shiftOutAllOff();
+
+		// reload the timer
+		ledMatrixTimer.begin(timerInteruptHandler, gSingleton->rowOffTimerInterval());
+	} else {
+		gSingleton->shiftOutCurrentControlRow();
+
+		// reload the timer
+		ledMatrixTimer.begin(timerInteruptHandler, gSingleton->nextRowScanTimerInterval());
+		// update scan row. Done outside of interrupt stoppage since execution time can
+		// be inconsistent, which would lead to vary brightness in rows.
+		gSingleton->incrementScanRow();
+	} 
+}
+
+void BaseLEDMatrix::startScanning(void) {
+	this->setup();
+	
+	_interFrameOffTimeInterval = _interFrameOffTimeMicros;
+	
+	ledMatrixTimer.begin(timerInteruptHandler, gSingleton->nextRowScanTimerInterval());
+}
+
+void BaseLEDMatrix::stopScanning(void) {
+	ledMatrixTimer.end();
+}
+
+unsigned int BaseLEDMatrix::nextRowScanTimerInterval(void) const {
+	// Calculates the microseconds for each scan	
+	return  10*this->baseIntervalMultiplier( _scanPass );
+}
+#else
 //
-// On the Teensy ARM boards, use the TimerThree library to drive scan timing
+// On the Teensy 3.x boards, use the TimerThree library to drive scan timing
 //
 #include <TimerThree.h>
 
@@ -286,6 +328,7 @@ unsigned int BaseLEDMatrix::nextRowScanTimerInterval(void) const {
 	// Calculates the microseconds for each scan	
 	return  10*this->baseIntervalMultiplier( _scanPass );
 }
+#endif // #if defined(__IMXRT1062__)
 
 #pragma mark ESP32 Handlers
 #elif defined ( ESP32 )

@@ -83,8 +83,8 @@ void CellUniverse::setCellStatus(unsigned int row, unsigned int column, LifeStat
 
 CellUniverse::LifeState CellUniverse::getCellStatus(int row, int column) const {
   // this causes the matrix to be a toroidal array
-  unsigned int r = row < 0 ? row + _leds.rows() : ( row >= _leds.rows() ? row - _leds.rows() : row );
-  unsigned int c = column < 0 ? column + _leds.columns() : ( column >= _leds.columns() ? column - _leds.columns() : column );
+  unsigned int r = row < 0 ? row + _leds.rows() : ( row >= (int)_leds.rows() ? row - _leds.rows() : row );
+  unsigned int c = column < 0 ? column + _leds.columns() : ( column >= (int)_leds.columns() ? column - _leds.columns() : column );
 
   // double check just to be sure
   if (r >= _leds.rows() || c >= _leds.columns()) {

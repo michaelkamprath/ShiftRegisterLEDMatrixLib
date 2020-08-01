@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- Added a `platformio.ini` file to aid in the development of this library using hte Platform IO environment. This is only useful for developing this library itself, and not at all used for using this library in your projects.
+- Added support for Teensy 4.x boards
 
 ## [2.0.1]
 ### Added

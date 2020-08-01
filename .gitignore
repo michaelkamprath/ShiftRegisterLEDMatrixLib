@@ -33,3 +33,7 @@
 artwork/
 test/
 
+# Visual Code + PlatformIO
+.pio
+.vscode
+.travis.yml

@@ -87,8 +87,6 @@ ColorBitmapSequenceAnimation::ColorBitmapSequenceAnimation(
 }
 
 void ColorBitmapSequenceAnimation::erase(RGBLEDMatrix& matrix) {
-	int idx = this->getSequenceIndex();
-
 	matrix.writeFillRect(
 		this->getOriginX() - _leftPadSize,
 		this->getOriginY() - _topPadSize,
