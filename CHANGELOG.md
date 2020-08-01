@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [2.0.2]
 ### Added
 - Added a `platformio.ini` file to aid in the development of this library using hte Platform IO environment. This is only useful for developing this library itself, and not at all used for using this library in your projects.
 - Added support for Teensy 4.x boards
@@ -72,7 +72,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## 1.0.0 - 2017-12-24
 Initial release
 
-[Unreleased]: https://github.com/michaelkamprath/ShiftRegisterLEDMatrixLib/compare/v2.0.1...HEAD
+[Unreleased]: https://github.com/michaelkamprath/ShiftRegisterLEDMatrixLib/compare/v2.0.2...HEAD
+[2.0.2]: https://github.com/michaelkamprath/ShiftRegisterLEDMatrixLib/compare/v2.0.1...v2.0.2
 [2.0.1]: https://github.com/michaelkamprath/ShiftRegisterLEDMatrixLib/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/michaelkamprath/ShiftRegisterLEDMatrixLib/compare/v1.2.0...v2.0.0
 [1.2.0]: https://github.com/michaelkamprath/ShiftRegisterLEDMatrixLib/compare/v1.1.1...v1.2.0
