@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+### Fixed
+- The row scan timing was too long on ESP32 platforms. Adjusted this timing to remove visible blinking. 
+
 ## [2.0.2]
 ### Added
 - Added a `platformio.ini` file to aid in the development of this library using hte Platform IO environment. This is only useful for developing this library itself, and not at all used for using this library in your projects.

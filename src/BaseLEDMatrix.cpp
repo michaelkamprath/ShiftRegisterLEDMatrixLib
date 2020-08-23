@@ -374,7 +374,7 @@ void BaseLEDMatrix::stopScanning(void) {
 
 unsigned int BaseLEDMatrix::nextRowScanTimerInterval(void) const {
 	// this sets the interrupt to fire a multiple every 25 timer counts, or 25 microseconds
-	return  25*this->baseIntervalMultiplier( _scanPass );
+	return  5*this->baseIntervalMultiplier( _scanPass );
 }
 
 #pragma mark ESP8266 Handlers
