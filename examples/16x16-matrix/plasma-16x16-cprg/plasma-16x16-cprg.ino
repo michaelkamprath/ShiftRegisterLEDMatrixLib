@@ -1,25 +1,26 @@
-/* 
+/*
  *  Plasma
- *    
+ *
  *  This is a demonstration of the plasma algorithm displayed on an RGB LED matrix. `
  *  The COLOR_SCHEME global variable allows you to easily change between some pre-made
  *  color schemes. Using the patterm of the demonstration color schemes, it should be 
  *  easy to add others.
- *  
+ *
  *  The algorithm for this demo was sourced from here:
- *  
+ *
  *    https://www.bidouille.org/prog/plasma
- * 
+ *
  */
+#include <Adafruit_I2CDevice.h>
 #include <RGBLEDMatrix.h>
 #include <RGBColor.h>
 
 /* Color Schemes
- *  
+ *
  *  1 - Full rainbow gradients in RGB
  *  2 - Red, Orange, white gradients
  *  3 - gray scale
- * 
+ *
  */
 const int COLOR_SCHEME = 1;
 
@@ -34,7 +35,7 @@ int mapSineToRange( float sineValue, int rangeMax ) {
 }
 void drawPlasma( unsigned long counter ) {
   float utime = float(counter)/TIME_DILATION;
-  
+
   leds.startDrawing();
   for (unsigned int col = 0; col < leds.columns(); col++ ) {
     float x = ((float)col/((float)leds.columns()*HORIZ_SPACE_STRETCH_FACTOR)) - 0.5;
@@ -44,11 +45,11 @@ void drawPlasma( unsigned long counter ) {
 
       float v1 = sinf(x*10.0+utime);
       float v2 = sinf(10.0*(x*sinf(utime/2.0) + y*cosf(utime/3.0)) + utime);
-      
+
       float cx = x + 0.5*sinf(utime/5.0);
       float cy = y + 0.5*cosf(utime/3.0);
       float v3 = sinf( sqrtf(100.0*(cx*cx + cy*cy) + 1.0) + utime );
-      
+
       float v = v1+v2+v3;
 
       int r, g, b;

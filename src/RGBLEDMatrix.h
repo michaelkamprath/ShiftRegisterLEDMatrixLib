@@ -2,17 +2,17 @@
 //     Copyright (C) 2017 Michael Kamprath
 //
 //     This file is part of Shift Register LED Matrix Project.
-// 
+//
 //     Shift Register LED Matrix Project is free software: you can redistribute it and/or modify
 //     it under the terms of the GNU General Public License as published by
 //     the Free Software Foundation, either version 3 of the License, or
 //     (at your option) any later version.
-// 
+//
 //     Shift Register LED Matrix Project is distributed in the hope that it will be useful,
 //     but WITHOUT ANY WARRANTY; without even the implied warranty of
 //     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //     GNU General Public License for more details.
-// 
+//
 //     You should have received a copy of the GNU General Public License
 //     along with Shift Register LED Matrix Project.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -27,40 +27,40 @@ public:
 	typedef enum {
 		// Each individual LED's RGB bits are consecutive in column order.
 		// For a 4-column matrix, each row is ordered: RGB-RGB-RGB-RGB
-		INDIVIDUAL_LEDS,	
-		
+		INDIVIDUAL_LEDS,
+
 		// All elements of the same color are consecutive in column order. The color
 		// are order Red, Green, Blue
 		// For a 4-column matrix, each row is ordered: RRRR-GGGG-BBBB
 		RGB_GROUPS,
-		
+
 		// All elements of the same color are consecutive in column order. The color
 		// are order Red, Blue, Green
 		// For a 4-column matrix, each row is ordered: RRRR-BBBB-GGGG
 		RBG_GROUPS,
-		
+
 		// Common Power Row Groups - Size 8 - With RGB column grouping
 		// Row groups sharing common power source. Rows are split in groups of 8 contiguous rows,
-		// and each row shares the power source with the corresponding rows in the other 
+		// and each row shares the power source with the corresponding rows in the other
 		// groups. For example, in a matrix with 16 rows, there are be two groups of 8 rows,
 		// with group A having rows 1-8, and group B having rows 9-16. Rows 1 and 9 share
-		// the same power source, rows 2 and 10 the same, and so on. 
+		// the same power source, rows 2 and 10 the same, and so on.
 		//
 		// Columns are group by color in consecutive column order, as with RGB_GROUPS. However,
 		// the columns in each row group are independently powered. The control bits for
 		// higher row groups are more significant in the bit sequence. So in an 16x16 matrix,
 		// for example, the column bit sequence would be R16b-G16b-B16b-R16a-G16a-B16a,
 		// where R16a is the red control bits for columns 1-16 in row group A,  and R16b
-		// are red columns 1-16 in row group B. Similarly for green and blue. 
+		// are red columns 1-16 in row group B. Similarly for green and blue.
 		RGB_GROUPS_CPRG8
-			
+
 	} RGBLEDBitLayout;
 
 private:
 	const RGBLEDBitLayout _bitLayout;
-	
+
 	bool		_matrixNeedsUpdate;
-	
+
 	void setControlRowBitsForFrame(
 			unsigned int controlRow,
 			size_t frame,
@@ -76,7 +76,7 @@ private:
 			size_t frame,
 			LEDMatrixBits& frameBits
 		) const;
-	
+
 	bool allowedFrameForValue(uint16_t value, size_t frame) const;
 protected:
 	virtual void generateFrameBits(LEDMatrixBits& frameBits, size_t frame ) const;
@@ -85,7 +85,7 @@ protected:
 	virtual unsigned int baseIntervalMultiplier( size_t frame ) const;
 
 public:
-  
+
 	/**
 	 *	Constructs an RGB LED matrix controller object.
 	 *
@@ -116,17 +116,17 @@ public:
 			bool rowControlBitOn = LOW,
 			unsigned int interFrameOffTimeMicros = 0,
 #if defined ( ESP8266 )
-			int slavePin = D8	
+			int slavePin = D8
 #elif defined( ESP32 )
-			int slavePin = 5	
+			int slavePin = 5
 #else
-			int slavePin = 10	
+			int slavePin = 10
 #endif
 			,
 			DeviceBitEndian bitEndian = LED_BIG_ENDIAN
 		);
 	virtual ~RGBLEDMatrix();
-	
+
 	virtual void setup();
 
 	//
@@ -134,7 +134,7 @@ public:
 	//
 	virtual void drawPixel(int16_t x, int16_t y, uint16_t color);
 	virtual void fillScreen(uint16_t color);
-	
+
 	//
 	// debug
 	//
