@@ -37,3 +37,6 @@ test/
 .pio
 .vscode
 .travis.yml
+
+# MacOS
+.DS_Store

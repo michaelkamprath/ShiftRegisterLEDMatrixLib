@@ -2,17 +2,17 @@
 //     Copyright (C) 2017 Michael Kamprath
 //
 //     This file is part of Shift Register LED Matrix Project.
-// 
+//
 //     Shift Register LED Matrix Project is free software: you can redistribute it and/or modify
 //     it under the terms of the GNU General Public License as published by
 //     the Free Software Foundation, either version 3 of the License, or
 //     (at your option) any later version.
-// 
+//
 //     Shift Register LED Matrix Project is distributed in the hope that it will be useful,
 //     but WITHOUT ANY WARRANTY; without even the implied warranty of
 //     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //     GNU General Public License for more details.
-// 
+//
 //     You should have received a copy of the GNU General Public License
 //     along with Shift Register LED Matrix Project.  If not, see <http://www.gnu.org/licenses/>.
 #include <Arduino.h>
@@ -38,17 +38,17 @@ RGBAnimationSequence::RGBAnimationSequence(
 void RGBAnimationSequence::loop()
 {
 	this->TimerAction::loop();
-	
+
 	for (int i = 0; i < _aniArraySize; i++) {
 		if (_itemIsInView[i]) {
 			_aniArray[i].animation->loop();
 		}
-	}	
+	}
 }
 
 void RGBAnimationSequence::action() {
 	// the action here is really control which animations are visible
-	// and what their origin point is. This animation doesn't draw as that is 
+	// and what their origin point is. This animation doesn't draw as that is
 	// being done by the animations items in the list.
 
 	if (_curState == ANIMATION_START) {
@@ -57,42 +57,42 @@ void RGBAnimationSequence::action() {
 		curAni->setOriginY(0);
 		_itemIsInView[0] = true;
 		this->setIntervalMillis(_aniArray[_curItemIdx].appearMillis);
-		
+
 		_curState = ANIMATION_ITEM;
 	}
 	else if (_curState == ANIMATION_ITEM) {
 		//set up transition
 		if ( _aniArray[_curItemIdx].transition == TRANSITION_APPEAR ) {
 			_itemIsInView[_curItemIdx] = false;
-			
+
 			_curItemIdx++;
 			if (_curItemIdx >= _aniArraySize) {
 				_curItemIdx = 0;
 			}
-			
+
 			RGBAnimationBase* curAni = _aniArray[_curItemIdx].animation;
 			curAni = _aniArray[_curItemIdx].animation;
 			curAni->setOriginX(0);
 			curAni->setOriginY(0);
 			_itemIsInView[_curItemIdx] = true;
-			
+
 			this->setIntervalMillis(_aniArray[_curItemIdx].appearMillis);
 		}
-		else if ( 
+		else if (
 					(_aniArray[_curItemIdx].transition == TRANSITION_SLIDE_LEFT)
 					||(_aniArray[_curItemIdx].transition == TRANSITION_SLIDE_RIGHT)
 					||(_aniArray[_curItemIdx].transition == TRANSITION_SLIDE_UP)
 					||(_aniArray[_curItemIdx].transition == TRANSITION_SLIDE_DOWN)
-				) 
+				)
 		{
 			_transitionItemIdx = _curItemIdx+1;
 			if (_transitionItemIdx >= _aniArraySize) {
 				_transitionItemIdx = 0;
 			}
-			
+
 			RGBAnimationBase* curAni = _aniArray[_curItemIdx].animation;
 			RGBAnimationBase* nextAni = _aniArray[_transitionItemIdx].animation;
-			
+
 			_curItemOriginX = 0;
 			_curItemOriginY = 0;
 			if (_aniArray[_curItemIdx].transition == TRANSITION_SLIDE_RIGHT ) {
@@ -106,7 +106,7 @@ void RGBAnimationSequence::action() {
 			else {
 				_nextItemOriginX = 0;
 			}
-			
+
 			if (_aniArray[_curItemIdx].transition == TRANSITION_SLIDE_DOWN ) {
 				_nextItemOriginY = -(nextAni->rows() + _aniArray[_curItemIdx].transitionPad);
 				curAni->setTopPad( _aniArray[_curItemIdx].transitionPad );
@@ -118,12 +118,12 @@ void RGBAnimationSequence::action() {
 			else {
 				_nextItemOriginY = 0;
 			}
-			
+
 			curAni->setOriginY(_curItemOriginY);
 			curAni->setOriginX(_curItemOriginX);
 			nextAni->setOriginY(_nextItemOriginY);
 			nextAni->setOriginX(_nextItemOriginX);
-			
+
 			if ( _aniArray[_curItemIdx].transition == TRANSITION_SLIDE_RIGHT
 				|| _aniArray[_curItemIdx].transition == TRANSITION_SLIDE_LEFT )
 			{
@@ -133,8 +133,8 @@ void RGBAnimationSequence::action() {
 			}
 			_transitionStep = 0;
 			_itemIsInView[_transitionItemIdx] = true;
-	
-			
+
+
 			this->setIntervalMillis(_transitionIntervalMillis);
 			_curState = ANIMATION_TRANSITION;
 		}
@@ -142,20 +142,20 @@ void RGBAnimationSequence::action() {
 	else if (_curState == ANIMATION_TRANSITION) {
 		RGBAnimationBase* curAni = _aniArray[_curItemIdx].animation;
 		RGBAnimationBase* nextAni = _aniArray[_transitionItemIdx].animation;
-			
+
 		if (_aniArray[_curItemIdx].transition == TRANSITION_SLIDE_LEFT) {
 			_curItemOriginX--;
 			_nextItemOriginX--;
 		}
-		else if (_aniArray[_curItemIdx].transition == TRANSITION_SLIDE_RIGHT ) {	
+		else if (_aniArray[_curItemIdx].transition == TRANSITION_SLIDE_RIGHT ) {
 			_curItemOriginX++;
 			_nextItemOriginX++;
 		}
-		else if (_aniArray[_curItemIdx].transition == TRANSITION_SLIDE_DOWN ) {	
+		else if (_aniArray[_curItemIdx].transition == TRANSITION_SLIDE_DOWN ) {
 			_curItemOriginY++;
 			_nextItemOriginY++;
 		}
-		else if (_aniArray[_curItemIdx].transition == TRANSITION_SLIDE_UP ) {	
+		else if (_aniArray[_curItemIdx].transition == TRANSITION_SLIDE_UP ) {
 			_curItemOriginY--;
 			_nextItemOriginY--;
 		}
@@ -167,11 +167,11 @@ void RGBAnimationSequence::action() {
 		curAni->setOriginX(_curItemOriginX);
 		nextAni->setOriginY(_nextItemOriginY);
 		nextAni->setOriginX(_nextItemOriginX);
-		
+
 		curAni->update();
 		nextAni->update();
-		
-		if ( 	(	
+
+		if ( 	(
 					(
 						(_aniArray[_curItemIdx].transition == TRANSITION_SLIDE_LEFT)
 						||(_aniArray[_curItemIdx].transition == TRANSITION_SLIDE_RIGHT)

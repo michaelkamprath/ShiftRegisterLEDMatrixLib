@@ -92,18 +92,18 @@ public:
 	 *	@param rows the number of  rows in the LED matrix. Rows are expected to have
 	 *	            shared power to the LEDs.
 	 *	@param columns the number of columns in the LED matrix.
-	 *	@param bitLayout an RGBLEDBitLayout enum indicating how the RGB bits are arranged 
+	 *	@param bitLayout an RGBLEDBitLayout enum indicating how the RGB bits are arranged
 	 *              in each row.
 	 *	@param columnControlBitOn what value a column bit should be set to to the column on.
-	 *	@param rowControlBitOn what value a row bit should be set to to turn the row on. 
-	 *               E.g. of the row is common anode and a PNP transistor is being use 
+	 *	@param rowControlBitOn what value a row bit should be set to to turn the row on.
+	 *               E.g. of the row is common anode and a PNP transistor is being use
 	 *               to switch power to the row, the row bit likely needs to be LOW to
 	 *               cause the transistor to power the row.
 	 *	@param interFrameOffTimeMicros Controls whether an all-off signal is sent to the
-	 *				 shift registers in between row updates in order to mitigate LED 
-	 *				 ghosting. A value of 0 indicates that no all-off signal should be 
+	 *				 shift registers in between row updates in order to mitigate LED
+	 *				 ghosting. A value of 0 indicates that no all-off signal should be
 	 *				 sent. A value greater than 0 indicates how many microseconds should
-	 *				 be waited until the next row update gets shifted out. Usually a value 
+	 *				 be waited until the next row update gets shifted out. Usually a value
 	 *				 less than 3 microseconds is sufficient for most slow row power
 	 *				 switching.
 	 *  @param slavePin which ard pin is used for the latch signal.

@@ -2,17 +2,17 @@
 //     Copyright (C) 2017 Michael Kamprath
 //
 //     This file is part of Shift Register LED Matrix Project.
-// 
+//
 //     Shift Register LED Matrix Project is free software: you can redistribute it and/or modify
 //     it under the terms of the GNU General Public License as published by
 //     the Free Software Foundation, either version 3 of the License, or
 //     (at your option) any later version.
-// 
+//
 //     Shift Register LED Matrix Project is distributed in the hope that it will be useful,
 //     but WITHOUT ANY WARRANTY; without even the implied warranty of
 //     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //     GNU General Public License for more details.
-// 
+//
 //     You should have received a copy of the GNU General Public License
 //     along with Shift Register LED Matrix Project.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -36,7 +36,7 @@ const unsigned long UPDATE_INTERVAL = 2000;
 #define CONTROL_COLUMNS( rows, columns, layout)	\
 	(layout == RGBLEDMatrix::RGB_GROUPS_CPRG8) ? (rows/8)*columns : columns
 
-RGBLEDMatrix::RGBLEDMatrix( 
+RGBLEDMatrix::RGBLEDMatrix(
 	int rows,
 	int columns,
 	RGBLEDBitLayout bitLayout,
@@ -44,7 +44,7 @@ RGBLEDMatrix::RGBLEDMatrix(
 	bool rowControlBitOn,
 	unsigned int interFrameOffTimeMicros,
 	int slavePin,
-	DeviceBitEndian bitEndian	
+	DeviceBitEndian bitEndian
 ) :		BaseLEDMatrix(
 				rows,
 				columns,
@@ -137,8 +137,8 @@ void RGBLEDMatrix::generateFrameBits(LEDMatrixBits& frameBits, size_t frame ) co
 void RGBLEDMatrix::setControlRowBitsForFrame(
 	unsigned int controlRow,
 	size_t frame,
-	LEDMatrixBits& frameBits ) const 
-{	
+	LEDMatrixBits& frameBits ) const
+{
 	if (!frameBits.isRowMemoized(controlRow)) {
 		bool rowNeedsPower = false;
 		size_t redBitOffset = 0;
@@ -156,7 +156,7 @@ void RGBLEDMatrix::setControlRowBitsForFrame(
 			blueBitOffset = this->columns();
 			columnBitIdxIncrement = 1;
 		}
-		
+
 		for (unsigned int rowGroup = 0; rowGroup < this->rowGroups(); rowGroup++) {
 			rowNeedsPower |= this->setColumnBitsForControlRowAndFrame(
 				controlRow,
@@ -168,9 +168,9 @@ void RGBLEDMatrix::setControlRowBitsForFrame(
 				frame,
 				frameBits
 			);
-		}		
+		}
 		frameBits.setRowControlBit(controlRow,rowNeedsPower);
-	} 
+	}
 }
 
 bool RGBLEDMatrix::setColumnBitsForControlRowAndFrame(
@@ -181,54 +181,54 @@ bool RGBLEDMatrix::setColumnBitsForControlRowAndFrame(
 	size_t blueBitOffset,
 	size_t columnBitIdxIncrement,
 	size_t frame,
-	LEDMatrixBits& frameBits ) const 
+	LEDMatrixBits& frameBits ) const
 {
-	bool rowNeedsPower = false;	
+	bool rowNeedsPower = false;
 	size_t colBitIdx = rowGroup*this->columns()*this->columnBitWidth();
 	unsigned int imageRow = (this->rowGroups() - 1 - rowGroup)*this->controlRows() + controlRow;
 
 	for (unsigned int col = 0; col < this->columns(); col++) {
 		unsigned int endianCol = col;
-		
+
 		if (this->bitEndian() == LED_LITTLE_ENDIAN_8 ) {
 			// first get the column "byte"
 			unsigned int colByte = col/8;
 
 			// now column's "but" in the byte
 			unsigned int colBit = col%8;
-			
+
 			// calculate new column location by on "byte"
-			
+
 			endianCol = this->columns() - (colByte+1)*8 + colBit;
 		}
-		
+
 		RGBColorType rgbValue = this->getRawPixel(endianCol, imageRow);
 		// a form of Binary Code Modulation is used to control
 		// the LED intensity at variou levels.
-	
+
 		// red
 		RGBColorType redValue = rgbValue & RED_COLOR_MASK;
 		if (redValue && RGBLEDMatrix::allowedFrameForValue(redValue, frame) ) {
 			frameBits.setColumnControlBit(controlRow,colBitIdx+redBitOffset,true);
 			rowNeedsPower = true;
 		}
-		
+
 		// green
 		RGBColorType greenValue = rgbValue & GREEN_COLOR_MASK;
 		if (greenValue && RGBLEDMatrix::allowedFrameForValue(greenValue, frame) ) {
 			frameBits.setColumnControlBit(controlRow,colBitIdx+greenBitOffset,true);
 			rowNeedsPower = true;
 		}
-				
+
 		// blue
 		RGBColorType blueValue = (rgbValue & BLUE_COLOR_MASK);
 		if (blueValue && RGBLEDMatrix::allowedFrameForValue(blueValue, frame) ) {
 			frameBits.setColumnControlBit(controlRow,colBitIdx+blueBitOffset,true);
 			rowNeedsPower = true;
 		}
-		colBitIdx += columnBitIdxIncrement;		
+		colBitIdx += columnBitIdxIncrement;
 	}
-	
+
 	return 	rowNeedsPower;
 }
 

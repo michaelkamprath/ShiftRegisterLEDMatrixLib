@@ -6,7 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 ### Fixed
-- The row scan timing was too long on ESP32 platforms. Adjusted this timing to remove visible blinking. 
+- The row scan timing was too long on ESP32 platforms. Adjusted this timing to remove visible blinking.
+- Fixed Color Gradient example so thatit propery compiles.
 
 ## [2.0.2]
 ### Added

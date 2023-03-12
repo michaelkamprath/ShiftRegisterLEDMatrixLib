@@ -2,17 +2,17 @@
 //     Copyright (C) 2017 Michael Kamprath
 //
 //     This file is part of Shift Register LED Matrix Project.
-// 
+//
 //     Shift Register LED Matrix Project is free software: you can redistribute it and/or modify
 //     it under the terms of the GNU General Public License as published by
 //     the Free Software Foundation, either version 3 of the License, or
 //     (at your option) any later version.
-// 
+//
 //     Shift Register LED Matrix Project is distributed in the hope that it will be useful,
 //     but WITHOUT ANY WARRANTY; without even the implied warranty of
 //     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //     GNU General Public License for more details.
-// 
+//
 //     You should have received a copy of the GNU General Public License
 //     along with Shift Register LED Matrix Project.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __SRLEDMATRIXUTILS_H__
@@ -112,7 +112,7 @@ namespace SRLEDMatrixUtils {
 #define TIMER2_COMPA_vect			TIMER2_COMP_vect
 #define TIMER2_COMPA_vect_num	TIMER2_COMP_vect_num
 #define TIMER0_COMPA_vect		 	TIMER0_COMP_vect
-#define TIMER0_COMPA_vect_num	TIMER0_COMP_vect_num 
+#define TIMER0_COMPA_vect_num	TIMER0_COMP_vect_num
 #define USART0_RX_vect				USART_RXC_vect
 #define USART0_RX_vect_num		USART_RXC_vect_num
 #define USART0_UDRE_vect			USART_UDRE_vect
