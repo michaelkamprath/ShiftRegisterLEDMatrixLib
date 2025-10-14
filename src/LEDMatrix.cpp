@@ -18,6 +18,7 @@
 
 #include <Arduino.h>
 #include "LEDMatrix.h"
+#include "SRLEDMatrixUtils.h"
 
 #define LED_MATRIX_MAX_SCAN_PASS_COUNT 1
 
@@ -89,11 +90,11 @@ void LEDMatrix::setRowBitsForFrame(
 	}
 }
 
-ICACHE_RAM_ATTR unsigned int LEDMatrix::baseIntervalMultiplier( size_t frame ) const {
+SRLM_ISR_ATTR unsigned int LEDMatrix::baseIntervalMultiplier( size_t frame ) const {
 	return  10;
 }
 
-#pragma mark - Adafruit GFX Support
+// MARK: - Adafruit GFX Support
 
 void LEDMatrix::drawPixel(int16_t x, int16_t y, uint16_t color) {
 	this->GFXcanvas1::drawPixel(x, y, color);

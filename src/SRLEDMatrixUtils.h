@@ -19,6 +19,16 @@
 #define __SRLEDMATRIXUTILS_H__
 #include <Arduino.h>
 
+#ifndef SRLM_ISR_ATTR
+#if defined(IRAM_ATTR)
+#define SRLM_ISR_ATTR IRAM_ATTR
+#elif defined(ICACHE_RAM_ATTR)
+#define SRLM_ISR_ATTR ICACHE_RAM_ATTR
+#else
+#define SRLM_ISR_ATTR
+#endif
+#endif
+
 namespace SRLEDMatrixUtils {
 	void * memcpy_smart(
 				void * dest,
@@ -124,4 +134,3 @@ namespace SRLEDMatrixUtils {
 #endif // defined(__AVR_ATmega8535__) || defined(__AVR_ATmega16__) || defined(__AVR_ATmega32__)
 
 #endif // __RGBLEDMATRIXUTILS_H__
-
