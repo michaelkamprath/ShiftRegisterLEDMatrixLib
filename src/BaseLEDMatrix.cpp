@@ -582,6 +582,77 @@ void TC3_Handler()                              // Interrupt Service Routine (IS
 	}
 }
 
+#pragma mark Arduino Uno R4 (Renesas) Handlers
+#elif defined(ARDUINO_ARCH_RENESAS)
+
+#include <FspTimer.h>
+
+namespace {
+FspTimer ledMatrixTimer;
+bool timerInitialized = false;
+
+__attribute__((__used__)) void renesasTimerCallback(timer_callback_args_t *args) {
+        (void)args;
+
+        if (gSingleton == nullptr) {
+                return;
+        }
+
+        ledMatrixTimer.stop();
+
+        if (gSingleton->doInterFrameTransmitOff()) {
+                gSingleton->shiftOutAllOff();
+                if (ledMatrixTimer.setPeriod(gSingleton->rowOffTimerInterval(), TIMER_UNIT_PERIOD_US) != FSP_SUCCESS) {
+                        return;
+                }
+        } else {
+                gSingleton->shiftOutCurrentControlRow();
+                if (ledMatrixTimer.setPeriod(gSingleton->nextRowScanTimerInterval(), TIMER_UNIT_PERIOD_US) != FSP_SUCCESS) {
+                        return;
+                }
+                gSingleton->incrementScanRow();
+        }
+
+        ledMatrixTimer.start();
+}
+} // namespace
+
+void BaseLEDMatrix::startScanning(void) {
+        this->setup();
+
+        _interFrameOffTimeInterval = _interFrameOffTimeMicros;
+
+        if (!timerInitialized) {
+                if (ledMatrixTimer.begin(TIMER_MODE_PERIODIC, GPT_TIMER, 0, renesasTimerCallback) != FSP_SUCCESS) {
+                        return;
+                }
+                if (ledMatrixTimer.setup_overflow_irq() != FSP_SUCCESS) {
+                        return;
+                }
+                if (ledMatrixTimer.open() != FSP_SUCCESS) {
+                        return;
+                }
+                timerInitialized = true;
+        }
+
+        ledMatrixTimer.stop();
+        if (ledMatrixTimer.setPeriod(this->nextRowScanTimerInterval(), TIMER_UNIT_PERIOD_US) != FSP_SUCCESS) {
+                return;
+        }
+        ledMatrixTimer.start();
+}
+
+void BaseLEDMatrix::stopScanning(void) {
+        if (timerInitialized) {
+                ledMatrixTimer.stop();
+        }
+}
+
+unsigned int BaseLEDMatrix::nextRowScanTimerInterval(void) const {
+        // Calculates the microseconds for each scan in five microsecond units.
+        return  5*this->baseIntervalMultiplier( _scanPass );
+}
+
 #elif defined(__AVR_ATmegax08__) || defined(__AVR_ATmegax09__)
 void BaseLEDMatrix::startScanning(void) {
 
@@ -591,7 +662,7 @@ void BaseLEDMatrix::stopScanning(void) {
 }
 
 unsigned int BaseLEDMatrix::nextRowScanTimerInterval(void) const {
-	return 0;
+        return 0;
 }
 
 #pragma mark ATmega 8-bit Handlers

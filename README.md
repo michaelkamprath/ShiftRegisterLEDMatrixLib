@@ -165,7 +165,11 @@ ESP8266 and ESP32 boards are generally 3.3v logic level boards. The default wiri
 | **GND** | GND | GND | GND, connect to 5V supply GND | GND | |
 | **SER** | D7 | D7 | 23 | D23 | SPI MOSI / HMOSI |
 | **CLK** | D5 | D5 | 18 | D18 | SPI SCK / HSCLK |
-| **LATCH** | D8  | D8 | 5 | D5 | SS / HCS | 
+| **LATCH** | D8  | D8 | 5 | D5 | SS / HCS |
+
+### Arduino Uno R4 Boards
+
+The Uno R4 Minima and WiFi variants use Renesas' 48 MHz RA4M1 microcontroller and expose 3.3 V GPIO. The library now ships with a dedicated `FspTimer` backend that keeps the scan cadence identical to the existing AVR implementation, so sketches written for the classic Uno can be recompiled for the Uno R4 without modification. Level-shift the SPI, latch, and optional blanking lines to 5 V when you drive LED matrices that expect the higher voltage, using the same approaches described in the [3.3 V logic level](#33v-logic-level) section.
 
 ### 3.3v Logic Level
 To use the RGB LED Matrices designed in this project with micro-controller boards that use a 3.3V logic level, you must convert the 3.3V logic signals to 5V levels to work with the shift registers. You can easily use a 74HCT125 buffer/line driver chip to do this transformation. For example, you can wire a Teensy 3.6, which is a 3.3v device, to a 74HCT125 chip in the manner shown in the diagram below to get all power and signal lines required to drive the RGB LED Matrix while the Teensy is connected to USB power:
