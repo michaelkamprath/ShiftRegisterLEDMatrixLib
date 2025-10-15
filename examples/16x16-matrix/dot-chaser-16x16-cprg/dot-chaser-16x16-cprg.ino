@@ -1,8 +1,35 @@
+#include <Arduino.h>
 #include <RGBLEDMatrix.h>
 #include <TimerAction.h>
 
+// See notes in the 8x8 dot chaser: the Uno R4's hardware RNG is slow, so we only
+// switch to a lightweight software generator on that architecture.
+#if defined(ARDUINO_ARCH_RENESAS)
+#include "DotChaserRng.h"
+static unsigned int randomIndex(unsigned int limit) {
+  return DotChaserRng::nextIndex(limit);
+}
+static int randomStep(void) {
+  return DotChaserRng::nextNonZeroStep();
+}
+#else
+static unsigned int randomIndex(unsigned int limit) {
+  if (limit == 0u) {
+    return 0u;
+  }
+  return static_cast<unsigned int>(random(limit));
+}
+static int randomStep(void) {
+  int step = 0;
+  while (step == 0) {
+    step = random(-1, 2);
+  }
+  return step;
+}
+#endif
+
 class Animation : public TimerAction {
-private:  
+private:
   RGBLEDMatrix* _screen;
 
   int _xVel;
@@ -10,8 +37,7 @@ private:
 
   unsigned int _xStack[5] = {0xFFFF,0xFFFF,0xFFFF,0xFFFF,0xFFFF};
   unsigned int _yStack[5] = {0xFFFF,0xFFFF,0xFFFF,0xFFFF,0xFFFF};
-  
-  
+
 protected:
   virtual void action() {
     _screen->startDrawing();
@@ -48,21 +74,22 @@ protected:
     _yStack[2] = _yStack[1];
     _yStack[1] = _yStack[0];
 
-    
+
     if ( _xStack[0] == 0 && _xVel <= 0 ) {
-     _xVel = random(1,3) - 1;
-     _yVel = random(0,3) - 1;
+     _xVel = 1;
+     _yVel = randomStep();
     } else if ( _xStack[0] == _screen->rows()-1 && _xVel >= 0 ) {
-     _xVel = random(0,2) - 1;      
-     _yVel = random(0,3) - 1;
+     _xVel = -1;
+     _yVel = randomStep();
     }
 
     if ( _yStack[0] == 0  && _yVel == -1) {
-      _yVel = random(1,3) - 1;
+      _yVel = 1;
+      _xVel = randomStep();
     } else if ( _yStack[0] == _screen->columns()-1 && _yVel == 1) {
-      _yVel = random(0,2) - 1;      
+      _yVel = -1;
+      _xVel = randomStep();
     }
-    
 
     _xStack[0] += _xVel;
     _yStack[0] += _yVel;
@@ -74,25 +101,36 @@ public:
     : TimerAction(100000),
       _screen(pScreen)
     {
-      _xStack[0] = random(_screen->rows());
-      _yStack[0] = random(_screen->columns());
-      _xVel = 1;
-      _yVel = 0;
-      
+      this->randomize();
     }
 
-  
+  void randomize() {
+    for (unsigned int i = 0; i < 5; ++i) {
+      _xStack[i] = 0xFFFF;
+      _yStack[i] = 0xFFFF;
+    }
+    _xStack[0] = randomIndex(_screen->rows());
+    _yStack[0] = randomIndex(_screen->columns());
+    _xVel = randomStep();
+    _yVel = randomStep();
+  }
 };
 
 RGBLEDMatrix leds(16,16, RGBLEDMatrix::RGB_GROUPS_CPRG8, HIGH, LOW, 3);
 Animation ani(&leds);
 
 void setup() {
+#if defined(ARDUINO_ARCH_RENESAS)
+  DotChaserRng::seed(micros());
+#else
+  randomSeed(micros());
+#endif
+  ani.randomize();
   leds.setup();
   leds.startScanning();
 }
 
-void loop() {  
+void loop() {
   leds.loop();
   ani.loop();
 }

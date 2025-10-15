@@ -76,7 +76,6 @@ void drawPlasma( unsigned long counter ) {
       }
 
       RGBColorType color = RGBColor::fromRGB(r, g, b);
-                              
       leds.writePixel(col, row, color);
     }
   }
@@ -96,13 +95,12 @@ void loop() {
   leds.loop();
 
   // update frame every 40 milleseconds. AVR chips are slow enough to not need this delay.
-  #if !defined(ARDUINO_ARCH_AVR)
+  #if !defined(ARDUINO_ARCH_AVR) && !defined(ARDUINO_ARCH_RENESAS)
   delay(40);
   #endif
 
   if (timeIncrement) {
     timeCount++;
-  
     //
     // set a maximum to timeCount because floats only have
     // a max precision of 5 significant digits. Otherwise, when timeCount

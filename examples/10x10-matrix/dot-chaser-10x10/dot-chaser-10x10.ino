@@ -2,6 +2,32 @@
 #include <RGBLEDMatrix.h>
 #include <TimerAction.h>
 
+// See notes in the 8x8 dot chaser: the Uno R4's hardware RNG makes random()
+// calls expensive, so we switch to a cheap xorshift generator there only.
+#if defined(ARDUINO_ARCH_RENESAS)
+#include "DotChaserRng.h"
+static unsigned int randomIndex(unsigned int limit) {
+  return DotChaserRng::nextIndex(limit);
+}
+static int randomStep(void) {
+  return DotChaserRng::nextNonZeroStep();
+}
+#else
+static unsigned int randomIndex(unsigned int limit) {
+  if (limit == 0u) {
+    return 0u;
+  }
+  return static_cast<unsigned int>(random(limit));
+}
+static int randomStep(void) {
+  int step = 0;
+  while (step == 0) {
+    step = random(-1, 2);
+  }
+  return step;
+}
+#endif
+
 class Animation : public TimerAction {
 private:
   RGBLEDMatrix* _screen;
@@ -53,17 +79,19 @@ protected:
     _yStack[1] = _yStack[0];
 
     if ( _xStack[0] == 0 && _xVel <= 0 ) {
-     _xVel = random(1,3) - 1;
-     _yVel = random(0,3) - 1;
+     _xVel = 1;
+     _yVel = randomStep();
     } else if ( _xStack[0] == _screen->rows()-1 && _xVel >= 0 ) {
-     _xVel = random(0,2) - 1;
-     _yVel = random(0,3) - 1;
+     _xVel = -1;
+     _yVel = randomStep();
     }
 
     if ( _yStack[0] == 0  && _yVel == -1) {
-      _yVel = random(1,3) - 1;
+      _yVel = 1;
+      _xVel = randomStep();
     } else if ( _yStack[0] == _screen->columns()-1 && _yVel == 1) {
-      _yVel = random(0,2) - 1;
+      _yVel = -1;
+      _xVel = randomStep();
     }
 
     _xStack[0] += _xVel;
@@ -76,21 +104,35 @@ public:
     : TimerAction(100000),
       _screen(pScreen)
     {
-      _xStack[0] = random(_screen->rows());
-      _yStack[0] = random(_screen->columns());
-      _xVel = 1;
-      _yVel = 0;
+      this->randomize();
     }
+
+  void randomize() {
+    for (unsigned int i = 0; i < 5; ++i) {
+      _xStack[i] = 0xFFFF;
+      _yStack[i] = 0xFFFF;
+    }
+    _xStack[0] = randomIndex(_screen->rows());
+    _yStack[0] = randomIndex(_screen->columns());
+    _xVel = randomStep();
+    _yVel = randomStep();
+  }
 };
 
-RGBLEDMatrix *leds;
-Animation *ani;
+RGBLEDMatrix *leds = nullptr;
+Animation *ani = nullptr;
 
 void setup() {
   Serial.begin(115200);
   Serial.println("---===*** Program Start ***===---");
+#if defined(ARDUINO_ARCH_RENESAS)
+  DotChaserRng::seed(micros());
+#else
+  randomSeed(micros());
+#endif
   leds = new RGBLEDMatrix(10,10);
   ani = new Animation(leds);
+  ani->randomize();
   leds->setup();
   leds->startScanning();
   Serial.println("Dot Chaser has started!");

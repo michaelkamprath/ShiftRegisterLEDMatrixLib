@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 
 ### Added
-- Native scan timer support for the Arduino Uno R4 (Renesas RA4M1) family via the core `FspTimer` helper.【F:src/BaseLEDMatrix.cpp†L560-L705】
+- Native scan timer support for the Arduino Uno R4 (Renesas RA4M1) family.
 - Fixed several compiler warnings
 
 ## [2.0.3]
