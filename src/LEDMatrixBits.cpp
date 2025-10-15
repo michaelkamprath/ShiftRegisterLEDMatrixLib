@@ -63,7 +63,8 @@ LEDMatrixBits::LEDMatrixBits(
 
 LEDMatrixBits::~LEDMatrixBits()
 {
-	delete _data;
+	delete[] _data;
+	delete[] _rowMemoized;
 }
 
 void LEDMatrixBits::reset(void) {

@@ -37,8 +37,7 @@ namespace SRLEDMatrixUtils {
 				bool isSrcProgMem
 			);
 
-	float fmod(float value, float modulo);
-
+float fmod(float value, float modulo);
 }
 
 //

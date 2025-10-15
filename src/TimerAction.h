@@ -36,18 +36,11 @@ private:
 
 	unsigned long timeSinceLast(void) const {
 		unsigned long curMicros = micros();
-		// current micros is less than last micros. Since micros is
-		// represented by a 4 byte "long", the count will roll over at
-		// about 1 hour 10 minutes.
-		unsigned long timeSinceLast;
-		if (curMicros < _lastLoopMicros) {
-			timeSinceLast = (0xFFFFUL - _lastLoopMicros) + curMicros;
+		if (curMicros >= _lastLoopMicros) {
+			return curMicros - _lastLoopMicros;
 		}
-		else {
-			timeSinceLast = curMicros - _lastLoopMicros;
-		}
-
-		return timeSinceLast;
+		// The timer counter has roll over. Account for that in the time since last calculation.
+		return (0xFFFFFFFFUL - _lastLoopMicros) + curMicros + 1UL;
 	}
 protected:
   virtual void action() = 0;

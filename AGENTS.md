@@ -1,4 +1,5 @@
 # ShiftRegisterLEDMatrixLib Agent Instructions
+This library provides a generalized API to create and drive an image on LED matrix where shift registers, such as the 74HC595 or DM13a, are used to control the rows and columns of the matrix. It is designed to be use with the Arduino framework on a number of microcontroller platforms. A detailed description of this library and its use cases can be found in `README.md`.
 
 ## Scope
 These instructions apply to the entire repository unless a nested `AGENTS.md` overrides them.

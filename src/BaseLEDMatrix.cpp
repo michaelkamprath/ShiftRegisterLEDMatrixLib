@@ -92,13 +92,23 @@ void BaseLEDMatrix::setup() {
 }
 
 BaseLEDMatrix::~BaseLEDMatrix() {
+	this->stopScanning();
+	noInterrupts();
+	if (gSingleton == this) {
+		gSingleton = NULL;
+	}
+	interrupts();
+
 	if (_screenBitFrames != NULL) {
 		for (unsigned int i = 0; i < 2*_pwmCycleScanCount; i++) {
 			delete _screenBitFrames[i];
 		}
-		delete _screenBitFrames;
+		delete[] _screenBitFrames;
+		_screenBitFrames = NULL;
 		_curScreenBitFrames = NULL;
 	}
+	delete _allOffBits;
+	_allOffBits = NULL;
 }
 
 void BaseLEDMatrix::action() {
@@ -590,30 +600,52 @@ void TC3_Handler()                              // Interrupt Service Routine (IS
 namespace {
 FspTimer ledMatrixTimer;
 bool timerInitialized = false;
+constexpr uint32_t kRenesasDefaultTickMicros = 5u;
+constexpr uint32_t kRenesasMaxTickMicros = 640u;
+volatile uint32_t renesasAccumulatedMicros = 0u;
+volatile uint32_t renesasCurrentIntervalMicros = kRenesasDefaultTickMicros;
+volatile uint32_t renesasTimerTickMicros = kRenesasDefaultTickMicros;
+uint8_t renesasTimerType = GPT_TIMER;
+int8_t renesasTimerChannel = -1;
+} // namespace
 
 __attribute__((__used__)) void renesasTimerCallback(timer_callback_args_t *args) {
 	(void)args;
-
 	if (gSingleton == nullptr) {
 		return;
 	}
 
-	ledMatrixTimer.stop();
+	if (renesasTimerTickMicros == 0u) {
+		return;
+	}
 
-	if (gSingleton->doInterFrameTransmitOff()) {
-		gSingleton->shiftOutAllOff();
-		if (!ledMatrixTimer.set_period_us(gSingleton->rowOffTimerInterval())) {
-			return;
+	if (renesasCurrentIntervalMicros == 0u) {
+		renesasCurrentIntervalMicros = renesasTimerTickMicros;
+	}
+
+	renesasAccumulatedMicros += renesasTimerTickMicros;
+
+	while (renesasAccumulatedMicros >= renesasCurrentIntervalMicros) {
+		renesasAccumulatedMicros -= renesasCurrentIntervalMicros;
+
+		uint32_t nextIntervalMicros = 0u;
+
+		if (gSingleton->doInterFrameTransmitOff()) {
+			gSingleton->shiftOutAllOff();
+			nextIntervalMicros = gSingleton->rowOffTimerInterval();
+		} else {
+			gSingleton->shiftOutCurrentControlRow();
+			nextIntervalMicros = gSingleton->nextRowScanTimerInterval();
+			gSingleton->incrementScanRow();
 		}
-	} else {
-		gSingleton->shiftOutCurrentControlRow();
-		if (!ledMatrixTimer.set_period_us(gSingleton->nextRowScanTimerInterval())) {
-			return;
+
+		if (nextIntervalMicros == 0u) {
+			nextIntervalMicros = renesasTimerTickMicros;
 		}
-		gSingleton->incrementScanRow();
+
+		renesasCurrentIntervalMicros = nextIntervalMicros;
 	}
 }
-} // namespace
 
 void BaseLEDMatrix::startScanning(void) {
 	this->setup();
@@ -621,20 +653,54 @@ void BaseLEDMatrix::startScanning(void) {
 	_interFrameOffTimeInterval = _interFrameOffTimeMicros;
 
 	if (!timerInitialized) {
-		if (!ledMatrixTimer.begin(TIMER_MODE_PERIODIC, GPT_TIMER, 0, 1000.0f, 50.0f, renesasTimerCallback)) {
+		renesasTimerChannel = FspTimer::get_available_timer(renesasTimerType, true);
+		if (renesasTimerChannel < 0) {
 			return;
 		}
-		if (!ledMatrixTimer.setup_overflow_irq()) {
+
+		if (!ledMatrixTimer.begin(TIMER_MODE_PERIODIC, renesasTimerType, renesasTimerChannel, 1000.0f, 50.0f, renesasTimerCallback)) {
 			return;
 		}
+
 		if (!ledMatrixTimer.open()) {
 			return;
 		}
+
+		uint32_t requestedTick = kRenesasDefaultTickMicros;
+		bool tickConfigured = false;
+		while (!tickConfigured && requestedTick <= kRenesasMaxTickMicros) {
+			if (ledMatrixTimer.set_period_us(requestedTick)) {
+				tickConfigured = true;
+				renesasTimerTickMicros = requestedTick;
+				ledMatrixTimer.stop();
+			} else {
+				requestedTick *= 2u;
+			}
+		}
+		if (!tickConfigured) {
+			return;
+		}
+
+		if (!ledMatrixTimer.setup_overflow_irq()) {
+			return;
+		}
+
 		timerInitialized = true;
+	} else {
+		if (!ledMatrixTimer.is_opened()) {
+			if (!ledMatrixTimer.open()) {
+				return;
+			}
+		}
 	}
 
-	ledMatrixTimer.stop();
-	if (!ledMatrixTimer.set_period_us(this->nextRowScanTimerInterval())) {
+	renesasAccumulatedMicros = 0u;
+	renesasCurrentIntervalMicros = this->nextRowScanTimerInterval();
+	if (renesasCurrentIntervalMicros == 0u) {
+		renesasCurrentIntervalMicros = renesasTimerTickMicros;
+	}
+
+	if (!ledMatrixTimer.start()) {
 		return;
 	}
 }
@@ -665,7 +731,7 @@ unsigned int BaseLEDMatrix::nextRowScanTimerInterval(void) const {
 // MARK: ATmega 8-bit Handlers
 #else
 //
-// On normal Arduino board (Uno, Nano, etc), use the timer interrupts to drive the
+// On normal AVR Arduino board (Uno R3, Nano, etc), use the timer interrupts to drive the
 // scan timing.
 //
 
