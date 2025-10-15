@@ -1,8 +1,9 @@
+#include <Arduino.h>
 #include <RGBLEDMatrix.h>
 #include <TimerAction.h>
 
 class Animation : public TimerAction {
-private:  
+private:
   RGBLEDMatrix* _screen;
 
   int _xVel;
@@ -10,8 +11,7 @@ private:
 
   unsigned int _xStack[5] = {0xFFFF,0xFFFF,0xFFFF,0xFFFF,0xFFFF};
   unsigned int _yStack[5] = {0xFFFF,0xFFFF,0xFFFF,0xFFFF,0xFFFF};
-  
-  
+
 protected:
   virtual void action() {
     _screen->startDrawing();
@@ -52,21 +52,19 @@ protected:
     _yStack[2] = _yStack[1];
     _yStack[1] = _yStack[0];
 
-    
     if ( _xStack[0] == 0 && _xVel <= 0 ) {
      _xVel = random(1,3) - 1;
      _yVel = random(0,3) - 1;
     } else if ( _xStack[0] == _screen->rows()-1 && _xVel >= 0 ) {
-     _xVel = random(0,2) - 1;      
+     _xVel = random(0,2) - 1;
      _yVel = random(0,3) - 1;
     }
 
     if ( _yStack[0] == 0  && _yVel == -1) {
       _yVel = random(1,3) - 1;
     } else if ( _yStack[0] == _screen->columns()-1 && _yVel == 1) {
-      _yVel = random(0,2) - 1;      
+      _yVel = random(0,2) - 1;
     }
-    
 
     _xStack[0] += _xVel;
     _yStack[0] += _yVel;
@@ -82,21 +80,23 @@ public:
       _yStack[0] = random(_screen->columns());
       _xVel = 1;
       _yVel = 0;
-      
     }
-
-  
 };
 
-RGBLEDMatrix leds(10,10);
-Animation ani(&leds);
+RGBLEDMatrix *leds;
+Animation *ani;
 
 void setup() {
-  leds.setup();
-  leds.startScanning();
+  Serial.begin(115200);
+  Serial.println("---===*** Program Start ***===---");
+  leds = new RGBLEDMatrix(10,10);
+  ani = new Animation(leds);
+  leds->setup();
+  leds->startScanning();
+  Serial.println("Dot Chaser has started!");
 }
 
-void loop() {  
-  leds.loop();
-  ani.loop();
+void loop() {
+  leds->loop();
+  ani->loop();
 }
