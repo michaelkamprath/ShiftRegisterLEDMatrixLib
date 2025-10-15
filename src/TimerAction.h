@@ -47,8 +47,8 @@ protected:
 public:
   TimerAction(unsigned long intervalMicros)
   		: 	_interval(intervalMicros),
-  			_isActive(true),
-  			_lastLoopMicros(micros())
+  			_lastLoopMicros(micros()),
+  			_isActive(true)
   	{
 	}
 
