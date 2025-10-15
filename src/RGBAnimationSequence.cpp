@@ -35,6 +35,11 @@ RGBAnimationSequence::RGBAnimationSequence(
 	memset(	_itemIsInView, 0, aniArraySize*sizeof(bool) );
 }
 
+RGBAnimationSequence::~RGBAnimationSequence() {
+	delete[] _itemIsInView;
+	_itemIsInView = NULL;
+}
+
 void RGBAnimationSequence::loop()
 {
 	this->TimerAction::loop();

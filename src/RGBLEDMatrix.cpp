@@ -237,7 +237,7 @@ unsigned int RGBLEDMatrix::baseIntervalMultiplier( size_t frame ) const {
 	return (1 << frame);
 }
 
-#pragma mark - Adafruit GFX Support
+// MARK: - Adafruit GFX Support
 
 void RGBLEDMatrix::drawPixel(int16_t x, int16_t y, uint16_t color) {
 	this->GFXcanvas16::drawPixel(x, y, color);
@@ -249,14 +249,14 @@ void RGBLEDMatrix::fillScreen(uint16_t color) {
 	_matrixNeedsUpdate = true;
 }
 
-#pragma mark - Debugging
+// MARK: - Debugging
 
 void RGBLEDMatrix::debugPrintImageData(void) const {
 	char c[8];
 	Serial.println("Current image data:");
-	for (uint16_t y = 0; y < this->HEIGHT; y++ ) {
+	for (int16_t y = 0; y < this->HEIGHT; y++ ) {
 		Serial.print("    ");
-		for (uint16_t x = 0; x < this->WIDTH; x++) {
+		for (int16_t x = 0; x < this->WIDTH; x++) {
 			Serial.print("0x");
 			sprintf(c, "%04x", this->getRawPixel(x,y));
 			Serial.print(c);

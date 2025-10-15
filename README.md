@@ -9,7 +9,7 @@ Find at more about this library and hardware that it is designed for at:
 
 # Design and Usage
 ## Hardware Design
-The general hardware design of the matrix is to use shift registers to drive the matrix. This library can support either common anode or common cathode RGB LEDs, but default settings assume common anode. 
+The general hardware design of the matrix is to use shift registers to drive the matrix. This library can support either common anode or common cathode RGB LEDs, but default settings assume common anode.
 
 Consider the following 4x4  matrix using common anode RGB LEDs as an example:
 
@@ -17,7 +17,7 @@ Consider the following 4x4  matrix using common anode RGB LEDs as an example:
                  Serial Bit Stream
                           |
  RGB--RGB--RGB--RGB- R1  LSB
- |||  |||  |||  |||       | 
+ |||  |||  |||  |||       |
  RGB--RGB--RGB--RGB- R2   |
  |||  |||  |||  |||       |
  RGB--RGB--RGB--RGB- R3   |
@@ -37,12 +37,12 @@ Since there are 16 bits needed to control the rows and columns, two 74HC595 shif
 
 In this case, Q7 of the first 74HC595 (U1) would be attached to C01, Q6 to C02, and so on. Since there are 12 column and 4 rows, two 8-bit shift registers are needed. So the second 74HC595 (U2) would have its Q0 through Q3 attached to R1 through R4, and its Q4 through Q7 attached to C12 down through C09. In this configuration, the first bit shifted out in an update cycle is for C01, and the last bit shifted out is for R1.
 
-In this common anode set up, the rows would be "on" when the proper 74HC595 pin is in the `high` state and the column would "on" when its respective pin is in the `low` state. Basically, the shift register is sinking the columns and powering the rows. However, since the 74HC595 cannot source enough power to drive the multiple LEDs in the row, you might use a PNP transistor to drive the row. In this case, the row would be on if the its pin on the 74HC595 is `low`, which turns on the PNP transistor allowing current to flow. 
+In this common anode set up, the rows would be "on" when the proper 74HC595 pin is in the `high` state and the column would "on" when its respective pin is in the `low` state. Basically, the shift register is sinking the columns and powering the rows. However, since the 74HC595 cannot source enough power to drive the multiple LEDs in the row, you might use a PNP transistor to drive the row. In this case, the row would be on if the its pin on the 74HC595 is `low`, which turns on the PNP transistor allowing current to flow.
 
 Other similar designs can be used with this library. Common variations would be:
 
 1. Using a DM13A sink driver to drive the cathode columns. It is not recommended to use a DM13A to drive the rows for common cathode RGB LEDs due to high current needs to drive the multiple LEDs in a single row. Using DM13A chips for the columns is nice because you can forgo the current limiting resistor for each column and the DM13A does the job of limiting the current.
-2. Using common cathode RGB LEDs. In this case NPN transistors would be used to sink the current for a row, and columns are sourced with the current of the high state on a 74HC595 pin. 
+2. Using common cathode RGB LEDs. In this case NPN transistors would be used to sink the current for a row, and columns are sourced with the current of the high state on a 74HC595 pin.
 3. When using a common anode RGB LEDs, you could use a source driver, such as a UDN2981, to drive a row. This would be turned on with a `high` state on the row's shift register pin.
 4. Rather than ordering the column bits as alternating through R, G, and B colors, each color can be grouped together. This is convenient when using manufactured LED matrix modules that group the pins by colors rather than by columns. See [Bit Layouts](#bit-layouts).
 
@@ -55,14 +55,14 @@ All image drawing is handled by the [Adafruit GFX API](https://learn.adafruit.co
 For RGB color matrices, there are two color modes supported: 9 bit and 16 bit color. Color for the image is represented by a `RGBColorType` value. When the preprocessor macro 	`SIXTEEN_BIT_COLOR` is defined to `1`, `RGBColorType` will use following bit layout (notice green gets 6 bits while red and blue each get 5 bits):
 
 ```
-	Bits   0   4   8  12  
+	Bits   0   4   8  12
 		   |---|---|---|---
  		   RRRRRGGGGGGBBBBB
 
 	R = Red
 	G = Green
 	B = Blue
-``` 
+```
 Color can easily be set in hexadecimal format. For example, the following colors are defined in `RGBColor.h`:
 
 ```
@@ -98,13 +98,13 @@ const RGBColorType YELLOW_COLOR = RED_COLOR_MASK|GREEN_COLOR_MASK;
 When the preprocessor macro `SIXTEEN_BIT_COLOR` is defined to `0`, the library will use a subset of bits `RGBColorType` that effectively makes the color range based on 3 bits per red, green, and blue. This is done automatically, and you can still use the 16 bit color definitions illustrated above.
 
 ### Matrix Driver
-The matrix driver is an object that manages rendering an image on an LED matrix. It does this using a double buffer approach. The first buffer is the image that is desired to be rendered on the LED matrix. The second buffer is the bit sequences that needs to be sent to the LED matrix's shift registers to render the image. The matrix driver object uses SPI to send the bits to the shift register. Since the rows on the matrix are multiplexed when rendering, the matrix driver object will use a system clock interrupt to ensure the multiplexing is consistently timed. 
+The matrix driver is an object that manages rendering an image on an LED matrix. It does this using a double buffer approach. The first buffer is the image that is desired to be rendered on the LED matrix. The second buffer is the bit sequences that needs to be sent to the LED matrix's shift registers to render the image. The matrix driver object uses SPI to send the bits to the shift register. Since the rows on the matrix are multiplexed when rendering, the matrix driver object will use a system clock interrupt to ensure the multiplexing is consistently timed.
 
 When constructing a matrix driver, you need to tell it a few details:
 * The matrix's size in rows and columns
-* Whether the shift registers used for controlling columns should be set to `HIGH` or `LOW` to turn on the column. 
+* Whether the shift registers used for controlling columns should be set to `HIGH` or `LOW` to turn on the column.
 * Whether the shift registers used for controlling rows should be set to `HIGH` or `LOW` to turn on the row
-* The length of the delay that should be present between turning on each rows while multiplexing. By default, this delay is set to zero (no delay). However, if you are using slow switch for the row's power, such as a UDN2981 which has a 2 microsecond urn off time, introducing a short period of all rows being off in between each row update can eliminate LED ghosting.
+* The length of the delay that should be present between turning on each rows while multiplexing. By default, this delay is set to zero (no delay). However, if you are using slow switch for the row's power, such as a UDN2981 which has a 2 microsecond turn off time, introducing a short period of all rows being off in between each row update can eliminate LED ghosting.
 * The pin which will be used to send the latch signal.
 
 #### LEDMatrix
@@ -165,7 +165,11 @@ ESP8266 and ESP32 boards are generally 3.3v logic level boards. The default wiri
 | **GND** | GND | GND | GND, connect to 5V supply GND | GND | |
 | **SER** | D7 | D7 | 23 | D23 | SPI MOSI / HMOSI |
 | **CLK** | D5 | D5 | 18 | D18 | SPI SCK / HSCLK |
-| **LATCH** | D8  | D8 | 5 | D5 | SS / HCS | 
+| **LATCH** | D8  | D8 | 5 | D5 | SS / HCS |
+
+### Arduino Uno R4 Boards
+
+The Uno R4 Minima and WiFi variants use Renesas' 48 MHz RA4M1 microcontroller and expose 3.3 V GPIO. The library now ships with a dedicated `FspTimer` backend that keeps the scan cadence identical to the existing AVR implementation, so sketches written for the classic Uno can be recompiled for the Uno R4 without modification. Level-shift the SPI, latch, and optional blanking lines to 5 V when you drive LED matrices that expect the higher voltage, using the same approaches described in the [3.3 V logic level](#33v-logic-level) section.
 
 ### 3.3v Logic Level
 To use the RGB LED Matrices designed in this project with micro-controller boards that use a 3.3V logic level, you must convert the 3.3V logic signals to 5V levels to work with the shift registers. You can easily use a 74HCT125 buffer/line driver chip to do this transformation. For example, you can wire a Teensy 3.6, which is a 3.3v device, to a 74HCT125 chip in the manner shown in the diagram below to get all power and signal lines required to drive the RGB LED Matrix while the Teensy is connected to USB power:
@@ -179,7 +183,7 @@ An alternative to using this 74HCT125 circuit would be to replace the 74HC595 sh
 ### Color Modes
 This driver can support either 9-bit or 16-bit color. By default, this library uses 9-bit color. The library will default to either 9 bit or 16 bit color based on the type of microcontroller it is being compiled for. You can directly enable 16 bit color in this library by setting the preprocessor macro `SIXTEEN_BIT_COLOR` to a value of 1 (note, not in your `ino` file, but at compile time for all files). You can do this either by editing the `RGBColor.h` file or setting a compiler flag. However, note that 16 bit color requires more RAM than an Arduino Uno or Nano has. Due its memory requirements, 16 bit color should work on most 32 bit boards and the Arduino Mega 2560. 16 bit color has been tested to work on the following boards:
 
-* Teensy 3.6 
+* Teensy 3.6
 * Arduino Mega 2560
 * Wemos D1 mini Lite
 * NodeMCU
@@ -199,7 +203,7 @@ The second supported bit layout groups all colors together in column order, then
 When constructing the the `RGBLEDMatrix` object, the third argument is optional and it take a `RGBLEDBitLayout` enum value indicating which bit layout you are using. This argument defaults to `INDIVIDUAL_LEDS`, which is the first layout described above. The other potential value is `RGB_GROUPS`.
 
 #### Common Power Row Groups
-As matrices get large, it becomes more difficult to successfully scan through all the rows within the time needed to create gray scales and not create perceptible blinking. One way to resolve this problem is to design the large matrix with common power row groups. Common power rows groups are a circuit design mechanism for implementing [scan rates](https://www.sparkfun.com/sparkx/blog/2650) in the LED matrix.  What common power row groups does is effectively deconstruct a large LED matrix into smaller sub-matrices that all share the same set of rows, and thus the same set of row power control bits and switching transistors. The advantage of this design is that scan rate is implemented in hardware and as a result simplifies that hardware by reducing the row power transistors that are needed. The challenge with this approach is transforming the matrix image's logical layout (e.g., 16x16) to its actual circuit layout (e.g. 32x8). This transformation is handled in software by this library. Another challenge is that the row power transition would need to handle higher levels of current than matrices that don't use row groups. Be sure to select the row transistor appropriately. 
+As matrices get large, it becomes more difficult to successfully scan through all the rows within the time needed to create gray scales and not create perceptible blinking. One way to resolve this problem is to design the large matrix with common power row groups. Common power rows groups are a circuit design mechanism for implementing [scan rates](https://www.sparkfun.com/sparkx/blog/2650) in the LED matrix.  What common power row groups does is effectively deconstruct a large LED matrix into smaller sub-matrices that all share the same set of rows, and thus the same set of row power control bits and switching transistors. The advantage of this design is that scan rate is implemented in hardware and as a result simplifies that hardware by reducing the row power transistors that are needed. The challenge with this approach is transforming the matrix image's logical layout (e.g., 16x16) to its actual circuit layout (e.g. 32x8). This transformation is handled in software by this library. Another challenge is that the row power transition would need to handle higher levels of current than matrices that don't use row groups. Be sure to select the row transistor appropriately.
 
 To illustrate a common power row group works, consider this following 8 row by 4 columns matrix:
 

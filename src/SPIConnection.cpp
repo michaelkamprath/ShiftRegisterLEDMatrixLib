@@ -18,10 +18,7 @@
 #include <Arduino.h>
 #include <SPI.h>
 #include "SPIConnection.h"
-
-#ifndef ICACHE_RAM_ATTR
-#define ICACHE_RAM_ATTR
-#endif
+#include "SRLEDMatrixUtils.h"
 
 SPIConnection::SPIConnection(
 	int slavePin,
@@ -41,16 +38,16 @@ void SPIConnection::setup() {
 	SPI.begin();
 }
 
-ICACHE_RAM_ATTR void SPIConnection::startTransaction(void) {
+SRLM_ISR_ATTR void SPIConnection::startTransaction(void) {
 	SPI.beginTransaction(SPISettings(_maxSPISpeed, MSBFIRST, SPI_MODE0));
 	digitalWrite (_slavePin, LOW);
 }
 
-ICACHE_RAM_ATTR void SPIConnection::transmitByte(unsigned char data) {
+SRLM_ISR_ATTR void SPIConnection::transmitByte(unsigned char data) {
 	SPI.transfer(data);
 }
 
-ICACHE_RAM_ATTR void SPIConnection::endTransaction(void) {
+SRLM_ISR_ATTR void SPIConnection::endTransaction(void) {
 	digitalWrite (_slavePin, HIGH);
 	SPI.endTransaction();
 }

@@ -51,7 +51,8 @@ Or, the following big masks are used:
 							||defined(__AVR_ATmega2560__) \
 							||defined( ESP32 ) \
 							||defined(ARDUINO_SAMD_ZERO) \
-							||defined(_SAM3XA_)
+							||defined(_SAM3XA_) \
+							||defined(ARDUINO_ARCH_RENESAS)
 
 // You may wish to add the following platforms to the set that support 12-bit color
 //

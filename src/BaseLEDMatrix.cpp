@@ -92,13 +92,23 @@ void BaseLEDMatrix::setup() {
 }
 
 BaseLEDMatrix::~BaseLEDMatrix() {
+	this->stopScanning();
+	noInterrupts();
+	if (gSingleton == this) {
+		gSingleton = NULL;
+	}
+	interrupts();
+
 	if (_screenBitFrames != NULL) {
 		for (unsigned int i = 0; i < 2*_pwmCycleScanCount; i++) {
 			delete _screenBitFrames[i];
 		}
-		delete _screenBitFrames;
+		delete[] _screenBitFrames;
+		_screenBitFrames = NULL;
 		_curScreenBitFrames = NULL;
 	}
+	delete _allOffBits;
+	_allOffBits = NULL;
 }
 
 void BaseLEDMatrix::action() {
@@ -126,22 +136,22 @@ void BaseLEDMatrix::action() {
 	}
 }
 
-ICACHE_RAM_ATTR bool BaseLEDMatrix::doInterFrameTransmitOff( void ) const {
+SRLM_ISR_ATTR bool BaseLEDMatrix::doInterFrameTransmitOff( void ) const {
 	return _interFrameTransmitOffToggle;
 }
-ICACHE_RAM_ATTR void BaseLEDMatrix::shiftOutAllOff(void) {
+SRLM_ISR_ATTR void BaseLEDMatrix::shiftOutAllOff(void) {
 	_allOffBits->transmitRow(_scanRow, _spi);
 	_interFrameTransmitOffToggle = false;
 }
-ICACHE_RAM_ATTR void BaseLEDMatrix::shiftOutCurrentControlRow( void ) {
+SRLM_ISR_ATTR void BaseLEDMatrix::shiftOutCurrentControlRow( void ) {
 	this->shiftOutControlRow( _scanRow, _scanPass );
 }
 
-ICACHE_RAM_ATTR void BaseLEDMatrix::shiftOutControlRow( int row, int scanPass ) {
+SRLM_ISR_ATTR void BaseLEDMatrix::shiftOutControlRow( int row, int scanPass ) {
 	_curScreenBitFrames[scanPass-1]->transmitRow(row, _spi);
 }
 
-ICACHE_RAM_ATTR void BaseLEDMatrix::incrementScanRow( void ) {
+SRLM_ISR_ATTR void BaseLEDMatrix::incrementScanRow( void ) {
 	_scanRow++;
 	if (_scanRow >= this->controlRows()) {
 		_scanRow = 0;
@@ -155,14 +165,14 @@ ICACHE_RAM_ATTR void BaseLEDMatrix::incrementScanRow( void ) {
 	}
 }
 
-ICACHE_RAM_ATTR void BaseLEDMatrix::enableBlanking(int blankPin ) {
+SRLM_ISR_ATTR void BaseLEDMatrix::enableBlanking(int blankPin ) {
 	_blankPin = blankPin;
 	_blankLevel = 0;
 	pinMode (_blankPin, OUTPUT);
 	digitalWrite (_blankPin, LOW);
 }
 
-ICACHE_RAM_ATTR void BaseLEDMatrix::disableBlanking( void )	{
+SRLM_ISR_ATTR void BaseLEDMatrix::disableBlanking( void )	{
 	if ( _blankPin >= 0 ) {
 		digitalWrite (_blankPin, LOW);
 	}
@@ -170,7 +180,7 @@ ICACHE_RAM_ATTR void BaseLEDMatrix::disableBlanking( void )	{
 	_blankLevel = 0;
 }
 
-ICACHE_RAM_ATTR void BaseLEDMatrix::blank(void) {
+SRLM_ISR_ATTR void BaseLEDMatrix::blank(void) {
 	if ( _blankPin >= 0 ) {
 		if ( _blankLevel == 0 ) {
 			digitalWrite (_blankPin, HIGH);
@@ -179,7 +189,7 @@ ICACHE_RAM_ATTR void BaseLEDMatrix::blank(void) {
 	}
 }
 
-ICACHE_RAM_ATTR void BaseLEDMatrix::unblank(void) {
+SRLM_ISR_ATTR void BaseLEDMatrix::unblank(void) {
 	if ((_blankPin >= 0) && (_blankLevel > 0)) {
 		_blankLevel--;
 		if (_blankLevel == 0) {
@@ -190,18 +200,18 @@ ICACHE_RAM_ATTR void BaseLEDMatrix::unblank(void) {
 
 
 // Number of 5 microsecond units
-ICACHE_RAM_ATTR unsigned int BaseLEDMatrix::baseIntervalMultiplier( size_t frame ) const {
+SRLM_ISR_ATTR unsigned int BaseLEDMatrix::baseIntervalMultiplier( size_t frame ) const {
 	// base case does nothing interesting
 	return  1;
 }
 
-ICACHE_RAM_ATTR unsigned int BaseLEDMatrix::rowOffTimerInterval(void) const {
+SRLM_ISR_ATTR unsigned int BaseLEDMatrix::rowOffTimerInterval(void) const {
 	// _interFrameOffTimeInterval should be set in the platform-specific startScanning()
 	// method
 	return  _interFrameOffTimeInterval;
 }
 
-#pragma mark - Debugging
+// MARK: - Debugging
 void BaseLEDMatrix::debugPrintFrames( void ) const {
 	size_t idxOffset = 0;
 	if (_screenBitFrameToggle) {
@@ -234,7 +244,7 @@ void BaseLEDMatrix::debugPrintFrames( void ) const {
  *
  */
 
-#pragma mark Teensy Handlers
+// MARK: Teensy Handlers
 #if ((defined(__IMXRT1062__)||defined(__arm__)) && defined(TEENSYDUINO))
 #if defined(__IMXRT1062__)
 // Use IntervalTimer on Teensy 4+ to drive scan timing
@@ -325,7 +335,7 @@ unsigned int BaseLEDMatrix::nextRowScanTimerInterval(void) const {
 }
 #endif // #if defined(__IMXRT1062__)
 
-#pragma mark ESP32 Handlers
+// MARK: ESP32 Handlers
 #elif defined ( ESP32 )
 hw_timer_t * timer = NULL;
 portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
@@ -371,7 +381,7 @@ unsigned int BaseLEDMatrix::nextRowScanTimerInterval(void) const {
 	return  5*this->baseIntervalMultiplier( _scanPass );
 }
 
-#pragma mark ESP8266 Handlers
+// MARK: ESP8266 Handlers
 #elif defined ( ESP8266 )
 
 //
@@ -423,12 +433,12 @@ void BaseLEDMatrix::stopScanning(void) {
 	timer0_detachInterrupt();
 }
 
-ICACHE_RAM_ATTR unsigned int BaseLEDMatrix::nextRowScanTimerInterval(void) const {
+SRLM_ISR_ATTR unsigned int BaseLEDMatrix::nextRowScanTimerInterval(void) const {
 	// Calculates the microseconds for each scan
 	return  5*this->baseIntervalMultiplier( _scanPass );
 }
 
-#pragma mark Arduino Due Handlers
+// MARK: Arduino Due Handlers
 #elif defined(_SAM3XA_) // Arduino Due
 
 void BaseLEDMatrix::startScanning(void) {
@@ -494,7 +504,7 @@ void TC7_Handler() {
 	}
 }
 
-#pragma mark Arduino Zero Handlers
+// MARK: Arduino Zero Handlers
 #elif defined(ARDUINO_SAMD_ZERO) // Arduino Zero
 
 void BaseLEDMatrix::startScanning(void) {
@@ -582,6 +592,130 @@ void TC3_Handler()                              // Interrupt Service Routine (IS
 	}
 }
 
+// MARK: Arduino Uno R4 (Renesas) Handlers
+#elif defined(ARDUINO_ARCH_RENESAS)
+
+#include <FspTimer.h>
+
+namespace {
+FspTimer ledMatrixTimer;
+bool timerInitialized = false;
+constexpr uint32_t kRenesasDefaultTickMicros = 5u;
+constexpr uint32_t kRenesasMaxTickMicros = 640u;
+volatile uint32_t renesasAccumulatedMicros = 0u;
+volatile uint32_t renesasCurrentIntervalMicros = kRenesasDefaultTickMicros;
+volatile uint32_t renesasTimerTickMicros = kRenesasDefaultTickMicros;
+uint8_t renesasTimerType = GPT_TIMER;
+int8_t renesasTimerChannel = -1;
+} // namespace
+
+__attribute__((__used__)) void renesasTimerCallback(timer_callback_args_t *args) {
+	(void)args;
+	if (gSingleton == nullptr) {
+		return;
+	}
+
+	if (renesasTimerTickMicros == 0u) {
+		return;
+	}
+
+	if (renesasCurrentIntervalMicros == 0u) {
+		renesasCurrentIntervalMicros = renesasTimerTickMicros;
+	}
+
+	renesasAccumulatedMicros += renesasTimerTickMicros;
+
+	while (renesasAccumulatedMicros >= renesasCurrentIntervalMicros) {
+		renesasAccumulatedMicros -= renesasCurrentIntervalMicros;
+
+		uint32_t nextIntervalMicros = 0u;
+
+		if (gSingleton->doInterFrameTransmitOff()) {
+			gSingleton->shiftOutAllOff();
+			nextIntervalMicros = gSingleton->rowOffTimerInterval();
+		} else {
+			gSingleton->shiftOutCurrentControlRow();
+			nextIntervalMicros = gSingleton->nextRowScanTimerInterval();
+			gSingleton->incrementScanRow();
+		}
+
+		if (nextIntervalMicros == 0u) {
+			nextIntervalMicros = renesasTimerTickMicros;
+		}
+
+		renesasCurrentIntervalMicros = nextIntervalMicros;
+	}
+}
+
+void BaseLEDMatrix::startScanning(void) {
+	this->setup();
+
+	_interFrameOffTimeInterval = _interFrameOffTimeMicros;
+
+	if (!timerInitialized) {
+		renesasTimerChannel = FspTimer::get_available_timer(renesasTimerType, true);
+		if (renesasTimerChannel < 0) {
+			return;
+		}
+
+		if (!ledMatrixTimer.begin(TIMER_MODE_PERIODIC, renesasTimerType, renesasTimerChannel, 1000.0f, 50.0f, renesasTimerCallback)) {
+			return;
+		}
+
+		if (!ledMatrixTimer.open()) {
+			return;
+		}
+
+		uint32_t requestedTick = kRenesasDefaultTickMicros;
+		bool tickConfigured = false;
+		while (!tickConfigured && requestedTick <= kRenesasMaxTickMicros) {
+			if (ledMatrixTimer.set_period_us(requestedTick)) {
+				tickConfigured = true;
+				renesasTimerTickMicros = requestedTick;
+				ledMatrixTimer.stop();
+			} else {
+				requestedTick *= 2u;
+			}
+		}
+		if (!tickConfigured) {
+			return;
+		}
+
+		if (!ledMatrixTimer.setup_overflow_irq()) {
+			return;
+		}
+
+		timerInitialized = true;
+	} else {
+		if (!ledMatrixTimer.is_opened()) {
+			if (!ledMatrixTimer.open()) {
+				return;
+			}
+		}
+	}
+
+	renesasAccumulatedMicros = 0u;
+	renesasCurrentIntervalMicros = this->nextRowScanTimerInterval();
+	if (renesasCurrentIntervalMicros == 0u) {
+		renesasCurrentIntervalMicros = renesasTimerTickMicros;
+	}
+
+	if (!ledMatrixTimer.start()) {
+		return;
+	}
+}
+
+void BaseLEDMatrix::stopScanning(void) {
+	if (timerInitialized) {
+		ledMatrixTimer.stop();
+	}
+}
+
+unsigned int BaseLEDMatrix::nextRowScanTimerInterval(void) const {
+	// Calculates the microseconds for each scan in five microsecond units.
+	return  5*this->baseIntervalMultiplier( _scanPass );
+}
+
 #elif defined(__AVR_ATmegax08__) || defined(__AVR_ATmegax09__)
 void BaseLEDMatrix::startScanning(void) {
 
@@ -591,13 +725,13 @@ void BaseLEDMatrix::stopScanning(void) {
 }
 
 unsigned int BaseLEDMatrix::nextRowScanTimerInterval(void) const {
-	return 0;
+        return 0;
 }
 
-#pragma mark ATmega 8-bit Handlers
+// MARK: ATmega 8-bit Handlers
 #else
 //
-// On normal Arduino board (Uno, Nano, etc), use the timer interrupts to drive the
+// On normal AVR Arduino board (Uno R3, Nano, etc), use the timer interrupts to drive the
 // scan timing.
 //
 
@@ -606,7 +740,12 @@ unsigned int BaseLEDMatrix::nextRowScanTimerInterval(void) const {
 void BaseLEDMatrix::startScanning(void) {
 	this->setup();
 
-	_interFrameOffTimeInterval = max(255 - _interFrameOffTimeMicros, 0);
+	const unsigned int maxTimerPreload = 255u;
+	if (_interFrameOffTimeMicros >= maxTimerPreload) {
+		_interFrameOffTimeInterval = 0u;
+	} else {
+		_interFrameOffTimeInterval = maxTimerPreload - _interFrameOffTimeMicros;
+	}
 
 	noInterrupts(); // disable all interrupts
 
@@ -630,16 +769,21 @@ void BaseLEDMatrix::startScanning(void) {
 	TCNT2 = 0; // max interval for first timer fire
 	TIMSK2 |= (1<<TOIE2);
 
-  	interrupts(); // enable all interrupts
+	interrupts(); // enable all interrupts
 }
 
 void BaseLEDMatrix::stopScanning(void) {
-  	TIMSK2 &= ~(1<<TOIE2); // disable timer overflow interupt
+	TIMSK2 &= ~(1<<TOIE2); // disable timer overflow interupt
 }
 
 unsigned int BaseLEDMatrix::nextRowScanTimerInterval(void) const {
 	// this yields multiple of 50 microseconds on a 16 MHz chip
-	return  max(257 - this->baseIntervalMultiplier( _scanPass )*BASE_SCAN_TIMER_INTERVALS, 0 );
+	const unsigned int maxInterval = 257u;
+	const unsigned int interval = this->baseIntervalMultiplier(_scanPass) * BASE_SCAN_TIMER_INTERVALS;
+	if (interval >= maxInterval) {
+		return 0u;
+	}
+	return maxInterval - interval;
 }
 
 ISR(TIMER2_OVF_vect) {

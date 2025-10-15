@@ -39,14 +39,14 @@ void drawPlasma( unsigned long counter ) {
   leds.startDrawing();
   for (unsigned int col = 0; col < leds.columns(); col++ ) {
     float x = ((float)col/((float)leds.columns()*HORIZ_SPACE_STRETCH_FACTOR)) - 0.5;
+    float v1 = sinf(x*10.0+utime);
+    float cx = x + 0.5*sinf(utime/5.0);
 
     for (unsigned int row = 0; row < leds.rows(); row++ ) {
       float y = ((float)row/((float)leds.rows()*VERT_SPACE_STRETCH_FACTOR)) - 0.5;
 
-      float v1 = sinf(x*10.0+utime);
       float v2 = sinf(10.0*(x*sinf(utime/2.0) + y*cosf(utime/3.0)) + utime);
 
-      float cx = x + 0.5*sinf(utime/5.0);
       float cy = y + 0.5*cosf(utime/3.0);
       float v3 = sinf( sqrtf(100.0*(cx*cx + cy*cy) + 1.0) + utime );
 
@@ -76,7 +76,6 @@ void drawPlasma( unsigned long counter ) {
       }
 
       RGBColorType color = RGBColor::fromRGB(r, g, b);
-                              
       leds.writePixel(col, row, color);
     }
   }
@@ -96,13 +95,12 @@ void loop() {
   leds.loop();
 
   // update frame every 40 milleseconds. AVR chips are slow enough to not need this delay.
-  #if !defined(ARDUINO_ARCH_AVR)
+  #if !defined(ARDUINO_ARCH_AVR) && !defined(ARDUINO_ARCH_RENESAS)
   delay(40);
   #endif
 
   if (timeIncrement) {
     timeCount++;
-  
     //
     // set a maximum to timeCount because floats only have
     // a max precision of 5 significant digits. Otherwise, when timeCount

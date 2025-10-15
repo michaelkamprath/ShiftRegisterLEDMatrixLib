@@ -16,9 +16,7 @@
 //     You should have received a copy of the GNU General Public License
 //     along with Shift Register LED Matrix Project.  If not, see <http://www.gnu.org/licenses/>.
 #include "LEDMatrixBits.h"
-#ifndef ICACHE_RAM_ATTR
-#define ICACHE_RAM_ATTR
-#endif
+#include "SRLEDMatrixUtils.h"
 
 const unsigned char BYTE_BIT_BITMASK[8] = {
 	B10000000,
@@ -65,7 +63,8 @@ LEDMatrixBits::LEDMatrixBits(
 
 LEDMatrixBits::~LEDMatrixBits()
 {
-	delete _data;
+	delete[] _data;
+	delete[] _rowMemoized;
 }
 
 void LEDMatrixBits::reset(void) {
@@ -189,7 +188,7 @@ void LEDMatrixBits::setColumnControlBit( size_t row, size_t column, bool isOn ) 
 	}
 }
 
-ICACHE_RAM_ATTR void LEDMatrixBits::transmitRow(int row, SPIConnection& conn) const {
+SRLM_ISR_ATTR void LEDMatrixBits::transmitRow(int row, SPIConnection& conn) const {
 	unsigned char *dataPtr = _data + _controlBitBytesPerRow*row;
 	conn.startTransaction();
 	for (size_t i = 0; i < _controlBitBytesPerRow; i++ ) {

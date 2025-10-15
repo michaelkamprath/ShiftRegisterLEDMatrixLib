@@ -25,10 +25,6 @@
 
 #define LED_MATRIX_MAX_SCAN_PASS_COUNT 1
 
-#ifndef ICACHE_RAM_ATTR
-#define ICACHE_RAM_ATTR
-#endif
-
 class BaseLEDMatrix : public TimerAction {
 public:
 
@@ -211,4 +207,3 @@ public:
 };
 
 #endif //__SCREEN_H__
-

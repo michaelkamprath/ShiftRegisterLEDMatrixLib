@@ -72,6 +72,7 @@ public:
 			AnimationItem* aniArray,
 			int	aniArraySize
 	);
+	virtual ~RGBAnimationSequence();
 
 	virtual void loop();
 

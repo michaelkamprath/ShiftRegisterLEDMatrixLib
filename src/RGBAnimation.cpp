@@ -19,7 +19,7 @@
 #include "RGBAnimation.h"
 #include "RGBLEDMatrix.h"
 
-#pragma mark - RGBAnimationBase
+// MARK: - RGBAnimationBase
 
 RGBAnimationBase::RGBAnimationBase(
 			unsigned long intervalMicros,
@@ -71,7 +71,7 @@ void RGBAnimationBase::setBottomPad( int padSize ) {
 	_bottomPadSize = padSize;
 }
 
-#pragma mark - ColorBitmapSequenceAnimation
+// MARK: - ColorBitmapSequenceAnimation
 
 ColorBitmapSequenceAnimation::ColorBitmapSequenceAnimation(
 			RGBLEDMatrix& matrix,
@@ -124,7 +124,7 @@ void ColorBitmapSequenceAnimation::draw(RGBLEDMatrix& matrix)
 	_lastDrawnSequenceIdx = idx;
 }
 
-#pragma mark - MonoBitmapSequenceAnimation
+// MARK: - MonoBitmapSequenceAnimation
 
 MonoBitmapSequenceAnimation::MonoBitmapSequenceAnimation(
 			RGBLEDMatrix& matrix,
@@ -178,5 +178,4 @@ void MonoBitmapSequenceAnimation::draw(RGBLEDMatrix& matrix)
 	}
 	_lastDrawnSequenceIdx = idx;
 }
-
 
