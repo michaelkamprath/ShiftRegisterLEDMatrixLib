@@ -50,12 +50,12 @@ Other similar designs can be used with this library. Common variations would be:
 This library has three general facets: image handling, matrix driver, and animation management.
 
 ### Image Handling
-All image drawing is handled by the [Adafruit GFX API](https://learn.adafruit.com/adafruit-gfx-graphics-library/). Please refer to its documentation for information on how to draw an image to a matrix. 
+All image drawing is handled by the [Adafruit GFX API](https://learn.adafruit.com/adafruit-gfx-graphics-library/). Please refer to its documentation for information on how to draw an image to a matrix.
 
 For RGB color matrices, there are two color modes supported: 9 bit and 16 bit color. Color for the image is represented by a `RGBColorType` value. When the preprocessor macro 	`SIXTEEN_BIT_COLOR` is defined to `1`, `RGBColorType` will use following bit layout (notice green gets 6 bits while red and blue each get 5 bits):
 
 ```
-	Bits   0   4   8  12
+	Bits   0   4   8   12
 		   |---|---|---|---
  		   RRRRRGGGGGGBBBBB
 
@@ -124,13 +124,13 @@ In addition to the basic options listed above, when constructing an `RGBLEDMatri
 
 ### Animation Management
 #### TimerAction
-A `TimerAction` object allows you to manage a variably timed action in a manner that does not require the use of a clock interrupt. Since timer interrupts are not used, the timing of action may not be precise, so this class should only be used for actions that are not sensitive to some variability in the action timing. The object has a `loop()` method that should be called in every call to the global `loop()` method. 
+A `TimerAction` object allows you to manage a variably timed action in a manner that does not require the use of a clock interrupt. Since timer interrupts are not used, the timing of action may not be precise, so this class should only be used for actions that are not sensitive to some variability in the action timing. The object has a `loop()` method that should be called in every call to the global `loop()` method.
 
 ## Usage
 The basic pattern of usage is:
 
 1. Create a `LEDMatrix` or `RGBLEDMatrix` matrix object passing the appropriate arguments
-1. In the global `setup()` method, call the `setup()` method of the matrix object to initialize all fields. Then call `startScanning()` on the matrix object to cause bits to be transmitted to the shift registers in the matrix. 
+1. In the global `setup()` method, call the `setup()` method of the matrix object to initialize all fields. Then call `startScanning()` on the matrix object to cause bits to be transmitted to the shift registers in the matrix.
 1. Draw to the the matrix object using the [Adafruit GFX API](https://learn.adafruit.com/adafruit-gfx-graphics-library/), but do call the `startDrawing()` matrix object method prior to any drawing, and balance the call with a call to `stopDrawing()` on the matrix object. These method prevent the image display on the matrix's LEDs from being altered while you are drawing to to the image buffer.
 1. Call the matrix object's `loop()` method in the global `loop()` function.
 
@@ -139,7 +139,7 @@ The basic pattern of usage is:
 ## Driver Boards
 ### Arduino ATmega Boards
 
-The default wiring for connecting the RGB LED Matrix to an Arduino using the ATmega328 micro-controller (e.g., Uno, Nano, etc) is:
+The default wiring for connecting the RGB LED Matrix to an Arduino using the ATmega328 micro-controller (e.g., Uno, Nano, etc) is, and the Arduino Uno R4:
 
 | LED Matrix Connection | Arduino Uno/Nano Pin | Mega 2560 Pin | Notes |
 |:-:|:-:|:-:|---|
@@ -166,10 +166,6 @@ ESP8266 and ESP32 boards are generally 3.3v logic level boards. The default wiri
 | **SER** | D7 | D7 | 23 | D23 | SPI MOSI / HMOSI |
 | **CLK** | D5 | D5 | 18 | D18 | SPI SCK / HSCLK |
 | **LATCH** | D8  | D8 | 5 | D5 | SS / HCS |
-
-### Arduino Uno R4 Boards
-
-The Uno R4 Minima and WiFi variants use Renesas' 48 MHz RA4M1 microcontroller and expose 3.3 V GPIO. The library now ships with a dedicated `FspTimer` backend that keeps the scan cadence identical to the existing AVR implementation, so sketches written for the classic Uno can be recompiled for the Uno R4 without modification. Level-shift the SPI, latch, and optional blanking lines to 5 V when you drive LED matrices that expect the higher voltage, using the same approaches described in the [3.3 V logic level](#33v-logic-level) section.
 
 ### 3.3v Logic Level
 To use the RGB LED Matrices designed in this project with micro-controller boards that use a 3.3V logic level, you must convert the 3.3V logic signals to 5V levels to work with the shift registers. You can easily use a 74HCT125 buffer/line driver chip to do this transformation. For example, you can wire a Teensy 3.6, which is a 3.3v device, to a 74HCT125 chip in the manner shown in the diagram below to get all power and signal lines required to drive the RGB LED Matrix while the Teensy is connected to USB power:
