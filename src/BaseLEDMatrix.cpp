@@ -4,21 +4,22 @@
 //     This file is part of Shift Register LED Matrix Project.
 //
 //     Shift Register LED Matrix Project is free software: you can redistribute it and/or modify
-//     it under the terms of the GNU General Public License as published by
+//     it under the terms of the GNU Lesser General Public License as published by
 //     the Free Software Foundation, either version 3 of the License, or
 //     (at your option) any later version.
 //
 //     Shift Register LED Matrix Project is distributed in the hope that it will be useful,
 //     but WITHOUT ANY WARRANTY; without even the implied warranty of
 //     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//     GNU General Public License for more details.
+//     GNU Lesser General Public License for more details.
 //
-//     You should have received a copy of the GNU General Public License
+//     You should have received a copy of the GNU Lesser General Public License
 //     along with Shift Register LED Matrix Project.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "BaseLEDMatrix.h"
 #include "SRLEDMatrixUtils.h"
 
+// Update interval in microseconds for checking if frame bits need to be regenerated
 const unsigned long UPDATE_INTERVAL = 2000;
 
 static BaseLEDMatrix* gSingleton = NULL;
@@ -330,6 +331,7 @@ void BaseLEDMatrix::stopScanning(void) {
 }
 
 unsigned int BaseLEDMatrix::nextRowScanTimerInterval(void) const {
+	// Teensy 3.x uses 10 microsecond base intervals
 	// Calculates the microseconds for each scan
 	return  10*this->baseIntervalMultiplier( _scanPass );
 }
@@ -363,7 +365,8 @@ void BaseLEDMatrix::startScanning(void) {
 
 	noInterrupts();
 
-	// this sets the timer to count every 1 micro seconds. use timer 3 for best compatibility
+	// ESP32 timer configuration: Use timer 3 for best compatibility
+	// Prescaler of 80 divides 80MHz clock to 1MHz (1 microsecond ticks)
 	timer = timerBegin(3, 80, true);
 	timerAttachInterrupt(timer, &onTimer, true);
 	timerAlarmWrite(timer, this->nextRowScanTimerInterval(), true);
@@ -377,7 +380,8 @@ void BaseLEDMatrix::stopScanning(void) {
 }
 
 unsigned int BaseLEDMatrix::nextRowScanTimerInterval(void) const {
-	// this sets the interrupt to fire a multiple every 25 timer counts, or 25 microseconds
+	// ESP32 uses 5 microsecond base intervals
+	// This sets the interrupt to fire at multiples of 5 microseconds
 	return  5*this->baseIntervalMultiplier( _scanPass );
 }
 
@@ -393,12 +397,14 @@ inline void timer0InteruptHandler (void){
 		gSingleton->shiftOutAllOff();
 
 		// reload the timer
+		// ESP8266 runs at 84MHz, so multiply by 84 to convert microseconds to CPU cycles
 		timer0_write(ESP.getCycleCount() + 84*gSingleton->rowOffTimerInterval());
 		interrupts();
 	} else {
 		gSingleton->shiftOutCurrentControlRow();
 
 		// reload the timer
+		// ESP8266 runs at 84MHz, so multiply by 84 to convert microseconds to CPU cycles
 		timer0_write(ESP.getCycleCount() + 84*gSingleton->nextRowScanTimerInterval());
 		interrupts();
 
@@ -419,7 +425,8 @@ void BaseLEDMatrix::startScanning(void) {
 	timer0_isr_init();
 	timer0_attachInterrupt(timer0InteruptHandler);
 
-	// dirty hack to make sure we don't miss the first ISR call upon start up
+	// Ensure we don't miss the first ISR call upon start up
+	// Convert microseconds to CPU cycles (84 cycles per microsecond at 84MHz)
 	uint32_t tickCount = ESP.getCycleCount() + 84 * this->nextRowScanTimerInterval();
 	if (firstCall) {
 		tickCount += 5000;
@@ -434,6 +441,7 @@ void BaseLEDMatrix::stopScanning(void) {
 }
 
 SRLM_ISR_ATTR unsigned int BaseLEDMatrix::nextRowScanTimerInterval(void) const {
+	// ESP8266 uses 5 microsecond base intervals
 	// Calculates the microseconds for each scan
 	return  5*this->baseIntervalMultiplier( _scanPass );
 }
@@ -600,7 +608,10 @@ void TC3_Handler()                              // Interrupt Service Routine (IS
 namespace {
 FspTimer ledMatrixTimer;
 bool timerInitialized = false;
+// Renesas timer configuration
+// Default tick interval is 5 microseconds for optimal performance
 constexpr uint32_t kRenesasDefaultTickMicros = 5u;
+// Maximum tick interval is 640 microseconds (hardware limitation)
 constexpr uint32_t kRenesasMaxTickMicros = 640u;
 volatile uint32_t renesasAccumulatedMicros = 0u;
 volatile uint32_t renesasCurrentIntervalMicros = kRenesasDefaultTickMicros;
@@ -712,7 +723,8 @@ void BaseLEDMatrix::stopScanning(void) {
 }
 
 unsigned int BaseLEDMatrix::nextRowScanTimerInterval(void) const {
-	// Calculates the microseconds for each scan in five microsecond units.
+	// Renesas uses 5 microsecond base intervals
+	// Calculates the microseconds for each scan in five microsecond units
 	return  5*this->baseIntervalMultiplier( _scanPass );
 }
 
@@ -735,11 +747,14 @@ unsigned int BaseLEDMatrix::nextRowScanTimerInterval(void) const {
 // scan timing.
 //
 
+// Base timer interval units for ATmega Timer2 with /32 prescaler
+// This yields approximately 50 microsecond intervals on a 16 MHz chip
 #define BASE_SCAN_TIMER_INTERVALS 24
 
 void BaseLEDMatrix::startScanning(void) {
 	this->setup();
 
+	// Maximum 8-bit timer counter value for Timer2
 	const unsigned int maxTimerPreload = 255u;
 	if (_interFrameOffTimeMicros >= maxTimerPreload) {
 		_interFrameOffTimeInterval = 0u;
@@ -777,7 +792,8 @@ void BaseLEDMatrix::stopScanning(void) {
 }
 
 unsigned int BaseLEDMatrix::nextRowScanTimerInterval(void) const {
-	// this yields multiple of 50 microseconds on a 16 MHz chip
+	// This yields multiples of 50 microseconds on a 16 MHz chip
+	// Max interval is 257 due to 8-bit counter (256) plus 1 for rollover
 	const unsigned int maxInterval = 257u;
 	const unsigned int interval = this->baseIntervalMultiplier(_scanPass) * BASE_SCAN_TIMER_INTERVALS;
 	if (interval >= maxInterval) {
