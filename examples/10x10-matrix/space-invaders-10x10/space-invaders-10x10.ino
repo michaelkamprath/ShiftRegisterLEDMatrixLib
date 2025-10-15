@@ -1,11 +1,11 @@
 /***
  * Space Invaders Animation Sequence
- * 
+ *
  * Cyclces through the classic images of attacking aliens.
- * 
- * This animations was heavily inspired by: 
+ *
+ * This animations was heavily inspired by:
  *     https://learn.adafruit.com/trinket-slash-gemma-space-invader-pendant/animation
- * 
+ *
  */
 
 #include <RGBLEDMatrix.h>
@@ -16,7 +16,7 @@
 RGBLEDMatrix leds(10,10);
 
 PROGMEM const uint8_t invader1A[8] = {
-	B00011000, 
+	B00011000,
     B00111100,
     B01111110,
     B11011011,
@@ -92,7 +92,7 @@ PROGMEM const uint8_t invader4A[8] = {
     B00001000,
     B00000000
 };
- 
+
 PROGMEM const uint8_t invader4B[8] = {
     B00111100,
     B01111110,
@@ -103,7 +103,7 @@ PROGMEM const uint8_t invader4B[8] = {
     B00001000,
     B00001000
 };
- 
+
 PROGMEM const uint8_t invader4C[8] = {
     B00111100,
     B01111110,
@@ -114,7 +114,7 @@ PROGMEM const uint8_t invader4C[8] = {
     B00000000,
     B00001000
 };
- 
+
 PROGMEM const uint8_t invader4D[8] = {
     B00111100,
     B01111110,
@@ -165,7 +165,7 @@ MonoBitmapSequenceAnimation::Frame ani2[2] = {
     500
   },
 };
- 
+
 // third
 MonoBitmapSequenceAnimation::Frame ani3[2] = {
   {
@@ -288,7 +288,7 @@ RGBAnimationSequence::AnimationItem aniItems[ANIMATION_ITEMS_SIZE] = {
     RGBAnimationSequence::TRANSITION_SLIDE_UP,
     2
   },
-  
+
 };
 
 RGBAnimationSequence animation( aniItems, ANIMATION_ITEMS_SIZE);
@@ -298,7 +298,7 @@ void setup() {
     leds.startScanning();
 }
 
-void loop() {  
+void loop() {
   leds.loop();
   animation.loop();
 }

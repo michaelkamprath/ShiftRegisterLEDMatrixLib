@@ -3,7 +3,7 @@
  *
  *  This is a demonstration of the plasma algorithm displayed on an RGB LED matrix. `
  *  The COLOR_SCHEME global variable allows you to easily change between some pre-made
- *  color schemes. Using the patterm of the demonstration color schemes, it should be 
+ *  color schemes. Using the patterm of the demonstration color schemes, it should be
  *  easy to add others.
  *
  *  The algorithm for this demo was sourced from here:

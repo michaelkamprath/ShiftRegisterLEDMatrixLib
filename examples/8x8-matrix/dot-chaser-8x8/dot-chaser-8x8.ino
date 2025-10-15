@@ -135,7 +135,7 @@ void setup() {
   leds.startScanning();
 }
 
-void loop() { 
+void loop() {
   leds.loop();
   ani.loop();
 }

@@ -1,14 +1,14 @@
 #include <RGBLEDMatrix.h>
 
 //
-// This is an toroidal array implementation of Conway's gqme of life. 
+// This is an toroidal array implementation of Conway's gqme of life.
 //
 // Colors indicate:
 //   green = cell is newly born
 //   blue = cell is alive
 //   red = cell is dying
 //   black = cell is dead
-// 
+//
 // A random set of cells are born on the first generration, then the game commences
 // according to the standard rules.
 //
@@ -20,10 +20,10 @@ public:
 
   const static LifeState ALIVE = 1;
   const static LifeState BORN = 2;
-  const static LifeState DYING = 3;  
+  const static LifeState DYING = 3;
   const static LifeState DEAD = 0;
   const static LifeState GAME_OVER = 4;
-  
+
 private:
 
 
@@ -33,10 +33,10 @@ private:
   LifeState* _nextCells;
 
   bool  _isReseting;
-  
+
   RGBColorType getColorForLifeState( LifeState state ) const;
 
-  
+
 protected:
   virtual void action();
 
@@ -50,7 +50,7 @@ public:
   void setCellStatus(unsigned int row, unsigned int column, LifeState cellStatus);
   LifeState getCellStatus(int row, int column) const;
   void createRandomState();
-  
+
   bool isAlive(int row, int column) const;
   int countAliveNeighbors(int row, int column) const;
 
@@ -120,7 +120,7 @@ void CellUniverse::action() {
     _isReseting = false;
     return;
   }
-  
+
   _leds.startDrawing();
   bool isSame = true;
 
@@ -129,7 +129,7 @@ void CellUniverse::action() {
       LifeState newState = DEAD;
       LifeState currentState = this->getCellStatus(y, x);
       int count = this->countAliveNeighbors(y, x);
-      
+
       switch (currentState) {
         case BORN:
         case ALIVE:
@@ -146,12 +146,12 @@ void CellUniverse::action() {
           if (count == 3) {
             newState = BORN;
           }
-          break; 
+          break;
       }
       if (currentState != newState) {
         isSame = false;
       }
-  
+
       unsigned int idx = y*_leds.columns() + x;
       _nextCells[idx] = newState;
 
@@ -187,7 +187,7 @@ void CellUniverse::createRandomState() {
       this->setCellStatus(y, x, CellUniverse::DEAD);
     }
   }
-  
+
   unsigned int countStartingCells = random(0.25*numTotalCells, 0.75*numTotalCells);
 
   for (unsigned int i = 0; i < countStartingCells; i++ ) {
@@ -196,8 +196,8 @@ void CellUniverse::createRandomState() {
 
     this->setCellStatus(randomRow, randomColumn, CellUniverse::BORN);
   }
-  
-  this->drawToScreen();  
+
+  this->drawToScreen();
 }
 
 void CellUniverse::drawToScreen() {
@@ -261,7 +261,7 @@ void setup() {
 
     uni.setCellStatus(randomRow, randomColumn, CellUniverse::BORN);
   }
-  
+
   uni.drawToScreen();
   leds.startScanning();
 }

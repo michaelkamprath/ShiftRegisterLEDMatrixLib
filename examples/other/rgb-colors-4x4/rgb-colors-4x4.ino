@@ -1,6 +1,6 @@
 /***
  * NOTICE
- * 
+ *
  * This example only works with a 4x4 LED matrix
  */
 #include <RGBLEDMatrix.h>
