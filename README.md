@@ -49,6 +49,20 @@ Other similar designs can be used with this library. Common variations would be:
 ## Library Architecture
 This library has three general facets: image handling, matrix driver, and animation management.
 
+### Platform Timer Handlers
+Platform-specific interrupt and timer routines for `BaseLEDMatrix` reside in `src/platform/` and are `#include`d from `src/BaseLEDMatrix.cpp` based on the active Arduino architecture symbol. Each file follows the naming pattern `BaseLEDMatrix_<architecture>.cpp`. The current mappings are:
+
+- `BaseLEDMatrix_avr.cpp` for default ATmega 8-bit boards
+- `BaseLEDMatrix_esp32.cpp` for ESP32 boards
+- `BaseLEDMatrix_esp8266.cpp` for ESP8266 boards
+- `BaseLEDMatrix_teensy.cpp` for Teensy boards
+- `BaseLEDMatrix_samd.cpp` for Arduino Zero and other SAMD boards
+- `BaseLEDMatrix_sam.cpp` for Arduino Due (SAM3X) boards
+- `BaseLEDMatrix_rp2040.cpp` for RP2040-based boards
+- `BaseLEDMatrix_renesas_uno.cpp` for Arduino Uno R4 (Renesas) boards
+
+When adding support for a new platform, place the handler implementation in a new file under `src/platform/` following this convention and extend the architecture switch in `src/BaseLEDMatrix.cpp`.
+
 ### Image Handling
 All image drawing is handled by the [Adafruit GFX API](https://learn.adafruit.com/adafruit-gfx-graphics-library/). Please refer to its documentation for information on how to draw an image to a matrix.
 
@@ -222,5 +236,3 @@ In this way, a 4 column by 8 row matrix with common power row groups using a sca
 ![Example 8 row by 4 column matrix](extras/common-power-row-groups-rearranged-with-column-bits.png)
 
 When using this library in conjunction with a matrix that is set up to use common power row groups, you declare your matrix size according to how the image is laid out out. In this example's case, that would be the 8 row by 4 column arrangement. This library will take care of rearranging the bits to the equivalent horizontally laid out matrix.
-
-

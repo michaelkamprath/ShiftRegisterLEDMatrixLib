@@ -1,9 +1,9 @@
 /*
  *  Plasma
  *
- *  This is a demonstration of the plasma algorithm displayed on an RGB LED matrix.
+ *  This is a demonstration of the plasma algorithm displayed on an RGB LED matrix. `
  *  The COLOR_SCHEME global variable allows you to easily change between some pre-made
- *  color schemes. Using the patterm of the demonstration color schemes, it should be
+ *  color schemes. Using the patterm of the demonstration color schemes, it should be 
  *  easy to add others.
  *
  *  The algorithm for this demo was sourced from here:
@@ -23,10 +23,18 @@
  */
 const int COLOR_SCHEME = 1;
 
-const float SPACE_STRETCH_FACTOR = 4.0;
+const float VERT_SPACE_STRETCH_FACTOR = 4.0;
+const float HORIZ_SPACE_STRETCH_FACTOR = 3;
 const float TIME_DILATION = 20.0;
 
-RGBLEDMatrix leds(8,8);
+RGBLEDMatrix leds(8,16, RGBLEDMatrix::RGB_GROUPS, HIGH, LOW, 0, 
+#if defined(ESP32)
+      5
+#else
+      10
+#endif
+//    , RGBLEDMatrix::LED_LITTLE_ENDIAN_8
+    );
 
 int mapSineToRange( float sineValue, int rangeMax ) {
   return rangeMax*(sineValue+1.0)/2.0;
@@ -36,10 +44,10 @@ void drawPlasma( unsigned long counter ) {
 
   leds.startDrawing();
   for (unsigned int col = 0; col < leds.columns(); col++ ) {
-    float x = ((float)col/((float)leds.columns()*SPACE_STRETCH_FACTOR)) - 0.5;
+    float x = ((float)col/((float)leds.columns()*HORIZ_SPACE_STRETCH_FACTOR)) - 0.5;
 
     for (unsigned int row = 0; row < leds.rows(); row++ ) {
-      float y = ((float)row/((float)leds.rows()*SPACE_STRETCH_FACTOR)) - 0.5;
+      float y = ((float)row/((float)leds.rows()*VERT_SPACE_STRETCH_FACTOR)) - 0.5;
 
       float v1 = sinf(x*10.0+utime);
       float v2 = sinf(10.0*(x*sinf(utime/2.0) + y*cosf(utime/3.0)) + utime);
@@ -66,10 +74,14 @@ void drawPlasma( unsigned long counter ) {
         case 3:
           r = g = b = mapSineToRange(sinf(v*5.0*PI), 255);
           break;
+        case 4:
+          r = mapSineToRange(cosf(v*PI), 255);
+          g = mapSineToRange(sinf(v*PI + 3.0*PI/4.0), 255);
+          b = 255;
+          break;
       }
 
       RGBColorType color = RGBColor::fromRGB(r, g, b);
-
       leds.writePixel(col, row, color);
     }
   }
@@ -85,23 +97,17 @@ void setup() {
   Serial.println(F("*** Done setting up."));
 }
 
-unsigned long loopCounter = 0;
 unsigned long timeCount = 0;
 bool timeIncrement = true;
 
-#if (defined(__arm__)&& defined(TEENSYDUINO))||(defined( ESP32 ))
-// slow things down for the Teensy and other fast microcontrollers
-const unsigned long loopMod = 20000;
-#else
-const unsigned long loopMod = 500;
-#endif
-
 void loop() {
   leds.loop();
-  loopCounter++;
 
-  if (loopCounter == loopMod) {
-    if (timeIncrement) {
+  // update frame every 40 milleseconds. AVR chips are slow enough to not need this delay.
+  #if !defined(ARDUINO_ARCH_AVR)
+  delay(40);
+  #endif
+  if (timeIncrement) {
       timeCount++;
 
       //
@@ -111,16 +117,14 @@ void loop() {
       // will not have a noticable change to timeCount/TIME_DILATION. for several
       // consecutive calls.
       //
-      if (timeCount >= 100000*PI) {
+      if (timeCount >= 1000*PI) {
         timeIncrement = false;
       }
-    } else {
+  } else {
       timeCount--;
       if (timeCount == 0) {
         timeIncrement = true;
       }
-    }
-    drawPlasma(timeCount);
-    loopCounter = 0;
   }
+  drawPlasma(timeCount);
 }
